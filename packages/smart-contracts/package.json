@@ -1,8 +1,9 @@
 {
-  "name": "@dapp-starter-kit/smart-contracts",
+  "name": "@archerswap/smart-contracts",
   "version": "0.0.0",
+  "organization": "Archer DAO",
   "author": "Chris Piatt (@chpiatt)",
-  "license": "Unlicense",
+  "license": "MIT",
   "scripts": {
     "chain": "npx hardhat node --no-deploy --show-accounts",
     "accounts": "npx hardhat accounts",

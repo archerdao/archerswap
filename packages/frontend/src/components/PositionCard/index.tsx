@@ -1,4 +1,5 @@
-import { JSBI, Pair, Percent, TokenAmount } from '@uniswap/sdk'
+import { JSBI, Pair } from '@archerswap/sdk'
+import { Percent, TokenAmount } from '@uniswap/sdk-core'
 import { darken } from 'polished'
 import React, { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'react-feather'

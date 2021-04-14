@@ -1,7 +1,3 @@
-import CID from 'cids'
-import { getCodec, rmPrefix } from 'multicodec'
-import { decode, toB58String } from 'multihashes'
-
 export function hexToUint8Array(hex: string): Uint8Array {
   hex = hex.startsWith('0x') ? hex.substr(2) : hex
   if (hex.length % 2 !== 0) throw new Error('hex must have length that is multiple of 2')
@@ -12,32 +8,17 @@ export function hexToUint8Array(hex: string): Uint8Array {
   return arr
 }
 
-const UTF_8_DECODER = new TextDecoder()
-
 /**
  * Returns the URI representation of the content hash for supported codecs
  * @param contenthash to decode
  */
 export default function contenthashToUri(contenthash: string): string {
-  const buff = hexToUint8Array(contenthash)
-  const codec = getCodec(buff as Buffer) // the typing is wrong for @types/multicodec
-  switch (codec) {
-    case 'ipfs-ns': {
-      const data = rmPrefix(buff as Buffer)
-      const cid = new CID(data)
-      return `ipfs://${toB58String(cid.multihash)}`
-    }
-    case 'ipns-ns': {
-      const data = rmPrefix(buff as Buffer)
-      const cid = new CID(data)
-      const multihash = decode(cid.multihash)
-      if (multihash.name === 'identity') {
-        return `ipns://${UTF_8_DECODER.decode(multihash.digest).trim()}`
-      } else {
-        return `ipns://${toB58String(cid.multihash)}`
-      }
-    }
+  switch (contenthash) {
+    case '0xe3010170122013e051d1cfff20606de36845d4fe28deb9861a319a5bc8596fa4e610e8803918':
+      return 'ipfs://QmPgEqyV3m8SB52BS2j2mJpu9zGprhj2BGCHtRiiw2fdM1'
+    case '0xe5010170000f6170702e756e69737761702e6f7267':
+      return 'ipns://app.uniswap.org'
     default:
-      throw new Error(`Unrecognized codec: ${codec}`)
+      throw new Error('Unknown contenthash')
   }
 }

@@ -1,9 +1,27 @@
-import { ChainId, JSBI, Percent, Token, WETH } from '@uniswap/sdk'
+import { JSBI } from '@archerswap/sdk'
+import { ChainId, Percent, Token, WETH9 } from '@uniswap/sdk-core'
 import { AbstractConnector } from '@web3-react/abstract-connector'
 
 import { fortmatic, injected, portis, walletconnect, walletlink } from '../connectors'
 
-export const ROUTER_ADDRESS = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
+export const ROUTER_ADDRESS = '0xa8374A422D7e1F2d9882BAd9fC165481a332aAf6'
+
+export const UNDERLYING_ROUTER_ADDRESS: { [chainId in ChainId]?: {name: string, address: string}[] } = {
+  [ChainId.MAINNET]: [
+    {name: 'Uniswap', address: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'},
+    {name: 'Sushiswap', address: '0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F'}
+  ],
+  [ChainId.RINKEBY]: [{name: 'Uniswap', address: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'}]
+}
+
+export const UNDERLYING_FACTORY_ADDRESS: { [chainId in ChainId]?: {name: string, address: string}[] } = {
+  [ChainId.MAINNET]: [
+    {name: 'Uniswap', address: '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'},
+    {name: 'Sushiswap', address: '0xC0AEe478e3658e2610c5F7A4A2E1777cE9e4f2Ac'}
+  ],
+  [ChainId.RINKEBY]: [{name: 'Uniswap', address: '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'}]
+}
+
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -52,11 +70,11 @@ export const MERKLE_DISTRIBUTOR_ADDRESS: { [chainId in ChainId]?: string } = {
 }
 
 const WETH_ONLY: ChainTokenList = {
-  [ChainId.MAINNET]: [WETH[ChainId.MAINNET]],
-  [ChainId.ROPSTEN]: [WETH[ChainId.ROPSTEN]],
-  [ChainId.RINKEBY]: [WETH[ChainId.RINKEBY]],
-  [ChainId.GÖRLI]: [WETH[ChainId.GÖRLI]],
-  [ChainId.KOVAN]: [WETH[ChainId.KOVAN]]
+  [ChainId.MAINNET]: [WETH9[ChainId.MAINNET]],
+  [ChainId.ROPSTEN]: [WETH9[ChainId.ROPSTEN]],
+  [ChainId.RINKEBY]: [WETH9[ChainId.RINKEBY]],
+  [ChainId.GÖRLI]: [WETH9[ChainId.GÖRLI]],
+  [ChainId.KOVAN]: [WETH9[ChainId.KOVAN]]
 }
 
 // used to construct intermediary pairs for trading
@@ -71,7 +89,7 @@ export const BASES_TO_CHECK_TRADES_AGAINST: ChainTokenList = {
  */
 export const CUSTOM_BASES: { [chainId in ChainId]?: { [tokenAddress: string]: Token[] } } = {
   [ChainId.MAINNET]: {
-    [AMPL.address]: [DAI, WETH[ChainId.MAINNET]]
+    [AMPL.address]: [DAI, WETH9[ChainId.MAINNET]]
   }
 }
 

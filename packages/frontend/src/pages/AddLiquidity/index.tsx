@@ -1,6 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { TransactionResponse } from '@ethersproject/providers'
-import { Currency, currencyEquals, ETHER, TokenAmount, WETH } from '@uniswap/sdk'
+import { Currency, currencyEquals, ETHER, TokenAmount, WETH9 } from '@uniswap/sdk-core'
 import React, { useCallback, useContext, useState } from 'react'
 import { Plus } from 'react-feather'
 import ReactGA from 'react-ga'
@@ -55,8 +55,8 @@ export default function AddLiquidity({
 
   const oneCurrencyIsWETH = Boolean(
     chainId &&
-      ((currencyA && currencyEquals(currencyA, WETH[chainId])) ||
-        (currencyB && currencyEquals(currencyB, WETH[chainId])))
+      ((currencyA && currencyEquals(currencyA, WETH9[chainId])) ||
+        (currencyB && currencyEquals(currencyB, WETH9[chainId])))
   )
 
   const toggleWalletModal = useWalletModalToggle() // toggle wallet when disconnected

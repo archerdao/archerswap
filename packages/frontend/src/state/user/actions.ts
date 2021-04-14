@@ -28,3 +28,4 @@ export const removeSerializedPair = createAction<{ chainId: number; tokenAAddres
   'user/removeSerializedPair'
 )
 export const toggleURLWarning = createAction<void>('app/toggleURLWarning')
+export const updateUserUnderlyingRouter = createAction<{ userUnderlyingRouter: string }>('user/updateUserUnderlyingRouter')

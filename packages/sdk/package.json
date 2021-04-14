@@ -1,0 +1,42 @@
+{
+  "name": "@archerswap/sdk",
+  "license": "MIT",
+  "version": "1.0.7",
+  "description": "🛠 An SDK for building applications on top of Uniswap V2-like exchanges",
+  "organization": "Archer DAO",
+  "author": "Jeffrey Quesnelle (@realjeffq)",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "module": "dist/v2-sdk.esm.js",
+  "scripts": {
+    "lint": "tsdx lint src test",
+    "build": "tsdx build",
+    "start": "tsdx watch",
+    "test": "tsdx test",
+    "prepublishOnly": "tsdx build"
+  },
+  "dependencies": {
+    "@ethersproject/address": "^5.0.0",
+    "@ethersproject/solidity": "^5.0.0",
+    "@uniswap/sdk-core": "^1.0.9",
+    "tiny-invariant": "^1.1.0",
+    "tiny-warning": "^1.0.3"
+  },
+  "devDependencies": {
+    "@types/big.js": "^4.0.5",
+    "@types/jest": "^24.0.25",
+    "@uniswap/v2-core": "^1.0.1",
+    "tsdx": "^0.14.1"
+  },
+  "engines": {
+    "node": ">=10"
+  },
+  "prettier": {
+    "printWidth": 120,
+    "semi": false,
+    "singleQuote": true
+  }
+}

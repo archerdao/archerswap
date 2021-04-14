@@ -23,7 +23,7 @@
     "verify": "yarn workspace @archerswap/smart-contracts verify",
     "start": "yarn workspace @archerswap/frontend start",
     "start:service-worker": "yarn workspace @archerswap/frontend start:service-worker",
-    "build": "yarn workspace @archerswap/frontend build",
+    "build": "yarn workspace @archerswap/sdk build && yarn workspace @archerswap/frontend build",
     "eject": "yarn workspace @archerswap/frontend eject",
     "test:frontend": "yarn workspace @archerswap/frontend test",
     "integration-test": "yarn workspace @archerswap/frontend integration-test",

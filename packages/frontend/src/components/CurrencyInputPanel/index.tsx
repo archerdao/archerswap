@@ -1,4 +1,5 @@
-import { Currency, Pair } from '@uniswap/sdk'
+import { Currency } from '@uniswap/sdk-core'
+import { Pair } from '@archerswap/sdk'
 import React, { useState, useCallback } from 'react'
 import styled from 'styled-components'
 import { darken } from 'polished'

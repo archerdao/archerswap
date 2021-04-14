@@ -1,18 +1,20 @@
 import { AddressZero } from '@ethersproject/constants'
 import {
+  JSBI,
+  Pair,
+  Route,
+  Trade,
+} from '@archerswap/sdk'
+import {
   BigintIsh,
   Currency,
   CurrencyAmount,
   ETHER,
-  JSBI,
-  Pair,
-  Route,
   Token,
   TokenAmount,
-  Trade,
   TradeType,
-  WETH
-} from '@uniswap/sdk'
+  WETH9
+} from '@uniswap/sdk-core'
 import { useMemo } from 'react'
 import { useActiveWeb3React } from '../hooks'
 import { useAllTokens } from '../hooks/Tokens'
@@ -30,14 +32,14 @@ export function useV1ExchangeAddress(tokenAddress?: string): string | undefined 
 
 export class MockV1Pair extends Pair {
   constructor(etherAmount: BigintIsh, tokenAmount: TokenAmount) {
-    super(tokenAmount, new TokenAmount(WETH[tokenAmount.token.chainId], etherAmount))
+    super(tokenAmount, new TokenAmount(WETH9[1], etherAmount))
   }
 }
 
 function useMockV1Pair(inputCurrency?: Currency): MockV1Pair | undefined {
   const token = inputCurrency instanceof Token ? inputCurrency : undefined
 
-  const isWETH = Boolean(token && token.equals(WETH[token.chainId]))
+  const isWETH = Boolean(token && token.equals(WETH9[1]))
   const v1PairAddress = useV1ExchangeAddress(isWETH ? undefined : token?.address)
   const tokenBalance = useTokenBalance(v1PairAddress, token)
   const ETHBalance = useETHBalances([v1PairAddress])[v1PairAddress ?? '']

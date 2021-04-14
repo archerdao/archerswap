@@ -59,19 +59,19 @@ export function colors(darkMode: boolean): Colors {
     advancedBG: darkMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.6)',
 
     //primary colors
-    primary1: darkMode ? '#2172E5' : '#ff007a',
-    primary2: darkMode ? '#3680E7' : '#FF8CC3',
-    primary3: darkMode ? '#4D8FEA' : '#FF99C9',
-    primary4: darkMode ? '#376bad70' : '#F6DDE8',
+    primary1: darkMode ? '#6AB04C' : '#ff007a',
+    primary2: darkMode ? '#5545BF' : '#FF8CC3',
+    primary3: darkMode ? '#00CEC9' : '#FF99C9',
+    primary4: darkMode ? '#FDCB6E' : '#F6DDE8',
     primary5: darkMode ? '#153d6f70' : '#FDEAF1',
 
     // color text
     primaryText1: darkMode ? '#6da8ff' : '#ff007a',
 
     // secondary colors
-    secondary1: darkMode ? '#2172E5' : '#ff007a',
-    secondary2: darkMode ? '#17000b26' : '#F6DDE8',
-    secondary3: darkMode ? '#17000b26' : '#FDEAF1',
+    secondary1: darkMode ? '#DEDBFF' : '#ff007a',
+    secondary2: darkMode ? '#303642' : '#F6DDE8',
+    secondary3: darkMode ? '#E17055' : '#FDEAF1',
 
     // other
     red1: '#FD4040',
@@ -178,13 +178,8 @@ export const TYPE = {
 
 export const FixedGlobalStyle = createGlobalStyle`
 html, input, textarea, button {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   font-display: fallback;
-}
-@supports (font-variation-settings: normal) {
-  html, input, textarea, button {
-    font-family: 'Inter var', sans-serif;
-  }
 }
 
 html,

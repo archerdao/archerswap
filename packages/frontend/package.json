@@ -3,10 +3,10 @@
   "description": "Archerswap Interface",
   "version": "0.0.0",
   "organization": "Archer DAO",
-  "author": "Chris Piatt (@chpiatt)",
-  "license": "MIT",
+  "author": "Jeffrey Quesnelle (@realjeffq)",
   "homepage": ".",
   "devDependencies": {
+    "@archerswap/sdk": "1.0.7",
     "@ethersproject/experimental": "^5.0.1",
     "@popperjs/core": "^2.4.4",
     "@reach/dialog": "^0.10.3",
@@ -33,7 +33,6 @@
     "@uniswap/governance": "^1.0.2",
     "@uniswap/liquidity-staker": "^1.0.2",
     "@uniswap/merkle-distributor": "1.0.1",
-    "@uniswap/sdk": "3.0.3",
     "@uniswap/token-lists": "^1.0.0-beta.19",
     "@uniswap/v2-core": "1.0.0",
     "@uniswap/v2-periphery": "^1.1.0-beta.0",
@@ -128,6 +127,7 @@
   },
   "license": "GPL-3.0-or-later",
   "dependencies": {
-    "@uniswap/default-token-list": "^2.0.0"
+    "@uniswap/default-token-list": "^2.0.0",
+    "@uniswap/sdk-core": "^1.0.9"
   }
 }

@@ -1,4 +1,5 @@
-import { ChainId, Pair, Token } from '@uniswap/sdk'
+import { ChainId, Token } from '@uniswap/sdk-core'
+import { Pair } from '@archerswap/sdk'
 import flatMap from 'lodash.flatmap'
 import { useCallback, useMemo } from 'react'
 import { shallowEqual, useDispatch, useSelector } from 'react-redux'
@@ -18,7 +19,8 @@ import {
   updateUserExpertMode,
   updateUserSlippageTolerance,
   toggleURLWarning,
-  updateUserSingleHopOnly
+  updateUserSingleHopOnly,
+  updateUserUnderlyingRouter
 } from './actions'
 
 function serializeToken(token: Token): SerializedToken {
@@ -263,4 +265,20 @@ export function useTrackedTokenPairs(): [Token, Token][] {
 
     return Object.keys(keyed).map(key => keyed[key])
   }, [combinedList])
+}
+
+export function useUserUnderlyingRouter(): [string, (address: string) => void] {
+  const dispatch = useDispatch<AppDispatch>()
+  const userUnderlyingRouter = useSelector<AppState, AppState['user']['userUnderlyingRouter']>(state => {
+    return state.user.userUnderlyingRouter
+  })
+
+  const setUserUnderlyingRouter = useCallback(
+    (userUnderlyingRouter: string) => {
+      dispatch(updateUserUnderlyingRouter({ userUnderlyingRouter }))
+    },
+    [dispatch]
+  )
+
+  return [userUnderlyingRouter, setUserUnderlyingRouter]
 }

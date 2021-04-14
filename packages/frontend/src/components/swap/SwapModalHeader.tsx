@@ -1,4 +1,5 @@
-import { Trade, TradeType } from '@uniswap/sdk'
+import { Trade } from '@archerswap/sdk'
+import { TradeType } from '@uniswap/sdk-core'
 import React, { useContext, useMemo } from 'react'
 import { ArrowDown, AlertTriangle } from 'react-feather'
 import { Text } from 'rebass'

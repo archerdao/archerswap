@@ -13,7 +13,7 @@ import { useProposalData, useUserVotesAsOfBlock, ProposalData, useUserDelegatee 
 import { DateTime } from 'luxon'
 import ReactMarkdown from 'react-markdown'
 import VoteModal from '../../components/vote/VoteModal'
-import { TokenAmount } from '@uniswap/sdk-core'
+import { TokenAmount } from '@archerswap/sdk'
 import { JSBI } from '@archerswap/sdk'
 import { useActiveWeb3React } from '../../hooks'
 import { AVERAGE_BLOCK_TIME_IN_SECS, COMMON_CONTRACT_NAMES, UNI, ZERO_ADDRESS } from '../../constants'

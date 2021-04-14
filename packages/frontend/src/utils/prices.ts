@@ -1,5 +1,5 @@
 import { BLOCKED_PRICE_IMPACT_NON_EXPERT } from '../constants'
-import { CurrencyAmount, Fraction, Percent, TokenAmount } from '@uniswap/sdk-core'
+import { CurrencyAmount, Fraction, Percent, TokenAmount } from '@archerswap/sdk'
 import { JSBI, Trade } from '@archerswap/sdk'
 import { ALLOWED_PRICE_IMPACT_HIGH, ALLOWED_PRICE_IMPACT_LOW, ALLOWED_PRICE_IMPACT_MEDIUM } from '../constants'
 import { Field } from '../state/swap/actions'

@@ -1,5 +1,5 @@
 import { UNI } from './../../constants/index'
-import { Currency, CurrencyAmount, ETHER, Token, TokenAmount } from '@uniswap/sdk-core'
+import { Currency, CurrencyAmount, ETHER, Token, TokenAmount } from '@archerswap/sdk'
 import { JSBI } from '@archerswap/sdk'
 import { useMemo } from 'react'
 import ERC20_INTERFACE from '../../constants/abis/erc20'

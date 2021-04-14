@@ -1,5 +1,5 @@
 import { JSBI, Pair } from '@archerswap/sdk'
-import { ChainId, CurrencyAmount, Token, TokenAmount, WETH } from '@uniswap/sdk-core'
+import { ChainId, CurrencyAmount, Token, TokenAmount, WETH } from '@archerswap/sdk'
 import { useMemo } from 'react'
 import { DAI, UNI, USDC, USDT, WBTC } from '../../constants'
 import { STAKING_REWARDS_INTERFACE } from '../../constants/abis/staking-rewards'

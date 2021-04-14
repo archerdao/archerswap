@@ -1,6 +1,6 @@
 import useENS from '../../hooks/useENS'
 import { parseUnits } from '@ethersproject/units'
-import { Currency, CurrencyAmount, ETHER, Token, TokenAmount } from '@uniswap/sdk-core'
+import { Currency, CurrencyAmount, ETHER, Token, TokenAmount } from '@archerswap/sdk'
 import { JSBI, Trade } from '@archerswap/sdk'
 import { ParsedQs } from 'qs'
 import { useCallback, useEffect, useState } from 'react'
@@ -140,6 +140,7 @@ export function useDerivedSwapInfo(): {
   const bestTradeExactOut = useTradeExactOut(inputCurrency ?? undefined, !isExactIn ? parsedAmount : undefined)
 
   const v2Trade = isExactIn ? bestTradeExactIn : bestTradeExactOut
+  console.log('v2Trade', v2Trade)
 
   const currencyBalances = {
     [Field.INPUT]: relevantTokenBalances[0],

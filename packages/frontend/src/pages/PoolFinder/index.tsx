@@ -1,4 +1,4 @@
-import { Currency, ETHER, TokenAmount } from '@uniswap/sdk-core'
+import { Currency, ETHER, TokenAmount } from '@archerswap/sdk'
 import { JSBI } from '@archerswap/sdk'
 import React, { useCallback, useEffect, useState } from 'react'
 import { Plus } from 'react-feather'

@@ -1,5 +1,5 @@
 import { JSBI } from '@archerswap/sdk'
-import { TokenAmount } from '@uniswap/sdk-core'
+import { TokenAmount } from '@archerswap/sdk'
 import { isAddress } from 'ethers/lib/utils'
 import React, { useEffect, useState } from 'react'
 import { Text } from 'rebass'

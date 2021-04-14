@@ -1,4 +1,4 @@
-import { ChainId, Currency, currencyEquals, Price, WETH } from '@uniswap/sdk-core'
+import { ChainId, Currency, currencyEquals, Price, WETH } from '@archerswap/sdk'
 import { JSBI } from '@archerswap/sdk'
 import { useMemo } from 'react'
 import { USDC } from '../constants'

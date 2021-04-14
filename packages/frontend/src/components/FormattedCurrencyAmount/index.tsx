@@ -1,5 +1,5 @@
 import React from 'react'
-import { CurrencyAmount, Fraction } from '@uniswap/sdk-core'
+import { CurrencyAmount, Fraction } from '@archerswap/sdk'
 import { JSBI } from '@archerswap/sdk'
 
 const CURRENCY_AMOUNT_MIN = new Fraction(JSBI.BigInt(1), JSBI.BigInt(1000000))

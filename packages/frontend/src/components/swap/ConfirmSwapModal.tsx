@@ -1,5 +1,5 @@
 import { Trade } from '@archerswap/sdk'
-import { currencyEquals } from '@uniswap/sdk-core'
+import { currencyEquals } from '@archerswap/sdk'
 import React, { useCallback, useMemo } from 'react'
 import TransactionConfirmationModal, {
   ConfirmationModalContent,

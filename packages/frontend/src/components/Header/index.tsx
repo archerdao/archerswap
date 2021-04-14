@@ -1,4 +1,4 @@
-import { ChainId } from '@uniswap/sdk-core'
+import { ChainId } from '@archerswap/sdk'
 import React from 'react'
 import { Text } from 'rebass'
 import { NavLink } from 'react-router-dom'

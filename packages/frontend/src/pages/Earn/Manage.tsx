@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { Link } from 'react-router-dom'
 
 import { JSBI } from '@archerswap/sdk'
-import { TokenAmount, ETHER } from '@uniswap/sdk-core'
+import { TokenAmount, ETHER } from '@archerswap/sdk'
 import { RouteComponentProps } from 'react-router-dom'
 import DoubleCurrencyLogo from '../../components/DoubleLogo'
 import { useCurrency } from '../../hooks/Tokens'

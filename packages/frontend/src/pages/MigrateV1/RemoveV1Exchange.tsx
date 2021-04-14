@@ -1,6 +1,6 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { JSBI} from '@archerswap/sdk'
-import { Token, TokenAmount, WETH, Fraction, Percent, CurrencyAmount } from '@uniswap/sdk-core'
+import { Token, TokenAmount, WETH, Fraction, Percent, CurrencyAmount } from '@archerswap/sdk'
 import React, { useCallback, useMemo, useState } from 'react'
 import ReactGA from 'react-ga'
 import { Redirect, RouteComponentProps } from 'react-router'

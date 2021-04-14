@@ -14,7 +14,7 @@ import {
   TokenAmount,
   TradeType,
   WETH
-} from '@uniswap/sdk-core'
+} from '@archerswap/sdk'
 import { useMemo } from 'react'
 import { useActiveWeb3React } from '../hooks'
 import { useAllTokens } from '../hooks/Tokens'

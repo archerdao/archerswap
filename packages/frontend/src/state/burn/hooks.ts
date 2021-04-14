@@ -1,4 +1,4 @@
-import { Currency, CurrencyAmount, Percent, TokenAmount } from '@uniswap/sdk-core'
+import { Currency, CurrencyAmount, Percent, TokenAmount } from '@archerswap/sdk'
 import { JSBI, Pair } from '@archerswap/sdk'
 import { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'

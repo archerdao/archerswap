@@ -1,4 +1,4 @@
-import { TokenAmount } from '@uniswap/sdk-core'
+import { TokenAmount } from '@archerswap/sdk'
 import React, { useEffect } from 'react'
 import { X } from 'react-feather'
 import styled, { keyframes } from 'styled-components'

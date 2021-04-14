@@ -1,5 +1,5 @@
 import { JSBI } from '@archerswap/sdk'
-import { ChainId, Percent, Token, WETH } from '@uniswap/sdk-core'
+import { ChainId, Percent, Token, WETH } from '@archerswap/sdk'
 import { AbstractConnector } from '@web3-react/abstract-connector'
 
 import { fortmatic, injected, portis, walletconnect, walletlink } from '../connectors'

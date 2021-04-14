@@ -6,7 +6,7 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { abi as IUniswapV2Router02ABI } from '@uniswap/v2-periphery/build/IUniswapV2Router02.json'
 import ArcherSwapRouterABI from '../constants/abis/ArcherSwapRouter.json'
 import { ROUTER_ADDRESS } from '../constants'
-import { ChainId, Percent, Token, CurrencyAmount, Currency, ETHER } from '@uniswap/sdk-core'
+import { ChainId, Percent, Token, CurrencyAmount, Currency, ETHER } from '@archerswap/sdk'
 import { JSBI } from '@archerswap/sdk'
 import { TokenAddressMap } from '../state/lists/hooks'
 

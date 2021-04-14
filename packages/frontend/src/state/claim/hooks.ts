@@ -1,6 +1,6 @@
 import { UNI } from './../../constants/index'
 import { JSBI } from '@archerswap/sdk'
-import { TokenAmount, ChainId } from '@uniswap/sdk-core'
+import { TokenAmount, ChainId } from '@archerswap/sdk'
 import { TransactionResponse } from '@ethersproject/providers'
 import { useEffect, useState } from 'react'
 import { useActiveWeb3React } from '../../hooks'

@@ -1,4 +1,4 @@
-import { Currency, ETHER, Token } from '@uniswap/sdk-core'
+import { Currency, ETHER, Token } from '@archerswap/sdk'
 
 export function currencyId(currency: Currency): string {
   if (currency === ETHER) return 'ETH'

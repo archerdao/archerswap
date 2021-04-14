@@ -20,7 +20,7 @@ import {
   updateUserSlippageTolerance,
   toggleURLWarning,
   updateUserSingleHopOnly,
-  updateUserUnderlyingRouter
+  updateUserUnderlyingExchange
 } from './actions'
 
 function serializeToken(token: Token): SerializedToken {
@@ -267,18 +267,18 @@ export function useTrackedTokenPairs(): [Token, Token][] {
   }, [combinedList])
 }
 
-export function useUserUnderlyingRouter(): [string, (address: string) => void] {
+export function useUserUnderlyingExchange(): [string, (address: string) => void] {
   const dispatch = useDispatch<AppDispatch>()
-  const userUnderlyingRouter = useSelector<AppState, AppState['user']['userUnderlyingRouter']>(state => {
-    return state.user.userUnderlyingRouter
+  const userUnderlyingExchange = useSelector<AppState, AppState['user']['userUnderlyingExchange']>(state => {
+    return state.user.userUnderlyingExchange
   })
 
-  const setUserUnderlyingRouter = useCallback(
-    (userUnderlyingRouter: string) => {
-      dispatch(updateUserUnderlyingRouter({ userUnderlyingRouter }))
+  const setUserUnderlyingExchange = useCallback(
+    (userUnderlyingExchange: string) => {
+      dispatch(updateUserUnderlyingExchange({ userUnderlyingExchange }))
     },
     [dispatch]
   )
 
-  return [userUnderlyingRouter, setUserUnderlyingRouter]
+  return [userUnderlyingExchange, setUserUnderlyingExchange]
 }

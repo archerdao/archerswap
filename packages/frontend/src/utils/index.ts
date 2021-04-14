@@ -104,7 +104,7 @@ export function getRouterContract(_: number, library: Web3Provider, account?: st
   return getContract(ROUTER_ADDRESS, ArcherSwapRouterABI, library, account)
 }
 
-export function getUnderlyingRouterContract(address: string, _: number, library: Web3Provider, account?: string): Contract {
+export function getUnderlyingExchangeContract(address: string, _: number, library: Web3Provider, account?: string): Contract {
   return getContract(address, IUniswapV2Router02ABI, library, account)
 }
 

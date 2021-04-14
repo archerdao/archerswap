@@ -103,6 +103,7 @@ export function useTradeExactIn(currencyAmountIn?: CurrencyAmount, currencyOut?:
       // search through trades with varying hops, find best trade out of them
       let bestTradeSoFar: Trade | null = null
       for (let i = 1; i <= MAX_HOPS; i++) {
+        console.log('allowedPairs', allowedPairs, 'currencyAmountIn', currencyAmountIn, 'currencyOut', currencyOut)
         const currentTrade: Trade | null =
           Trade.bestTradeExactIn(allowedPairs, currencyAmountIn, currencyOut, { maxHops: i, maxNumResults: 1 })[0] ??
           null

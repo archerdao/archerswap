@@ -1,23 +1,16 @@
-import {
-  ChainId,
-  Currency,
-  CurrencyAmount,
-  currencyEquals,
-  ETHER,
-  Fraction,
-  Percent,
-  Price,
-  sortedInsert,
-  Token,
-  TokenAmount,
-  TradeType,
-  WETH9
-} from '@uniswap/sdk-core'
-import { ONE, ZERO } from '../constants'
 import invariant from 'tiny-invariant'
 
+import { ChainId, ONE, TradeType, ZERO } from '../constants'
+import { sortedInsert } from '../utils'
+import { Currency, ETHER } from './currency'
+import { CurrencyAmount } from './fractions/currencyAmount'
+import { Fraction } from './fractions/fraction'
+import { Percent } from './fractions/percent'
+import { Price } from './fractions/price'
+import { TokenAmount } from './fractions/tokenAmount'
 import { Pair } from './pair'
 import { Route } from './route'
+import { currencyEquals, Token, WETH } from './token'
 
 /**
  * Returns the percent difference between the mid price and the execution price, i.e. price impact.
@@ -91,18 +84,18 @@ export interface BestTradeOptions {
 
 /**
  * Given a currency amount and a chain ID, returns the equivalent representation as the token amount.
- * In other words, if the currency is ETHER, returns the WETH9 token amount for the given chain. Otherwise, returns
+ * In other words, if the currency is ETHER, returns the WETH token amount for the given chain. Otherwise, returns
  * the input currency amount.
  */
 function wrappedAmount(currencyAmount: CurrencyAmount, chainId: ChainId): TokenAmount {
   if (currencyAmount instanceof TokenAmount) return currencyAmount
-  if (currencyAmount.currency === ETHER) return new TokenAmount(WETH9[chainId], currencyAmount.raw)
+  if (currencyAmount.currency === ETHER) return new TokenAmount(WETH[chainId], currencyAmount.raw)
   invariant(false, 'CURRENCY')
 }
 
 function wrappedCurrency(currency: Currency, chainId: ChainId): Token {
   if (currency instanceof Token) return currency
-  if (currency === ETHER) return WETH9[chainId]
+  if (currency === ETHER) return WETH[chainId]
   invariant(false, 'CURRENCY')
 }
 
@@ -201,7 +194,7 @@ export class Trade {
       this.inputAmount.raw,
       this.outputAmount.raw
     )
-    this.nextMidPrice = new Route(nextPairs, route.input).midPrice
+    this.nextMidPrice = Price.fromRoute(new Route(nextPairs, route.input))
     this.priceImpact = computePriceImpact(route.midPrice, this.inputAmount, this.outputAmount)
   }
 

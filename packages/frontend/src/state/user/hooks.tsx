@@ -3,7 +3,7 @@ import { Pair } from '@archerswap/sdk'
 import flatMap from 'lodash.flatmap'
 import { useCallback, useMemo } from 'react'
 import { shallowEqual, useDispatch, useSelector } from 'react-redux'
-import { BASES_TO_TRACK_LIQUIDITY_FOR, PINNED_PAIRS } from '../../constants'
+import { BASES_TO_TRACK_LIQUIDITY_FOR, PINNED_PAIRS, UNDERLYING_EXCHANGES } from '../../constants'
 
 import { useActiveWeb3React } from '../../hooks'
 import { useAllTokens } from '../../hooks/Tokens'
@@ -195,8 +195,8 @@ export function useURLWarningToggle(): () => void {
  * @param tokenA one of the two tokens
  * @param tokenB the other token
  */
-export function toV2LiquidityToken([tokenA, tokenB]: [Token, Token]): Token {
-  return new Token(tokenA.chainId, Pair.getAddress(tokenA, tokenB), 18, 'UNI-V2', 'Uniswap V2')
+export function toV2LiquidityToken(factoryAddress: string, initCodeHash: string, [tokenA, tokenB]: [Token, Token]): Token {
+  return new Token(tokenA.chainId, Pair.getAddress(factoryAddress, initCodeHash, tokenA, tokenB), 18, 'UNI-V2', 'Uniswap V2')
 }
 
 /**
@@ -281,4 +281,14 @@ export function useUserUnderlyingExchange(): [string, (address: string) => void]
   )
 
   return [userUnderlyingExchange, setUserUnderlyingExchange]
+}
+
+export function useUserUnderlyingExchangeAddresses() {
+  const { chainId } = useActiveWeb3React()
+  const [userUnderlyingExchange] = useUserUnderlyingExchange();
+  return useMemo(() => {
+    if (chainId)
+      return UNDERLYING_EXCHANGES[chainId]?.find(x => x.name === userUnderlyingExchange);
+    return undefined;
+  }, [chainId, userUnderlyingExchange]);
 }

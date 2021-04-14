@@ -13,7 +13,7 @@ import {
   Token,
   TokenAmount,
   TradeType,
-  WETH9
+  WETH
 } from '@uniswap/sdk-core'
 import { useMemo } from 'react'
 import { useActiveWeb3React } from '../hooks'
@@ -22,6 +22,7 @@ import { useV1FactoryContract } from '../hooks/useContract'
 import { Version } from '../hooks/useToggledVersion'
 import { NEVER_RELOAD, useSingleCallResult, useSingleContractMultipleData } from '../state/multicall/hooks'
 import { useETHBalances, useTokenBalance, useTokenBalances } from '../state/wallet/hooks'
+import { UNISWAP_FACTORY_ADDRESS, UNISWAP_INIT_CODE_HASH } from '../constants'
 
 export function useV1ExchangeAddress(tokenAddress?: string): string | undefined {
   const contract = useV1FactoryContract()
@@ -32,14 +33,14 @@ export function useV1ExchangeAddress(tokenAddress?: string): string | undefined 
 
 export class MockV1Pair extends Pair {
   constructor(etherAmount: BigintIsh, tokenAmount: TokenAmount) {
-    super(tokenAmount, new TokenAmount(WETH9[1], etherAmount))
+    super(UNISWAP_FACTORY_ADDRESS, UNISWAP_INIT_CODE_HASH, tokenAmount, new TokenAmount(WETH[1], etherAmount))
   }
 }
 
 function useMockV1Pair(inputCurrency?: Currency): MockV1Pair | undefined {
   const token = inputCurrency instanceof Token ? inputCurrency : undefined
 
-  const isWETH = Boolean(token && token.equals(WETH9[1]))
+  const isWETH = Boolean(token && token.equals(WETH[1]))
   const v1PairAddress = useV1ExchangeAddress(isWETH ? undefined : token?.address)
   const tokenBalance = useTokenBalance(v1PairAddress, token)
   const ETHBalance = useETHBalances([v1PairAddress])[v1PairAddress ?? '']

@@ -1,49 +1,37 @@
-import { ChainId, Currency, ETHER, Price, Token, WETH9 } from '@uniswap/sdk-core'
+import { ChainId } from '../constants'
 import invariant from 'tiny-invariant'
 
+import { Currency, ETHER } from './currency'
+import { Token, WETH } from './token'
 import { Pair } from './pair'
+import { Price } from './fractions/price'
 
 export class Route {
   public readonly pairs: Pair[]
   public readonly path: Token[]
   public readonly input: Currency
   public readonly output: Currency
-
-  public get midPrice(): Price {
-    const prices: Price[] = []
-    for (const [i, pair] of this.pairs.entries()) {
-      prices.push(
-        this.path[i].equals(pair.token0)
-          ? new Price(pair.reserve0.currency, pair.reserve1.currency, pair.reserve0.raw, pair.reserve1.raw)
-          : new Price(pair.reserve1.currency, pair.reserve0.currency, pair.reserve1.raw, pair.reserve0.raw)
-      )
-    }
-    return prices.slice(1).reduce((accumulator, currentValue) => accumulator.multiply(currentValue), prices[0])
-  }
+  public readonly midPrice: Price
 
   public constructor(pairs: Pair[], input: Currency, output?: Currency) {
     invariant(pairs.length > 0, 'PAIRS')
-    const chainId: ChainId | number = pairs[0].chainId
     invariant(
-      pairs.every(pair => pair.chainId === chainId),
+      pairs.every(pair => pair.chainId === pairs[0].chainId),
       'CHAIN_IDS'
     )
-
-    const weth: Token | undefined = WETH9[chainId as ChainId]
-
     invariant(
       (input instanceof Token && pairs[0].involvesToken(input)) ||
-        (input === ETHER && weth && pairs[0].involvesToken(weth)),
+        (input === ETHER && pairs[0].involvesToken(WETH[pairs[0].chainId])),
       'INPUT'
     )
     invariant(
       typeof output === 'undefined' ||
         (output instanceof Token && pairs[pairs.length - 1].involvesToken(output)) ||
-        (output === ETHER && weth && pairs[pairs.length - 1].involvesToken(weth)),
+        (output === ETHER && pairs[pairs.length - 1].involvesToken(WETH[pairs[0].chainId])),
       'OUTPUT'
     )
 
-    const path: Token[] = [input instanceof Token ? input : weth]
+    const path: Token[] = [input instanceof Token ? input : WETH[pairs[0].chainId]]
     for (const [i, pair] of pairs.entries()) {
       const currentInput = path[i]
       invariant(currentInput.equals(pair.token0) || currentInput.equals(pair.token1), 'PATH')
@@ -53,11 +41,12 @@ export class Route {
 
     this.pairs = pairs
     this.path = path
+    this.midPrice = Price.fromRoute(this)
     this.input = input
     this.output = output ?? path[path.length - 1]
   }
 
-  public get chainId(): ChainId | number {
+  public get chainId(): ChainId {
     return this.pairs[0].chainId
   }
 }

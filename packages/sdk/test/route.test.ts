@@ -1,13 +1,13 @@
-import { Token, WETH9, ChainId, TokenAmount, ETHER } from '@uniswap/sdk-core'
-import { Pair, Route } from './index'
+import { Token, WETH, ChainId, Pair, TokenAmount, Route, ETHER } from '../src'
+import { FACTORY_ADDRESS, INIT_CODE_HASH } from './constants.test'
 
 describe('Route', () => {
   const token0 = new Token(ChainId.MAINNET, '0x0000000000000000000000000000000000000001', 18, 't0')
   const token1 = new Token(ChainId.MAINNET, '0x0000000000000000000000000000000000000002', 18, 't1')
-  const weth = WETH9[ChainId.MAINNET]
-  const pair_0_1 = new Pair(new TokenAmount(token0, '100'), new TokenAmount(token1, '200'))
-  const pair_0_weth = new Pair(new TokenAmount(token0, '100'), new TokenAmount(weth, '100'))
-  const pair_1_weth = new Pair(new TokenAmount(token1, '175'), new TokenAmount(weth, '100'))
+  const weth = WETH[ChainId.MAINNET]
+  const pair_0_1 = new Pair(FACTORY_ADDRESS, INIT_CODE_HASH, new TokenAmount(token0, '100'), new TokenAmount(token1, '200'))
+  const pair_0_weth = new Pair(FACTORY_ADDRESS, INIT_CODE_HASH, new TokenAmount(token0, '100'), new TokenAmount(weth, '100'))
+  const pair_1_weth = new Pair(FACTORY_ADDRESS, INIT_CODE_HASH, new TokenAmount(token1, '175'), new TokenAmount(weth, '100'))
 
   it('constructs a path from the tokens', () => {
     const route = new Route([pair_0_1], token0)

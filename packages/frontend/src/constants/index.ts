@@ -1,19 +1,28 @@
 import { JSBI } from '@archerswap/sdk'
-import { ChainId, Percent, Token, WETH9 } from '@uniswap/sdk-core'
+import { ChainId, Percent, Token, WETH } from '@uniswap/sdk-core'
 import { AbstractConnector } from '@web3-react/abstract-connector'
 
 import { fortmatic, injected, portis, walletconnect, walletlink } from '../connectors'
 
 export const ROUTER_ADDRESS = '0xa8374A422D7e1F2d9882BAd9fC165481a332aAf6'
 
+export const UNISWAP_ROUTER_ADDRESS = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
+export const UNISWAP_FACTORY_ADDRESS = '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'
+export const UNISWAP_INIT_CODE_HASH = '0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f'
+export const SUSHISWAP_ROUTER_ADDRESS = '0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F'
+export const SUSHISWAP_FACTORY_ADDRESS = '0xC0AEe478e3658e2610c5F7A4A2E1777cE9e4f2Ac'
+export const SUSHIWAP_INIT_CODE_HASH = '0xe18a34eb0e04b04f7a0ac29a6e80748dca96319b42c54d679cb821dca90c6303'
+export const SUSHISWAP_RINKEBY_ROUTER_ADDRESS = '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506'
+export const SUSHISWAP_RINKEBY_FACTORY_ADDRESS = '0xc35DADB65012eC5796536bD9864eD8773aBc74C4'
+
 export const UNDERLYING_EXCHANGES: { [chainId in ChainId]?: {name: string, router: string, factory: string, initCodeHash: string}[] } = {
   [ChainId.MAINNET]: [
-    {name: 'Uniswap', router: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D', factory: '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f', initCodeHash: '0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f'},
-    {name: 'Sushiswap', router: '0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F', factory: '0xC0AEe478e3658e2610c5F7A4A2E1777cE9e4f2Ac', initCodeHash: '0xe18a34eb0e04b04f7a0ac29a6e80748dca96319b42c54d679cb821dca90c6303'}
+    {name: 'Uniswap', router: UNISWAP_ROUTER_ADDRESS, factory: UNISWAP_FACTORY_ADDRESS, initCodeHash: UNISWAP_INIT_CODE_HASH},
+    {name: 'Sushiswap', router: SUSHISWAP_ROUTER_ADDRESS, factory: SUSHISWAP_FACTORY_ADDRESS, initCodeHash: SUSHIWAP_INIT_CODE_HASH}
   ],
   [ChainId.RINKEBY]: [
-    {name: 'Uniswap', router: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D', factory: '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f', initCodeHash: '0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f'},
-    {name: 'Sushiswap', router: '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506', factory: '0xc35DADB65012eC5796536bD9864eD8773aBc74C4', initCodeHash: '0xe18a34eb0e04b04f7a0ac29a6e80748dca96319b42c54d679cb821dca90c6303'}
+    {name: 'Uniswap', router: UNISWAP_ROUTER_ADDRESS, factory: UNISWAP_FACTORY_ADDRESS, initCodeHash: UNISWAP_INIT_CODE_HASH},
+    {name: 'Sushiswap', router: SUSHISWAP_RINKEBY_ROUTER_ADDRESS, factory: SUSHISWAP_RINKEBY_FACTORY_ADDRESS, initCodeHash: SUSHIWAP_INIT_CODE_HASH}
   ]
 }
 
@@ -64,11 +73,11 @@ export const MERKLE_DISTRIBUTOR_ADDRESS: { [chainId in ChainId]?: string } = {
 }
 
 const WETH_ONLY: ChainTokenList = {
-  [ChainId.MAINNET]: [WETH9[ChainId.MAINNET]],
-  [ChainId.ROPSTEN]: [WETH9[ChainId.ROPSTEN]],
-  [ChainId.RINKEBY]: [WETH9[ChainId.RINKEBY]],
-  [ChainId.GÖRLI]: [WETH9[ChainId.GÖRLI]],
-  [ChainId.KOVAN]: [WETH9[ChainId.KOVAN]]
+  [ChainId.MAINNET]: [WETH[ChainId.MAINNET]],
+  [ChainId.ROPSTEN]: [WETH[ChainId.ROPSTEN]],
+  [ChainId.RINKEBY]: [WETH[ChainId.RINKEBY]],
+  [ChainId.GÖRLI]: [WETH[ChainId.GÖRLI]],
+  [ChainId.KOVAN]: [WETH[ChainId.KOVAN]]
 }
 
 // used to construct intermediary pairs for trading
@@ -83,7 +92,7 @@ export const BASES_TO_CHECK_TRADES_AGAINST: ChainTokenList = {
  */
 export const CUSTOM_BASES: { [chainId in ChainId]?: { [tokenAddress: string]: Token[] } } = {
   [ChainId.MAINNET]: {
-    [AMPL.address]: [DAI, WETH9[ChainId.MAINNET]]
+    [AMPL.address]: [DAI, WETH[ChainId.MAINNET]]
   }
 }
 

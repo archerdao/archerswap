@@ -1,8 +1,18 @@
-import { Pair } from './pair'
-import { Route } from './route'
-import { Trade } from './trade'
 import JSBI from 'jsbi'
-import { ChainId, ETHER, CurrencyAmount, Percent, Token, TokenAmount, TradeType, WETH9 } from '@uniswap/sdk-core'
+import {
+  ChainId,
+  ETHER,
+  CurrencyAmount,
+  Pair,
+  Percent,
+  Route,
+  Token,
+  TokenAmount,
+  Trade,
+  TradeType,
+  WETH
+} from '../src'
+import { FACTORY_ADDRESS, INIT_CODE_HASH } from './constants.test'
 
 describe('Trade', () => {
   const token0 = new Token(ChainId.MAINNET, '0x0000000000000000000000000000000000000001', 18, 't0')
@@ -10,18 +20,18 @@ describe('Trade', () => {
   const token2 = new Token(ChainId.MAINNET, '0x0000000000000000000000000000000000000003', 18, 't2')
   const token3 = new Token(ChainId.MAINNET, '0x0000000000000000000000000000000000000004', 18, 't3')
 
-  const pair_0_1 = new Pair(new TokenAmount(token0, JSBI.BigInt(1000)), new TokenAmount(token1, JSBI.BigInt(1000)))
-  const pair_0_2 = new Pair(new TokenAmount(token0, JSBI.BigInt(1000)), new TokenAmount(token2, JSBI.BigInt(1100)))
-  const pair_0_3 = new Pair(new TokenAmount(token0, JSBI.BigInt(1000)), new TokenAmount(token3, JSBI.BigInt(900)))
-  const pair_1_2 = new Pair(new TokenAmount(token1, JSBI.BigInt(1200)), new TokenAmount(token2, JSBI.BigInt(1000)))
-  const pair_1_3 = new Pair(new TokenAmount(token1, JSBI.BigInt(1200)), new TokenAmount(token3, JSBI.BigInt(1300)))
+  const pair_0_1 = new Pair(FACTORY_ADDRESS, INIT_CODE_HASH, new TokenAmount(token0, JSBI.BigInt(1000)), new TokenAmount(token1, JSBI.BigInt(1000)))
+  const pair_0_2 = new Pair(FACTORY_ADDRESS, INIT_CODE_HASH, new TokenAmount(token0, JSBI.BigInt(1000)), new TokenAmount(token2, JSBI.BigInt(1100)))
+  const pair_0_3 = new Pair(FACTORY_ADDRESS, INIT_CODE_HASH, new TokenAmount(token0, JSBI.BigInt(1000)), new TokenAmount(token3, JSBI.BigInt(900)))
+  const pair_1_2 = new Pair(FACTORY_ADDRESS, INIT_CODE_HASH, new TokenAmount(token1, JSBI.BigInt(1200)), new TokenAmount(token2, JSBI.BigInt(1000)))
+  const pair_1_3 = new Pair(FACTORY_ADDRESS, INIT_CODE_HASH, new TokenAmount(token1, JSBI.BigInt(1200)), new TokenAmount(token3, JSBI.BigInt(1300)))
 
-  const pair_weth_0 = new Pair(
-    new TokenAmount(WETH9[ChainId.MAINNET], JSBI.BigInt(1000)),
+  const pair_weth_0 = new Pair(FACTORY_ADDRESS, INIT_CODE_HASH, 
+    new TokenAmount(WETH[ChainId.MAINNET], JSBI.BigInt(1000)),
     new TokenAmount(token0, JSBI.BigInt(1000))
   )
 
-  const empty_pair_0_1 = new Pair(new TokenAmount(token0, JSBI.BigInt(0)), new TokenAmount(token1, JSBI.BigInt(0)))
+  const empty_pair_0_1 = new Pair(FACTORY_ADDRESS, INIT_CODE_HASH, new TokenAmount(token0, JSBI.BigInt(0)), new TokenAmount(token1, JSBI.BigInt(0)))
 
   it('can be constructed with ETHER as input', () => {
     const trade = new Trade(
@@ -146,10 +156,10 @@ describe('Trade', () => {
       )
       expect(result).toHaveLength(2)
       expect(result[0].inputAmount.currency).toEqual(ETHER)
-      expect(result[0].route.path).toEqual([WETH9[ChainId.MAINNET], token0, token1, token3])
+      expect(result[0].route.path).toEqual([WETH[ChainId.MAINNET], token0, token1, token3])
       expect(result[0].outputAmount.currency).toEqual(token3)
       expect(result[1].inputAmount.currency).toEqual(ETHER)
-      expect(result[1].route.path).toEqual([WETH9[ChainId.MAINNET], token0, token3])
+      expect(result[1].route.path).toEqual([WETH[ChainId.MAINNET], token0, token3])
       expect(result[1].outputAmount.currency).toEqual(token3)
     })
     it('works for ETHER currency output', () => {
@@ -160,10 +170,10 @@ describe('Trade', () => {
       )
       expect(result).toHaveLength(2)
       expect(result[0].inputAmount.currency).toEqual(token3)
-      expect(result[0].route.path).toEqual([token3, token0, WETH9[ChainId.MAINNET]])
+      expect(result[0].route.path).toEqual([token3, token0, WETH[ChainId.MAINNET]])
       expect(result[0].outputAmount.currency).toEqual(ETHER)
       expect(result[1].inputAmount.currency).toEqual(token3)
-      expect(result[1].route.path).toEqual([token3, token1, token0, WETH9[ChainId.MAINNET]])
+      expect(result[1].route.path).toEqual([token3, token1, token0, WETH[ChainId.MAINNET]])
       expect(result[1].outputAmount.currency).toEqual(ETHER)
     })
   })
@@ -371,10 +381,10 @@ describe('Trade', () => {
       )
       expect(result).toHaveLength(2)
       expect(result[0].inputAmount.currency).toEqual(ETHER)
-      expect(result[0].route.path).toEqual([WETH9[ChainId.MAINNET], token0, token1, token3])
+      expect(result[0].route.path).toEqual([WETH[ChainId.MAINNET], token0, token1, token3])
       expect(result[0].outputAmount.currency).toEqual(token3)
       expect(result[1].inputAmount.currency).toEqual(ETHER)
-      expect(result[1].route.path).toEqual([WETH9[ChainId.MAINNET], token0, token3])
+      expect(result[1].route.path).toEqual([WETH[ChainId.MAINNET], token0, token3])
       expect(result[1].outputAmount.currency).toEqual(token3)
     })
     it('works for ETHER currency output', () => {
@@ -385,10 +395,10 @@ describe('Trade', () => {
       )
       expect(result).toHaveLength(2)
       expect(result[0].inputAmount.currency).toEqual(token3)
-      expect(result[0].route.path).toEqual([token3, token0, WETH9[ChainId.MAINNET]])
+      expect(result[0].route.path).toEqual([token3, token0, WETH[ChainId.MAINNET]])
       expect(result[0].outputAmount.currency).toEqual(ETHER)
       expect(result[1].inputAmount.currency).toEqual(token3)
-      expect(result[1].route.path).toEqual([token3, token1, token0, WETH9[ChainId.MAINNET]])
+      expect(result[1].route.path).toEqual([token3, token1, token0, WETH[ChainId.MAINNET]])
       expect(result[1].outputAmount.currency).toEqual(ETHER)
     })
   })

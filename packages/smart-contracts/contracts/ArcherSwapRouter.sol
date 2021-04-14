@@ -29,6 +29,252 @@ contract ArcherSwapRouter {
         uint256 deadline;
     }
 
+    /// @notice Add Liquidity details
+    struct AddLiquidity {
+        address tokenA;
+        address tokenB;
+        uint amountADesired;
+        uint amountBDesired;
+        uint amountAMin;
+        uint amountBMin;
+        address to;
+        uint deadline;
+    }
+
+    /// @notice Remove Liquidity details
+    struct RemoveLiquidity {
+        IERC20Extended lpToken;
+        address tokenA;
+        address tokenB;
+        uint liquidity;
+        uint amountAMin;
+        uint amountBMin;
+        address to;
+        uint deadline;
+    }
+
+    /// @notice Permit details
+    struct Permit {
+        IERC20Extended token;
+        uint256 amount;
+        uint deadline;
+        uint8 v;
+        bytes32 r; 
+        bytes32 s;
+    }
+
+    /**
+     * @notice Add liquidity to token pair
+     * @param router Uniswap V2-compliant Router contract
+     * @param liquidity Liquidity details
+     */
+    function addLiquidityAndTipAmount(
+        IUniRouter router,
+        AddLiquidity calldata liquidity
+    ) external payable {
+        require(msg.value > 0, "tip amount must be > 0");
+        _tipAmountETH(msg.value);
+        _addLiquidity(
+            router,
+            liquidity.tokenA, 
+            liquidity.tokenB, 
+            liquidity.amountADesired, 
+            liquidity.amountBDesired, 
+            liquidity.amountAMin,
+            liquidity.amountBMin,
+            liquidity.to,
+            liquidity.deadline
+        );
+    }
+
+    /**
+     * @notice Add liquidity to pair, using permit for approvals
+     * @param router Uniswap V2-compliant Router contract
+     * @param liquidity Liquidity details
+     * @param permitA Permit details for token A
+     * @param permitB Permit details for token B
+     */
+    function addLiquidityWithPermitAndTipAmount(
+        IUniRouter router,
+        AddLiquidity calldata liquidity,
+        Permit calldata permitA,
+        Permit calldata permitB
+    ) external payable {
+        require(msg.value > 0, "tip amount must be > 0");
+        if(permitA.amount > 0) {
+            _permit(permitA.token, permitA.amount, permitA.deadline, permitA.v, permitA.r, permitA.s);
+        }
+        if(permitB.amount > 0) {
+            _permit(permitB.token, permitB.amount, permitB.deadline, permitB.v, permitB.r, permitB.s);
+        }
+        _tipAmountETH(msg.value);
+        _addLiquidity(
+            router,
+            liquidity.tokenA, 
+            liquidity.tokenB, 
+            liquidity.amountADesired, 
+            liquidity.amountBDesired, 
+            liquidity.amountAMin, 
+            liquidity.amountBMin,
+            liquidity.to,
+            liquidity.deadline
+        );
+    }
+
+    /**
+     * @notice Add liquidity to ETH>Token pair
+     * @param router Uniswap V2-compliant Router contract
+     * @param liquidity Liquidity details
+     * @param tipAmount tip amount
+     */
+    function addLiquidityETHAndTipAmount(
+        IUniRouter router,
+        AddLiquidity calldata liquidity,
+        uint256 tipAmount
+    ) external payable {
+        require(tipAmount > 0, "tip amount must be > 0");
+        require(msg.value >= liquidity.amountBDesired + tipAmount, "must send ETH to cover tip + liquidity");
+        _tipAmountETH(tipAmount);
+        _addLiquidityETH(
+            router,
+            liquidity.tokenA,
+            liquidity.amountADesired, 
+            liquidity.amountBDesired, 
+            liquidity.amountAMin,
+            liquidity.amountBMin,
+            liquidity.to,
+            liquidity.deadline
+        );
+    }
+
+    /**
+     * @notice Add liquidity to ETH>Token pair
+     * @param router Uniswap V2-compliant Router contract
+     * @param liquidity Liquidity details
+     * @param tipAmount tip amount
+     */
+    function addLiquidityETHWithPermitAndTipAmount(
+        IUniRouter router,
+        AddLiquidity calldata liquidity,
+        Permit calldata permit,
+        uint256 tipAmount
+    ) external payable {
+        require(tipAmount > 0, "tip amount must be > 0");
+        require(msg.value >= liquidity.amountBDesired + tipAmount, "must send ETH to cover tip + liquidity");
+        _permit(permit.token, permit.amount, permit.deadline, permit.v, permit.r, permit.s);
+        _tipAmountETH(tipAmount);
+        _addLiquidityETH(
+            router,
+            liquidity.tokenA,
+            liquidity.amountADesired, 
+            liquidity.amountBDesired, 
+            liquidity.amountAMin,
+            liquidity.amountBMin,
+            liquidity.to,
+            liquidity.deadline
+        );
+    }
+
+    /**
+     * @notice Remove liquidity from token>token pair
+     * @param router Uniswap V2-compliant Router contract
+     * @param liquidity Liquidity details
+     */
+    function removeLiquidityAndTipAmount(
+        IUniRouter router,
+        RemoveLiquidity calldata liquidity
+    ) external payable {
+        require(msg.value > 0, "tip amount must be > 0");
+        _tipAmountETH(msg.value);
+        _removeLiquidity(
+            router,
+            liquidity.lpToken,
+            liquidity.tokenA, 
+            liquidity.tokenB, 
+            liquidity.liquidity,
+            liquidity.amountAMin,
+            liquidity.amountBMin,
+            liquidity.to,
+            liquidity.deadline
+        );
+    }
+
+    /**
+     * @notice Remove liquidity from ETH>token pair
+     * @param router Uniswap V2-compliant Router contract
+     * @param liquidity Liquidity details
+     */
+    function removeLiquidityETHAndTipAmount(
+        IUniRouter router,
+        RemoveLiquidity calldata liquidity
+    ) external payable {
+        require(msg.value > 0, "tip amount must be > 0");
+        _tipAmountETH(msg.value);
+        _removeLiquidityETH(
+            router,
+            liquidity.lpToken,
+            liquidity.tokenA,
+            liquidity.liquidity, 
+            liquidity.amountAMin,
+            liquidity.amountBMin,
+            liquidity.to,
+            liquidity.deadline
+        );
+    }
+
+    /**
+     * @notice Remove liquidity from token>token pair, using permit for approval
+     * @param router Uniswap V2-compliant Router contract
+     * @param liquidity Liquidity details
+     * @param permit Permit details
+     */
+    function removeLiquidityWithPermitAndTipAmount(
+        IUniRouter router,
+        RemoveLiquidity calldata liquidity,
+        Permit calldata permit
+    ) external payable {
+        require(msg.value > 0, "tip amount must be > 0");
+        _tipAmountETH(msg.value);
+        _permit(permit.token, permit.amount, permit.deadline, permit.v, permit.r, permit.s);
+        _removeLiquidity(
+            router,
+            liquidity.lpToken,
+            liquidity.tokenA, 
+            liquidity.tokenB, 
+            liquidity.liquidity,
+            liquidity.amountAMin,
+            liquidity.amountBMin,
+            liquidity.to,
+            liquidity.deadline
+        );
+    }
+
+    /**
+     * @notice Remove liquidity from ETH>token pair, using permit for approval
+     * @param router Uniswap V2-compliant Router contract
+     * @param liquidity Liquidity details
+     * @param permit Permit details
+     */
+    function removeLiquidityETHWithPermitAndTipAmount(
+        IUniRouter router,
+        RemoveLiquidity calldata liquidity,
+        Permit calldata permit
+    ) external payable {
+        require(msg.value > 0, "tip amount must be > 0");
+        _tipAmountETH(msg.value);
+        _permit(permit.token, permit.amount, permit.deadline, permit.v, permit.r, permit.s);
+        _removeLiquidityETH(
+            router,
+            liquidity.lpToken,
+            liquidity.tokenA,
+            liquidity.liquidity, 
+            liquidity.amountAMin,
+            liquidity.amountBMin,
+            liquidity.to,
+            liquidity.deadline
+        );
+    }
+
     /**
      * @notice Swap tokens for ETH and pay amount of ETH as tip
      * @param router Uniswap V2-compliant Router contract
@@ -48,19 +294,15 @@ contract ArcherSwapRouter {
      * @notice Swap tokens for ETH and pay amount of ETH as tip, using permit for approval
      * @param router Uniswap V2-compliant Router contract
      * @param trade Trade details
-     * @param v The recovery byte of the signature
-     * @param r Half of the ECDSA signature pair
-     * @param s Half of the ECDSA signature pair
+     * @param permit Permit details
      */
     function swapTokensForETHWithPermitAndTipAmount(
         IUniRouter router,
         Trade calldata trade,
-        uint8 v, 
-        bytes32 r, 
-        bytes32 s
+        Permit calldata permit
     ) external payable {
         require(msg.value > 0, "tip amount must be > 0");
-        _permit(IERC20Extended(trade.path[0]), trade.amountIn, trade.deadline, v, r, s);
+        _permit(permit.token, permit.amount, permit.deadline, permit.v, permit.r, permit.s);
         _swapTokensForETH(router, trade.amountIn, trade.amountOutMin, trade.path, trade.deadline);
         _tipAmountETH(msg.value);
         _transferContractETHBalance(trade.to);
@@ -87,21 +329,17 @@ contract ArcherSwapRouter {
      * @notice Swap tokens for ETH and pay % of ETH as tip, using permit for approval
      * @param router Uniswap V2-compliant Router contract
      * @param trade Trade details
+     * @param permit Permit details
      * @param tipPct % of resulting ETH to pay as tip
-     * @param v The recovery byte of the signature
-     * @param r Half of the ECDSA signature pair
-     * @param s Half of the ECDSA signature pair
      */
     function swapTokensForETHWithPermitAndTipPct(
         IUniRouter router,
         Trade calldata trade,
-        uint32 tipPct,
-        uint8 v, 
-        bytes32 r, 
-        bytes32 s
+        Permit calldata permit,
+        uint32 tipPct
     ) external payable {
         require(tipPct > 0, "tipPct must be > 0");
-        _permit(IERC20Extended(trade.path[0]), trade.amountIn, trade.deadline, v, r, s);
+        _permit(permit.token, permit.amount, permit.deadline, permit.v, permit.r, permit.s);
         _swapTokensForETH(router, trade.amountIn, trade.amountOutMin, trade.path, trade.deadline);
         _tipPctETH(tipPct);
         _transferContractETHBalance(trade.to);
@@ -163,20 +401,16 @@ contract ArcherSwapRouter {
      * @notice Swap tokens for tokens and pay ETH amount as tip
      * @param router Uniswap V2-compliant Router contract
      * @param trade Trade details
-     * @param v The recovery byte of the signature
-     * @param r Half of the ECDSA signature pair
-     * @param s Half of the ECDSA signature pair
+     * @param permit Permit details
      */
     function swapTokensForTokensWithPermitAndTipAmount(
         IUniRouter router,
         Trade calldata trade,
-        uint8 v, 
-        bytes32 r, 
-        bytes32 s
+        Permit calldata permit
     ) external payable {
         require(msg.value > 0, "tip amount must be > 0");
         _tipAmountETH(msg.value);
-        _permit(IERC20Extended(trade.path[0]), trade.amountIn, trade.deadline, v, r, s);
+        _permit(permit.token, permit.amount, permit.deadline, permit.v, permit.r, permit.s);
         _swapTokensForTokens(router, trade.amountIn, trade.amountOutMin, trade.path, trade.deadline);
         _transferContractTokenBalance(IERC20Extended(trade.path[trade.path.length]), trade.to);
     }
@@ -209,31 +443,115 @@ contract ArcherSwapRouter {
      * @notice Swap tokens for tokens and pay % of tokens as tip, using permit for approval
      * @param router Uniswap V2-compliant Router contract
      * @param trade Trade details
+     * @param permit Permit details
      * @param pathToEth Path to ETH for tip
      * @param minEth ETH minimum for tip conversion
      * @param tipPct % of resulting tokens to pay as tip
-     * @param v The recovery byte of the signature
-     * @param r Half of the ECDSA signature pair
-     * @param s Half of the ECDSA signature pair
      */
     function swapTokensForTokensWithPermitAndTipPct(
         IUniRouter router,
         Trade calldata trade,
+        Permit calldata permit,
         address[] calldata pathToEth,
         uint256 minEth,
-        uint32 tipPct,
-        uint8 v, 
-        bytes32 r, 
-        bytes32 s
+        uint32 tipPct
     ) external payable {
         require(tipPct > 0, "tipPct must be > 0");
-        _permit(IERC20Extended(trade.path[0]), trade.amountIn, trade.deadline, v, r, s);
+        _permit(permit.token, permit.amount, permit.deadline, permit.v, permit.r, permit.s);
         _swapTokensForTokens(router, trade.amountIn, trade.amountOutMin, trade.path, trade.deadline);
         IERC20Extended toToken = IERC20Extended(pathToEth[0]);
         uint256 contractTokenBalance = toToken.balanceOf(address(this));
         uint256 tipAmount = (contractTokenBalance * tipPct) / 1000000;
         _tipWithTokens(router, tipAmount, pathToEth, trade.deadline, minEth);
         _transferContractTokenBalance(toToken, trade.to);
+    }
+
+    function _addLiquidity(
+        IUniRouter router,
+        address tokenA,
+        address tokenB,
+        uint amountADesired,
+        uint amountBDesired,
+        uint amountAMin,
+        uint amountBMin,
+        address to,
+        uint deadline
+    ) internal {
+        IERC20Extended fromToken = IERC20Extended(tokenA);
+        IERC20Extended toToken = IERC20Extended(tokenB);
+        fromToken.safeTransferFrom(msg.sender, address(this), amountADesired);
+        fromToken.safeIncreaseAllowance(address(router), amountADesired);
+        toToken.safeTransferFrom(msg.sender, address(this), amountBDesired);
+        toToken.safeIncreaseAllowance(address(router), amountBDesired);
+        (uint256 amountA, uint256 amountB, ) = router.addLiquidity(tokenA, tokenB, amountADesired, amountBDesired, amountAMin, amountBMin, to, deadline);
+        if(amountADesired > amountA) {
+            fromToken.safeTransfer(msg.sender, fromToken.balanceOf(address(this)));
+        }
+        if(amountBDesired > amountB) {
+            toToken.safeTransfer(msg.sender, toToken.balanceOf(address(this)));
+        }
+    }
+
+    function _addLiquidityETH(
+        IUniRouter router,
+        address token,
+        uint amountTokenDesired,
+        uint amountETHDesired,
+        uint amountTokenMin,
+        uint amountETHMin,
+        address to,
+        uint deadline
+    ) internal {
+        IERC20Extended fromToken = IERC20Extended(token);
+        fromToken.safeTransferFrom(msg.sender, address(this), amountTokenDesired);
+        fromToken.safeIncreaseAllowance(address(router), amountTokenDesired);
+        (uint256 amountToken, uint256 amountETH, ) = router.addLiquidityETH{value: amountETHDesired}(token, amountTokenDesired, amountTokenMin, amountETHMin, to, deadline);
+        if(amountTokenDesired > amountToken) {
+            fromToken.safeTransfer(msg.sender, amountTokenDesired - amountToken);
+        }
+        if(amountETHDesired > amountETH) {
+            (bool success, ) = msg.sender.call{value: amountETHDesired - amountETH}("");
+            require(success);
+        }
+    }
+
+    function _removeLiquidity(
+        IUniRouter router,
+        IERC20Extended lpToken,
+        address tokenA,
+        address tokenB,
+        uint liquidity,
+        uint amountAMin,
+        uint amountBMin,
+        address to,
+        uint deadline
+    ) internal {
+        lpToken.safeTransferFrom(msg.sender, address(this), liquidity);
+        lpToken.safeIncreaseAllowance(address(router), liquidity);
+        (uint256 amountA, uint256 amountB) = router.removeLiquidity(tokenA, tokenB, liquidity, amountAMin, amountBMin, to, deadline);
+        IERC20Extended fromToken = IERC20Extended(tokenA);
+        IERC20Extended toToken = IERC20Extended(tokenB);
+        fromToken.safeTransfer(msg.sender, amountA);
+        toToken.safeTransfer(msg.sender, amountB);
+    }
+
+    function _removeLiquidityETH(
+        IUniRouter router,
+        IERC20Extended lpToken,
+        address token,
+        uint liquidity,
+        uint amountTokenMin,
+        uint amountETHMin,
+        address to,
+        uint deadline
+    ) internal {
+        lpToken.safeTransferFrom(msg.sender, address(this), liquidity);
+        lpToken.safeIncreaseAllowance(address(router), liquidity);
+        (uint256 amountToken, uint256 amountETH) = router.removeLiquidityETH(token, liquidity, amountTokenMin, amountETHMin, to, deadline);
+        IERC20Extended fromToken = IERC20Extended(token);
+        fromToken.safeTransfer(msg.sender, amountToken);
+        (bool success, ) = msg.sender.call{value: amountETH}("");
+        require(success);
     }
 
     /**

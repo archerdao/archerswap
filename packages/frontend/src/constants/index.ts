@@ -6,22 +6,16 @@ import { fortmatic, injected, portis, walletconnect, walletlink } from '../conne
 
 export const ROUTER_ADDRESS = '0xa8374A422D7e1F2d9882BAd9fC165481a332aAf6'
 
-export const UNDERLYING_ROUTER_ADDRESS: { [chainId in ChainId]?: {name: string, address: string}[] } = {
+export const UNDERLYING_EXCHANGES: { [chainId in ChainId]?: {name: string, router: string, factory: string, initCodeHash: string}[] } = {
   [ChainId.MAINNET]: [
-    {name: 'Uniswap', address: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'},
-    {name: 'Sushiswap', address: '0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F'}
+    {name: 'Uniswap', router: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D', factory: '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f', initCodeHash: '0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f'},
+    {name: 'Sushiswap', router: '0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F', factory: '0xC0AEe478e3658e2610c5F7A4A2E1777cE9e4f2Ac', initCodeHash: '0xe18a34eb0e04b04f7a0ac29a6e80748dca96319b42c54d679cb821dca90c6303'}
   ],
-  [ChainId.RINKEBY]: [{name: 'Uniswap', address: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'}]
+  [ChainId.RINKEBY]: [
+    {name: 'Uniswap', router: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D', factory: '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f', initCodeHash: '0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f'},
+    {name: 'Sushiswap', router: '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506', factory: '0xc35DADB65012eC5796536bD9864eD8773aBc74C4', initCodeHash: '0xe18a34eb0e04b04f7a0ac29a6e80748dca96319b42c54d679cb821dca90c6303'}
+  ]
 }
-
-export const UNDERLYING_FACTORY_ADDRESS: { [chainId in ChainId]?: {name: string, address: string}[] } = {
-  [ChainId.MAINNET]: [
-    {name: 'Uniswap', address: '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'},
-    {name: 'Sushiswap', address: '0xC0AEe478e3658e2610c5F7A4A2E1777cE9e4f2Ac'}
-  ],
-  [ChainId.RINKEBY]: [{name: 'Uniswap', address: '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'}]
-}
-
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 

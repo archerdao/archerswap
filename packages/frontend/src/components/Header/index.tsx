@@ -17,7 +17,7 @@ import { YellowCard } from '../Card'
 import Row, { RowFixed } from '../Row'
 import Web3Status from '../Web3Status'
 import ClaimModal from '../claim/ClaimModal'
-import UnderlyingRouterToggle from '../UnderlyingRouterToggle'
+import UnderlyingExchangeToggle from '../UnderlyingExchangeToggle'
 
 const HeaderFrame = styled.div`
   display: grid;
@@ -254,7 +254,7 @@ export default function Header() {
               <NetworkCard title={NETWORK_LABELS[chainId]}>{NETWORK_LABELS[chainId]}</NetworkCard>
             )}
           </HideSmall>
-          <UnderlyingRouterToggle id='underlying-router-toggle' />
+          <UnderlyingExchangeToggle id='underlying-exchange-toggle' />
           <AccountElement active={!!account} style={{ pointerEvents: 'auto' }}>
             {account && userEthBalance ? (
               <BalanceText style={{ flexShrink: 0 }} pl="0.75rem" pr="0.5rem" fontWeight={500}>

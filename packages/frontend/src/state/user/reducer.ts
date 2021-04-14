@@ -1,5 +1,4 @@
-import { INITIAL_ALLOWED_SLIPPAGE, DEFAULT_DEADLINE_FROM_NOW, UNDERLYING_ROUTER_ADDRESS } from '../../constants'
-import { ChainId } from '@uniswap/sdk-core'
+import { INITIAL_ALLOWED_SLIPPAGE, DEFAULT_DEADLINE_FROM_NOW } from '../../constants'
 import { createReducer } from '@reduxjs/toolkit'
 import { updateVersion } from '../global/actions'
 import {
@@ -16,7 +15,7 @@ import {
   updateUserDeadline,
   toggleURLWarning,
   updateUserSingleHopOnly,
-  updateUserUnderlyingRouter
+  updateUserUnderlyingExchange
 } from './actions'
 
 const currentTimestamp = () => new Date().getTime()
@@ -54,7 +53,7 @@ export interface UserState {
   timestamp: number
   URLWarningVisible: boolean
 
-  userUnderlyingRouter: string // underlying IUniswapV2Router02 to use
+  userUnderlyingExchange: string // underlying IUniswapV2Router02 to use
 }
 
 function pairKey(token0Address: string, token1Address: string) {
@@ -72,7 +71,7 @@ export const initialState: UserState = {
   pairs: {},
   timestamp: currentTimestamp(),
   URLWarningVisible: true,
-  userUnderlyingRouter: UNDERLYING_ROUTER_ADDRESS[ChainId.MAINNET]?.[0]?.address ?? ''
+  userUnderlyingExchange: 'Uniswap'
 }
 
 export default createReducer(initialState, builder =>
@@ -153,8 +152,8 @@ export default createReducer(initialState, builder =>
     .addCase(toggleURLWarning, state => {
       state.URLWarningVisible = !state.URLWarningVisible
     })
-    .addCase(updateUserUnderlyingRouter, (state, action) => {
-      state.userUnderlyingRouter = action.payload.userUnderlyingRouter
+    .addCase(updateUserUnderlyingExchange, (state, action) => {
+      state.userUnderlyingExchange = action.payload.userUnderlyingExchange
       state.timestamp = currentTimestamp()
     })
 )

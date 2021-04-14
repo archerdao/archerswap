@@ -16,6 +16,10 @@
 .env.test.local
 .env.production.local
 
+# gcloud
+app.yaml
+.gcloudignore
+
 /.netlify
 
 npm-debug.log*

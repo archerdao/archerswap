@@ -4,7 +4,10 @@ import { AbstractConnector } from '@web3-react/abstract-connector'
 
 import { fortmatic, injected, portis, walletconnect, walletlink } from '../connectors'
 
-export const ROUTER_ADDRESS = '0xa8374A422D7e1F2d9882BAd9fC165481a332aAf6'
+export const ARCHER_ROUTER_ADDRESS: { [chainId in ChainId]?: string } = {
+  [ChainId.MAINNET]: '0x090D4613473dEE047c3f2706764f49E0821D256e',
+  [ChainId.RINKEBY]: '0xd972238A69AdeC97619538Ebd4fD5996161D1930'
+}
 
 export const UNISWAP_ROUTER_ADDRESS = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
 export const UNISWAP_FACTORY_ADDRESS = '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'
@@ -201,6 +204,8 @@ export const NetworkContextName = 'NETWORK'
 export const INITIAL_ALLOWED_SLIPPAGE = 50
 // 20 minutes, denominated in seconds
 export const DEFAULT_DEADLINE_FROM_NOW = 60 * 20
+// default tip amount, 0.01 ETH
+export const DEFAULT_ETH_TIP: JSBI = JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(16))
 
 // used for rewards deadlines
 export const BIG_INT_SECONDS_IN_WEEK = JSBI.BigInt(60 * 60 * 24 * 7)

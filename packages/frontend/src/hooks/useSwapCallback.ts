@@ -1,20 +1,17 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { Contract } from '@ethersproject/contracts'
-import { JSBI, Router, SwapParameters, Trade } from '@archerswap/sdk'
-import { Percent, TradeType } from '@archerswap/sdk'
+import { JSBI, Router, ArcherRouter, SwapParameters, Trade, CurrencyAmount, Percent, TradeType } from '@archerswap/sdk'
 import { useMemo } from 'react'
 import { BIPS_BASE, INITIAL_ALLOWED_SLIPPAGE } from '../constants'
-import { getTradeVersion, useV1TradeExchangeAddress } from '../data/V1'
+import { getTradeVersion } from '../data/V1'
 import { useTransactionAdder } from '../state/transactions/hooks'
-import { calculateGasMargin, getUnderlyingExchangeRouterContract, isAddress, shortenAddress } from '../utils'
+import { calculateGasMargin, getRouterContract, getUnderlyingExchangeRouterContract, isAddress, shortenAddress } from '../utils'
 import isZero from '../utils/isZero'
-import v1SwapArguments from '../utils/v1SwapArguments'
 import { useActiveWeb3React } from './index'
-import { useV1ExchangeContract } from './useContract'
 import useTransactionDeadline from './useTransactionDeadline'
 import useENS from './useENS'
 import { Version } from './useToggledVersion'
-import { useUserUnderlyingExchangeAddresses } from '../state/user/hooks'
+import { useUserETHTip, useUserUnderlyingExchangeAddresses, useUserUseRelay } from '../state/user/hooks'
 
 export enum SwapCallbackState {
   INVALID,
@@ -52,59 +49,61 @@ function useSwapCallArguments(
 ): SwapCall[] {
   const { account, chainId, library } = useActiveWeb3React()
   const exchange = useUserUnderlyingExchangeAddresses()
+  const [useRelay] = useUserUseRelay()
+  const [ethTip] = useUserETHTip()
 
   const { address: recipientAddress } = useENS(recipientAddressOrName)
   const recipient = recipientAddressOrName === null ? account : recipientAddress
   const deadline = useTransactionDeadline()
 
-  const v1Exchange = useV1ExchangeContract(useV1TradeExchangeAddress(trade), true)
-
   return useMemo(() => {
     const tradeVersion = getTradeVersion(trade)
-    if (!trade || !recipient || !library || !account || !tradeVersion || !chainId || !deadline) return []
+    if (!trade || !recipient || !library || !account || !tradeVersion || !chainId || !deadline || tradeVersion !== Version.v2 || !exchange?.router) return []
+
+    const underlyingRouter = getUnderlyingExchangeRouterContract(exchange.router, chainId, library, account);
 
     const contract: Contract | null =
-      tradeVersion === Version.v2 && exchange?.router ? getUnderlyingExchangeRouterContract(exchange.router, chainId, library, account) : v1Exchange
+       useRelay ? getRouterContract(chainId, library, account) : underlyingRouter
     if (!contract) {
       return []
     }
 
     const swapMethods = []
 
-    switch (tradeVersion) {
-      case Version.v2:
+    if (!useRelay) {
+      swapMethods.push(
+        Router.swapCallParameters(trade, {
+          feeOnTransfer: false,
+          allowedSlippage: new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE),
+          recipient,
+          deadline: deadline.toNumber()
+        })
+      )
+
+      if (trade.tradeType === TradeType.EXACT_INPUT) {
         swapMethods.push(
           Router.swapCallParameters(trade, {
-            feeOnTransfer: false,
+            feeOnTransfer: true,
             allowedSlippage: new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE),
             recipient,
             deadline: deadline.toNumber()
           })
         )
-
-        if (trade.tradeType === TradeType.EXACT_INPUT) {
-          swapMethods.push(
-            Router.swapCallParameters(trade, {
-              feeOnTransfer: true,
-              allowedSlippage: new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE),
-              recipient,
-              deadline: deadline.toNumber()
-            })
-          )
-        }
-        break
-      case Version.v1:
-        swapMethods.push(
-          v1SwapArguments(trade, {
-            allowedSlippage: new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE),
-            recipient,
-            deadline: deadline.toNumber()
-          })
-        )
-        break
+      }
     }
+    else {
+      swapMethods.push(
+        ArcherRouter.swapCallParameters(underlyingRouter.address, trade, {
+          allowedSlippage: new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE),
+          recipient,
+          deadline: deadline.toNumber(),
+          ethTip: CurrencyAmount.ether(ethTip)
+        })
+      )
+    }
+
     return swapMethods.map(parameters => ({ parameters, contract }))
-  }, [account, allowedSlippage, chainId, deadline, library, recipient, trade, v1Exchange, exchange])
+  }, [account, allowedSlippage, chainId, deadline, library, recipient, trade, useRelay, exchange, ethTip])
 }
 
 // returns a function that will execute a swap, if the parameters are all valid
@@ -117,6 +116,7 @@ export function useSwapCallback(
   const { account, chainId, library } = useActiveWeb3React()
 
   const swapCalls = useSwapCallArguments(trade, allowedSlippage, recipientAddressOrName)
+  console.log(swapCalls)
 
   const addTransaction = useTransactionAdder()
 

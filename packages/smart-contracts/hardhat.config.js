@@ -104,6 +104,10 @@ module.exports = {
       1: DEPLOYER_ADDRESS,
       4: DEPLOYER_ADDRESS
     },
+    tipJar: {
+      1: '0x5312B0d160E16feeeec13437a0053009e7564287',
+      4: '0x914528335B5d031c93Ac86e6F6A6C67052Eb44f0'
+    }
   },
   paths: {
     deploy: 'deploy',

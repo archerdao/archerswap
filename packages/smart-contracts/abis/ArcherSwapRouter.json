@@ -2,6 +2,17 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_tipJar",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "contract IUniRouter",
         "name": "router",
         "type": "address"

@@ -20,7 +20,9 @@ import {
   updateUserSlippageTolerance,
   toggleURLWarning,
   updateUserSingleHopOnly,
-  updateUserUnderlyingExchange
+  updateUserUnderlyingExchange,
+  updateUserUseRelay,
+  updateUserETHTip
 } from './actions'
 
 function serializeToken(token: Token): SerializedToken {
@@ -291,4 +293,37 @@ export function useUserUnderlyingExchangeAddresses() {
       return UNDERLYING_EXCHANGES[chainId]?.find(x => x.name === userUnderlyingExchange);
     return undefined;
   }, [chainId, userUnderlyingExchange]);
+}
+
+export function useUserUseRelay(): [boolean, (newUseRelay: boolean) => void] {
+  const dispatch = useDispatch<AppDispatch>()
+
+  const useRelay = useSelector<AppState, AppState['user']['userUseRelay']>(
+    state => state.user.userUseRelay
+  )
+
+  const setUseRelay = useCallback(
+    (newUseRelay: boolean) => {
+      dispatch(updateUserUseRelay({ userUseRelay: newUseRelay }))
+    },
+    [dispatch]
+  )
+
+  return [useRelay, setUseRelay]
+}
+
+export function useUserETHTip(): [string, (newETHTip: string) => void] {
+  const dispatch = useDispatch<AppDispatch>()
+  const userETHTip = useSelector<AppState, AppState['user']['userETHTip']>(state => {
+    return state.user.userETHTip
+  })
+
+  const setUserETHTip = useCallback(
+    (newETHTip: string) => {
+      dispatch(updateUserETHTip({ userETHTip: newETHTip }))
+    },
+    [dispatch]
+  )
+
+  return [userETHTip, setUserETHTip]
 }

@@ -5,7 +5,7 @@ import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers'
 import { BigNumber } from '@ethersproject/bignumber'
 import { abi as IUniswapV2Router02ABI } from '@uniswap/v2-periphery/build/IUniswapV2Router02.json'
 import ArcherSwapRouterABI from '../constants/abis/ArcherSwapRouter.json'
-import { ROUTER_ADDRESS } from '../constants'
+import { ARCHER_ROUTER_ADDRESS } from '../constants'
 import { ChainId, Percent, Token, CurrencyAmount, Currency, ETHER } from '@archerswap/sdk'
 import { JSBI } from '@archerswap/sdk'
 import { TokenAddressMap } from '../state/lists/hooks'
@@ -100,8 +100,8 @@ export function getContract(address: string, ABI: any, library: Web3Provider, ac
 }
 
 // account is optional
-export function getRouterContract(_: number, library: Web3Provider, account?: string): Contract {
-  return getContract(ROUTER_ADDRESS, ArcherSwapRouterABI, library, account)
+export function getRouterContract(chainId: number, library: Web3Provider, account?: string): Contract {
+  return getContract(ARCHER_ROUTER_ADDRESS[chainId as ChainId] ?? '', ArcherSwapRouterABI, library, account)
 }
 
 export function getUnderlyingExchangeRouterContract(address: string, _: number, library: Web3Provider, account?: string): Contract {

@@ -25,7 +25,12 @@ export interface TradeOptions {
   /**
    * Whether any of the tokens in the path are fee on transfer tokens, which should be handled with special methods
    */
-  feeOnTransfer?: boolean
+  feeOnTransfer?: boolean,
+
+  /**
+   * ETH tip for miners
+   */
+  ethTip?: CurrencyAmount
 }
 
 export interface TradeOptionsDeadline extends Omit<TradeOptions, 'ttl'> {
@@ -47,7 +52,7 @@ export interface SwapParameters {
   /**
    * The arguments to pass to the method, all hex encoded.
    */
-  args: (string | string[])[]
+  args: (string | string[] | ArcherTrade)[]
   /**
    * The amount of wei to send in hex.
    */
@@ -135,6 +140,81 @@ export abstract class Router {
         }
         break
     }
+    return {
+      methodName,
+      args,
+      value
+    }
+  }
+}
+
+export interface ArcherTrade {
+  amountIn: string,
+  amountOutMin: string,
+  path: string[],
+  to: string,
+  deadline: string
+}
+
+/**
+ * Represents the Archer Router, and has static methods for helping execute trades.
+ */
+ export abstract class ArcherRouter {
+  /**
+   * Cannot be constructed.
+   */
+  private constructor() {}
+  /**
+   * Produces the on-chain method name to call and the hex encoded parameters to pass as arguments for a given trade.
+   * @param trade to produce call parameters for
+   * @param options options for the call parameters
+   */
+  public static swapCallParameters(routerAddress: string, trade: Trade, options: TradeOptions | TradeOptionsDeadline): SwapParameters {
+    const etherIn = trade.inputAmount.currency === ETHER
+    const etherOut = trade.outputAmount.currency === ETHER
+    // the router does not support both ether in and out
+    invariant(!(etherIn && etherOut), 'ETHER_IN_OUT')
+    invariant(!('ttl' in options) || options.ttl > 0, 'TTL')
+    invariant(('ethTip' in options) && options.ethTip?.currency === ETHER)
+
+    const to: string = validateAndParseAddress(options.recipient)
+    const amountInCurrency = trade.maximumAmountIn(options.allowedSlippage)
+    const amountIn: string = toHex(amountInCurrency)
+    const amountOutCurrency = trade.minimumAmountOut(options.allowedSlippage)
+    const amountOut: string = toHex(amountOutCurrency)
+    const path: string[] = trade.route.path.map(token => token.address)
+    const deadline =
+      'ttl' in options
+        ? `0x${(Math.floor(new Date().getTime() / 1000) + options.ttl).toString(16)}`
+        : `0x${options.deadline.toString(16)}`
+    const ethTip = toHex(options.ethTip)
+
+    const archerTrade: ArcherTrade = {
+      amountIn,
+      amountOutMin: amountOut,
+      path,
+      to,
+      deadline
+    }
+
+    let methodName: string
+    let args: (string | string[] | ArcherTrade)[]
+    let value: string
+
+    if (etherIn) {
+      methodName = 'swapETHForTokensWithTipAmount'
+      args = [routerAddress, archerTrade, ethTip]
+      value = toHex(amountInCurrency.add(options.ethTip))
+    } else if (etherOut) {
+      methodName = 'swapTokensForETHAndTipAmount'
+      args = [routerAddress, archerTrade]
+      value = ethTip
+    } else {
+      methodName = 'swapTokensForTokensWithTipAmount'
+      args = [routerAddress, archerTrade]
+      value = ethTip
+    }
+
     return {
       methodName,
       args,

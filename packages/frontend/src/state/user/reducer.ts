@@ -1,4 +1,4 @@
-import { INITIAL_ALLOWED_SLIPPAGE, DEFAULT_DEADLINE_FROM_NOW } from '../../constants'
+import { INITIAL_ALLOWED_SLIPPAGE, DEFAULT_DEADLINE_FROM_NOW, DEFAULT_ETH_TIP } from '../../constants'
 import { createReducer } from '@reduxjs/toolkit'
 import { updateVersion } from '../global/actions'
 import {
@@ -15,7 +15,9 @@ import {
   updateUserDeadline,
   toggleURLWarning,
   updateUserSingleHopOnly,
-  updateUserUnderlyingExchange
+  updateUserUnderlyingExchange,
+  updateUserUseRelay,
+  updateUserETHTip
 } from './actions'
 
 const currentTimestamp = () => new Date().getTime()
@@ -54,6 +56,8 @@ export interface UserState {
   URLWarningVisible: boolean
 
   userUnderlyingExchange: string // underlying IUniswapV2Router02 to use
+  userUseRelay: boolean // use relay or go directly to router
+  userETHTip: string // ETH tip for relay, as full BigInt string 
 }
 
 function pairKey(token0Address: string, token1Address: string) {
@@ -71,7 +75,9 @@ export const initialState: UserState = {
   pairs: {},
   timestamp: currentTimestamp(),
   URLWarningVisible: true,
-  userUnderlyingExchange: 'Uniswap'
+  userUnderlyingExchange: 'Uniswap',
+  userUseRelay: false,
+  userETHTip: DEFAULT_ETH_TIP.toString()
 }
 
 export default createReducer(initialState, builder =>
@@ -155,5 +161,11 @@ export default createReducer(initialState, builder =>
     .addCase(updateUserUnderlyingExchange, (state, action) => {
       state.userUnderlyingExchange = action.payload.userUnderlyingExchange
       state.timestamp = currentTimestamp()
+    })
+    .addCase(updateUserUseRelay, (state, action) => {
+      state.userUseRelay = action.payload.userUseRelay
+    })
+    .addCase(updateUserETHTip, (state, action) => {
+      state.userETHTip = action.payload.userETHTip
     })
 )

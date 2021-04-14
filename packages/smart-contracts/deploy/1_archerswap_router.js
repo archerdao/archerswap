@@ -1,14 +1,15 @@
 module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy, log } = deployments;
-  const { deployer } = await getNamedAccounts();
+  const { deployer, tipJar } = await getNamedAccounts();
 
   log(`1) ArcherSwapRouter`)
-  // Deploy SimpleToken contract
+  
   const deployResult = await deploy("ArcherSwapRouter", {
     from: deployer,
     contract: "ArcherSwapRouter",
     gas: 4000000,
-    skipIfAlreadyDeployed: true
+    skipIfAlreadyDeployed: true,
+    args: [tipJar]
   });
 
   if (deployResult.newlyDeployed) {

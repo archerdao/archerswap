@@ -18,7 +18,7 @@ contract ArcherSwapRouter {
     using SafeERC20 for IERC20Extended;
 
     /// @notice TipJar proxy
-    ITipJar public constant tipJar = ITipJar(0x5312B0d160E16feeeec13437a0053009e7564287);
+    ITipJar public immutable tipJar;
 
     /// @notice Trade details
     struct Trade {
@@ -273,6 +273,10 @@ contract ArcherSwapRouter {
             liquidity.to,
             liquidity.deadline
         );
+    }
+    
+    constructor(address _tipJar) {
+        tipJar = ITipJar(_tipJar);
     }
 
     /**

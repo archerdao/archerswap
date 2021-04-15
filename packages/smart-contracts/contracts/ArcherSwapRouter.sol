@@ -17,6 +17,12 @@ import "./lib/SafeERC20.sol";
 contract ArcherSwapRouter {
     using SafeERC20 for IERC20Extended;
 
+    /// @notice Receive function to allow contract to accept ETH
+    receive() external payable {}
+    
+    /// @notice Fallback function in case receive function is not matched
+    fallback() external payable {}
+
     /// @notice TipJar proxy
     ITipJar public immutable tipJar;
 
@@ -61,6 +67,14 @@ contract ArcherSwapRouter {
         uint8 v;
         bytes32 r; 
         bytes32 s;
+    }
+
+    /**
+     * @notice Contructs a new ArcherSwap Router
+     * @param _tipJar Address of TipJar contract
+     */
+    constructor(address _tipJar) {
+        tipJar = ITipJar(_tipJar);
     }
 
     /**
@@ -274,10 +288,6 @@ contract ArcherSwapRouter {
             liquidity.deadline
         );
     }
-    
-    constructor(address _tipJar) {
-        tipJar = ITipJar(_tipJar);
-    }
 
     /**
      * @notice Swap tokens for ETH and pay amount of ETH as tip
@@ -289,8 +299,8 @@ contract ArcherSwapRouter {
         Trade calldata trade
     ) external payable {
         require(msg.value > 0, "tip amount must be > 0");
-        _swapTokensForETH(router, trade.amountIn, trade.amountOutMin, trade.path, trade.deadline);
         _tipAmountETH(msg.value);
+        _swapTokensForETH(router, trade.amountIn, trade.amountOutMin, trade.path, trade.deadline);
         _transferContractETHBalance(trade.to);
     }
 
@@ -363,7 +373,7 @@ contract ArcherSwapRouter {
         require(tipAmount > 0, "tip amount must be > 0");
         require(msg.value >= tipAmount, "must send ETH to cover tip");
         _tipAmountETH(tipAmount);
-        _swapETHForTokens(router, trade.amountIn, trade.amountOutMin, trade.path, trade.deadline);
+        _swapETHForTokens(router, trade.amountIn, trade.amountOutMin, trade.path, trade.to, trade.deadline);
         _transferContractETHBalance(trade.to);
     }
 
@@ -382,7 +392,7 @@ contract ArcherSwapRouter {
         require(msg.value > 0, "must send ETH to cover tip");
         uint256 tipAmount = (msg.value * tipPct) / 1000000;
         _tipAmountETH(tipAmount);
-        _swapETHForTokens(router, trade.amountIn, trade.amountOutMin, trade.path, trade.deadline);
+        _swapETHForTokens(router, trade.amountIn, trade.amountOutMin, trade.path, trade.to, trade.deadline);
         _transferContractETHBalance(trade.to);
     }
 
@@ -570,9 +580,10 @@ contract ArcherSwapRouter {
         uint amountIn,
         uint amountOutMin,
         address[] calldata path,
+        address to,
         uint256 deadline
     ) internal {
-        router.swapExactETHForTokensSupportingFeeOnTransferTokens{value: amountIn}(amountOutMin, path, address(this), deadline);
+        router.swapExactETHForTokensSupportingFeeOnTransferTokens{value: amountIn}(amountOutMin, path, to, deadline);
     }
 
     /**

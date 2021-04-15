@@ -27,6 +27,9 @@
     "eject": "yarn workspace @archerswap/frontend eject",
     "test:frontend": "yarn workspace @archerswap/frontend test",
     "integration-test": "yarn workspace @archerswap/frontend integration-test",
+    "sdk:build": "yarn workspace @archerswap/sdk build",
+    "sdk:start":  "yarn workspace @archerswap/sdk start",
+    "run": "yarn sdk:build && yarn start",
     "reset": "yarn deploy:reset && yarn sync"
   },
   "workspaces": {

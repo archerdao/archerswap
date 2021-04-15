@@ -10,6 +10,8 @@ const RPC_URL = process.env.VUE_APP_RPC_URL || "http://localhost:8545"
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY
 const DEPLOYER_ADDRESS = process.env.DEPLOYER_ADDRESS
 const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY
+const SWAPPER_ADDRESS = process.env.SWAPPER_ADDRESS
+const SWAPPER_PRIVATE_KEY = process.env.SWAPPER_PRIVATE_KEY
 const REPORT_GAS = process.env.REPORT_GAS
 const CMC_API_KEY = process.env.CMC_API_KEY
 
@@ -49,6 +51,10 @@ let mainnetConfig = {
 if (DEPLOYER_PRIVATE_KEY && DEPLOYER_PRIVATE_KEY.length > 0) {
   rinkebyConfig.accounts = [DEPLOYER_PRIVATE_KEY]
   mainnetConfig.accounts = [DEPLOYER_PRIVATE_KEY]
+  if (SWAPPER_PRIVATE_KEY && SWAPPER_PRIVATE_KEY.length > 0) {
+    rinkebyConfig.accounts.push(SWAPPER_PRIVATE_KEY)
+    mainnetConfig.accounts.push(SWAPPER_PRIVATE_KEY)
+  }
 }
 
 
@@ -103,6 +109,11 @@ module.exports = {
       default: 0,
       1: DEPLOYER_ADDRESS,
       4: DEPLOYER_ADDRESS
+    },
+    swapper: {
+      default: 1,
+      1: SWAPPER_ADDRESS,
+      4: SWAPPER_ADDRESS
     },
     tipJar: {
       1: '0x5312B0d160E16feeeec13437a0053009e7564287',

@@ -6,7 +6,12 @@ import { fortmatic, injected, portis, walletconnect, walletlink } from '../conne
 
 export const ARCHER_ROUTER_ADDRESS: { [chainId in ChainId]?: string } = {
   [ChainId.MAINNET]: '0x090D4613473dEE047c3f2706764f49E0821D256e',
-  [ChainId.RINKEBY]: '0xd972238A69AdeC97619538Ebd4fD5996161D1930'
+  [ChainId.RINKEBY]: '0xD2F703A1158E6AaA1D336399Be777d94Ba2ba918'
+}
+
+export const ARCHER_RELAY_URI: { [chainId in ChainId]?: string } = {
+  [ChainId.MAINNET]: 'https://api.archerdao.io/v1/bundle',
+  [ChainId.RINKEBY]: 'https://api.archerdao.io/v1/bundle',
 }
 
 export const UNISWAP_ROUTER_ADDRESS = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'

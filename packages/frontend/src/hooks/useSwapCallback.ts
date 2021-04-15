@@ -1,6 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { Contract } from '@ethersproject/contracts'
-import { JSBI, Router, ArcherRouter, SwapParameters, Trade, CurrencyAmount, Percent, TradeType } from '@archerswap/sdk'
+import { JSBI, Router, ArcherRouter, SwapParameters, Trade, CurrencyAmount, Percent, TradeType, ChainId } from '@archerswap/sdk'
 import { useMemo } from 'react'
 import { BIPS_BASE, INITIAL_ALLOWED_SLIPPAGE } from '../constants'
 import { getTradeVersion } from '../data/V1'
@@ -12,6 +12,9 @@ import useTransactionDeadline from './useTransactionDeadline'
 import useENS from './useENS'
 import { Version } from './useToggledVersion'
 import { useUserETHTip, useUserUnderlyingExchangeAddresses, useUserUseRelay } from '../state/user/hooks'
+import { ethers } from 'ethers'
+import Common from '@ethereumjs/common'
+import { TransactionFactory } from '@ethereumjs/tx'
 
 export enum SwapCallbackState {
   INVALID,
@@ -106,13 +109,19 @@ function useSwapCallArguments(
   }, [account, allowedSlippage, chainId, deadline, library, recipient, trade, useRelay, exchange, ethTip])
 }
 
+export interface SwapCallbackResponse {
+  hash: string,
+  rawTransaction?: string
+}
+
 // returns a function that will execute a swap, if the parameters are all valid
 // and the user has approved the slippage adjusted input amount for the trade
 export function useSwapCallback(
   trade: Trade | undefined, // trade to execute, required
   allowedSlippage: number = INITIAL_ALLOWED_SLIPPAGE, // in bips
-  recipientAddressOrName: string | null // the ENS name or address of the recipient of the trade, or null if swap should be returned to sender
-): { state: SwapCallbackState; callback: null | (() => Promise<string>); error: string | null } {
+  recipientAddressOrName: string | null, // the ENS name or address of the recipient of the trade, or null if swap should be returned to sender,
+  signOnly: boolean = false
+): { state: SwapCallbackState; callback: null | (() => Promise<SwapCallbackResponse>); error: string | null } {
   const { account, chainId, library } = useActiveWeb3React()
 
   const swapCalls = useSwapCallArguments(trade, allowedSlippage, recipientAddressOrName)
@@ -139,7 +148,7 @@ export function useSwapCallback(
 
     return {
       state: SwapCallbackState.VALID,
-      callback: async function onSwap(): Promise<string> {
+      callback: async function onSwap(): Promise<SwapCallbackResponse> {
         const estimatedCalls: EstimatedSwapCall[] = await Promise.all(
           swapCalls.map(call => {
             const {
@@ -201,47 +210,116 @@ export function useSwapCallback(
           gasEstimate
         } = successfulEstimation
 
-        return contract[methodName](...args, {
-          gasLimit: calculateGasMargin(gasEstimate),
-          ...(value && !isZero(value) ? { value, from: account } : { from: account })
-        })
-          .then((response: any) => {
-            const inputSymbol = trade.inputAmount.currency.symbol
-            const outputSymbol = trade.outputAmount.currency.symbol
-            const inputAmount = trade.inputAmount.toSignificant(3)
-            const outputAmount = trade.outputAmount.toSignificant(3)
+        if (!signOnly) {
+          return contract[methodName](...args, {
+            gasLimit: calculateGasMargin(gasEstimate),
+            ...(value && !isZero(value) ? { value, from: account } : { from: account })
+          })
+            .then((response: any) => {
+              const inputSymbol = trade.inputAmount.currency.symbol
+              const outputSymbol = trade.outputAmount.currency.symbol
+              const inputAmount = trade.inputAmount.toSignificant(3)
+              const outputAmount = trade.outputAmount.toSignificant(3)
 
-            const base = `Swap ${inputAmount} ${inputSymbol} for ${outputAmount} ${outputSymbol}`
-            const withRecipient =
-              recipient === account
-                ? base
-                : `${base} to ${
-                    recipientAddressOrName && isAddress(recipientAddressOrName)
-                      ? shortenAddress(recipientAddressOrName)
-                      : recipientAddressOrName
-                  }`
+              const base = `Swap ${inputAmount} ${inputSymbol} for ${outputAmount} ${outputSymbol}`
+              const withRecipient =
+                recipient === account
+                  ? base
+                  : `${base} to ${
+                      recipientAddressOrName && isAddress(recipientAddressOrName)
+                        ? shortenAddress(recipientAddressOrName)
+                        : recipientAddressOrName
+                    }`
 
-            const withVersion =
-              tradeVersion === Version.v2 ? withRecipient : `${withRecipient} on ${(tradeVersion as any).toUpperCase()}`
+              const withVersion =
+                tradeVersion === Version.v2 ? withRecipient : `${withRecipient} on ${(tradeVersion as any).toUpperCase()}`
 
-            addTransaction(response, {
-              summary: withVersion
+              addTransaction(response, {
+                summary: withVersion
+              })
+
+              return {hash: response.hash}
             })
+            .catch((error: any) => {
+              // if the user rejected the tx, pass this along
+              if (error?.code === 4001) {
+                throw new Error('Transaction rejected.')
+              } else {
+                // otherwise, the error was unexpected and we need to convey that
+                console.error(`Swap failed`, error, methodName, args, value)
+                throw new Error(`Swap failed: ${error.message}`)
+              }
+            })
+        }
+        else {
+          const partialTx = {
+            to: contract.address,
+            gasLimit: calculateGasMargin(gasEstimate),
+            data: contract.interface.encodeFunctionData(methodName, args),
+            ...(value && !isZero(value) ? { value, from: account } : { from: account })
+          }
+          return contract.signer.populateTransaction(partialTx)
+            .then(fullTx => {
+              // metamask doesn't support Signer.signTransaction, so we have to do all this manually
+              //return contract.signer.signTransaction(fullTx)
 
-            return response.hash
-          })
-          .catch((error: any) => {
-            // if the user rejected the tx, pass this along
-            if (error?.code === 4001) {
-              throw new Error('Transaction rejected.')
-            } else {
-              // otherwise, the error was unexpected and we need to convey that
-              console.error(`Swap failed`, error, methodName, args, value)
-              throw new Error(`Swap failed: ${error.message}`)
-            }
-          })
+              const chainNames: {[chainId in ChainId]?: string} = {
+                [ChainId.MAINNET]: 'mainnet',
+                [ChainId.RINKEBY]: 'rinkeby'
+              }
+              const chain = chainNames[chainId]
+              if (!chain)
+                throw new Error(`Unknown chain ID ${chainId} when building transaction`)
+
+              const common = new Common({ chain, hardfork: 'berlin' })
+              // @ts-ignore
+              const tx = TransactionFactory.fromTxData(fullTx, { common })
+              // @ts-ignore
+              const unsignedTx = tx.getMessageToSign()
+
+              return ''
+            })
+            .then(signedTx => {
+              const hash = ethers.utils.id(signedTx)
+
+              /*
+              const inputSymbol = trade.inputAmount.currency.symbol
+              const outputSymbol = trade.outputAmount.currency.symbol
+              const inputAmount = trade.inputAmount.toSignificant(3)
+              const outputAmount = trade.outputAmount.toSignificant(3)
+
+              const base = `🏹 Swap ${inputAmount} ${inputSymbol} for ${outputAmount} ${outputSymbol}`
+              const withRecipient =
+                recipient === account
+                  ? base
+                  : `${base} to ${
+                      recipientAddressOrName && isAddress(recipientAddressOrName)
+                        ? shortenAddress(recipientAddressOrName)
+                        : recipientAddressOrName
+                    }`
+
+              addTransaction({hash}, {
+                summary: withRecipient
+              })
+              */
+
+              console.log('hash', hash, 'rawTransaction', signedTx)
+
+              return {hash, rawTransaction: signedTx}
+            })
+            .catch((error: any) => {
+              // if the user rejected the tx, pass this along
+              if (error?.code === 4001) {
+                throw new Error('Transaction rejected.')
+              } else {
+                // otherwise, the error was unexpected and we need to convey that
+                console.error(`Swap failed`, error, methodName, args, value)
+                throw new Error(`Swap failed: ${error.message}`)
+              }
+            })
+        }
       },
       error: null
     }
-  }, [trade, library, account, chainId, recipient, recipientAddressOrName, swapCalls, addTransaction])
+  }, [trade, library, account, chainId, recipient, recipientAddressOrName, swapCalls, addTransaction, signOnly])
 }

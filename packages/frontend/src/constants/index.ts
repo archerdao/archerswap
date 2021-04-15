@@ -10,7 +10,8 @@ export const ARCHER_ROUTER_ADDRESS: { [chainId in ChainId]?: string } = {
 }
 
 export const ARCHER_RELAY_URI: { [chainId in ChainId]?: string } = {
-  [ChainId.MAINNET]: 'https://api.archerdao.io/v1/bundle'
+  [ChainId.MAINNET]: 'https://api.archerdao.io/v1/bundle',
+  [ChainId.RINKEBY]: 'https://api.archerdao.io/v1/bundle'
 }
 
 export const UNISWAP_ROUTER_ADDRESS = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'

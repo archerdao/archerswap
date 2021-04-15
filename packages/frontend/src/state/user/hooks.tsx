@@ -22,7 +22,8 @@ import {
   updateUserSingleHopOnly,
   updateUserUnderlyingExchange,
   updateUserUseRelay,
-  updateUserETHTip
+  updateUserETHTip,
+  updateUserPrivate
 } from './actions'
 
 function serializeToken(token: Token): SerializedToken {
@@ -326,4 +327,21 @@ export function useUserETHTip(): [string, (newETHTip: string) => void] {
   )
 
   return [userETHTip, setUserETHTip]
+}
+
+export function useUserPrivate(): [boolean, (newPrivate: boolean) => void] {
+  const dispatch = useDispatch<AppDispatch>()
+
+  const priv = useSelector<AppState, AppState['user']['userPrivate']>(
+    state => state.user.userPrivate
+  )
+
+  const setPrivate = useCallback(
+    (newPrivate: boolean) => {
+      dispatch(updateUserPrivate({ userPrivate: newPrivate }))
+    },
+    [dispatch]
+  )
+
+  return [priv, setPrivate]
 }

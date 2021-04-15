@@ -110,19 +110,15 @@ function useSwapCallArguments(
   }, [account, allowedSlippage, chainId, deadline, library, recipient, trade, useRelay, exchange, ethTip])
 }
 
-export interface SwapCallbackResponse {
-  hash: string,
-  rawTransaction?: string
-}
-
 // returns a function that will execute a swap, if the parameters are all valid
 // and the user has approved the slippage adjusted input amount for the trade
 export function useSwapCallback(
   trade: Trade | undefined, // trade to execute, required
   allowedSlippage: number = INITIAL_ALLOWED_SLIPPAGE, // in bips
   recipientAddressOrName: string | null, // the ENS name or address of the recipient of the trade, or null if swap should be returned to sender,
-  signOnly: boolean = false
-): { state: SwapCallbackState; callback: null | (() => Promise<SwapCallbackResponse>); error: string | null } {
+  relayDeadline?: number, // deadline to use for relay -- set to undefined for no relay
+  signOnly: boolean = false, // don't broadcast, just sign (for private relay)
+): { state: SwapCallbackState; callback: null | (() => Promise<string>); error: string | null } {
   const { account, chainId, library } = useActiveWeb3React()
 
   const swapCalls = useSwapCallArguments(trade, allowedSlippage, recipientAddressOrName)
@@ -149,7 +145,7 @@ export function useSwapCallback(
 
     return {
       state: SwapCallbackState.VALID,
-      callback: async function onSwap(): Promise<SwapCallbackResponse> {
+      callback: async function onSwap(): Promise<string> {
         const estimatedCalls: EstimatedSwapCall[] = await Promise.all(
           swapCalls.map(call => {
             const {
@@ -213,8 +209,10 @@ export function useSwapCallback(
 
         if (!signOnly) {
           return contract[methodName](...args, {
+            from: account,
             gasLimit: calculateGasMargin(gasEstimate),
-            ...(value && !isZero(value) ? { value, from: account } : { from: account })
+            ...(relayDeadline ? { gasPrice: ethers.utils.parseUnits("1", "gwei") } : {}),
+            ...(value && !isZero(value) ? { value} : {})
           })
             .then((response: any) => {
               const inputSymbol = trade.inputAmount.currency.symbol
@@ -222,7 +220,7 @@ export function useSwapCallback(
               const inputAmount = trade.inputAmount.toSignificant(3)
               const outputAmount = trade.outputAmount.toSignificant(3)
 
-              const base = `Swap ${inputAmount} ${inputSymbol} for ${outputAmount} ${outputSymbol}`
+              const base = (relayDeadline ? '🏹 ' : '') + `Swap ${inputAmount} ${inputSymbol} for ${outputAmount} ${outputSymbol}`
               const withRecipient =
                 recipient === account
                   ? base
@@ -236,10 +234,11 @@ export function useSwapCallback(
                 tradeVersion === Version.v2 ? withRecipient : `${withRecipient} on ${(tradeVersion as any).toUpperCase()}`
 
               addTransaction(response, {
-                summary: withVersion
+                summary: withVersion,
+                relay: relayDeadline ? { rawTransaction: response.raw, deadline: relayDeadline } : undefined,
               })
 
-              return {hash: response.hash}
+              return response.hash
             })
             .catch((error: any) => {
               // if the user rejected the tx, pass this along
@@ -255,9 +254,11 @@ export function useSwapCallback(
         else {
           const partialTx = {
             to: contract.address,
+            from: account,
             gasLimit: calculateGasMargin(gasEstimate),
             data: contract.interface.encodeFunctionData(methodName, args),
-            ...(value && !isZero(value) ? { value, from: account } : { from: account })
+            ...(relayDeadline ? { gasPrice: 0 } : {}),
+            ...(value && !isZero(value) ? { value } : {})
           }
           return contract.signer.populateTransaction(partialTx)
             .then(fullTx => {
@@ -294,8 +295,8 @@ export function useSwapCallback(
               // ethers will change eth_sign to personal_sign if it detects metamask
               // https://github.com/ethers-io/ethers.js/blob/2a7dbf05718e29e550f7a208d35a095547b9ccc2/packages/providers/src.ts/web3-provider.ts#L33
 
-              let isMetamask: boolean | undefined;
-              let web3Provider: Web3Provider | undefined;
+              let isMetamask: boolean | undefined
+              let web3Provider: Web3Provider | undefined
               if (signer.provider instanceof Web3Provider) {
                 web3Provider = signer.provider as Web3Provider
                 isMetamask = web3Provider.provider.isMetaMask
@@ -327,7 +328,7 @@ export function useSwapCallback(
               const inputAmount = trade.inputAmount.toSignificant(3)
               const outputAmount = trade.outputAmount.toSignificant(3)
 
-              const base = `🏹 Swap ${inputAmount} ${inputSymbol} for ${outputAmount} ${outputSymbol}`
+              const base = (relayDeadline ? '🏹 ' : '') + `Swap ${inputAmount} ${inputSymbol} for ${outputAmount} ${outputSymbol}`
               const withRecipient =
                 recipient === account
                   ? base
@@ -337,11 +338,12 @@ export function useSwapCallback(
                         : recipientAddressOrName
                     }`
 
-              addTransaction({hash}, {
-                summary: withRecipient
+              addTransaction({ hash }, {
+                summary: withRecipient,
+                relay: relayDeadline ? { rawTransaction: signedTx, deadline: relayDeadline } : undefined,
               })
 
-              return {hash, rawTransaction: signedTx}
+              return hash
             })
             .catch((error: any) => {
               // if the user rejected the tx, pass this along
@@ -357,5 +359,5 @@ export function useSwapCallback(
       },
       error: null
     }
-  }, [trade, library, account, chainId, recipient, recipientAddressOrName, swapCalls, addTransaction, signOnly])
+  }, [trade, library, account, chainId, recipient, recipientAddressOrName, swapCalls, addTransaction, signOnly, relayDeadline])
 }

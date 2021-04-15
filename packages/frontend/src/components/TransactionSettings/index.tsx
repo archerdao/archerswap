@@ -101,10 +101,12 @@ export interface SlippageTabsProps {
   useRelay: boolean,
   setUseRelay: (useRelay: boolean) => void,
   ethTip: string,
-  setETHTip: (ethTip: string) => void
+  setETHTip: (ethTip: string) => void,
+  priv: boolean,
+  setPrivate: (priv: boolean) => void
 }
 
-export default function SlippageTabs({ rawSlippage, setRawSlippage, deadline, setDeadline, useRelay, setUseRelay, ethTip, setETHTip }: SlippageTabsProps) {
+export default function SlippageTabs({ rawSlippage, setRawSlippage, deadline, setDeadline, useRelay, setUseRelay, ethTip, setETHTip, priv, setPrivate }: SlippageTabsProps) {
   const theme = useContext(ThemeContext)
 
   const inputRef = useRef<HTMLInputElement>()
@@ -321,6 +323,25 @@ export default function SlippageTabs({ rawSlippage, setRawSlippage, deadline, se
                   action: useRelay ? 'disable use relay' : 'enable use relay'
                 })
                 setUseRelay(!useRelay)
+              }}
+            />
+        </RowBetween>
+        <RowBetween>
+          <RowFixed>
+            <TYPE.black fontWeight={400} fontSize={14} color={theme.text2}>
+                Private Transaction
+              </TYPE.black>
+              <QuestionHelper text="Use the Archer Network to privately execute transaction" />
+            </RowFixed>
+            <Toggle
+              id="toggle-private"
+              isActive={priv}
+              toggle={() => {
+                ReactGA.event({
+                  category: 'Private',
+                  action: priv ? 'not private' : 'private'
+                })
+                setPrivate(!priv)
               }}
             />
         </RowBetween>

@@ -17,7 +17,8 @@ import {
   updateUserSingleHopOnly,
   updateUserUnderlyingExchange,
   updateUserUseRelay,
-  updateUserETHTip
+  updateUserETHTip,
+  updateUserPrivate
 } from './actions'
 
 const currentTimestamp = () => new Date().getTime()
@@ -58,6 +59,7 @@ export interface UserState {
   userUnderlyingExchange: string // underlying IUniswapV2Router02 to use
   userUseRelay: boolean // use relay or go directly to router
   userETHTip: string // ETH tip for relay, as full BigInt string 
+  userPrivate: boolean // when using the relay, don't broadcast transaction
 }
 
 function pairKey(token0Address: string, token1Address: string) {
@@ -76,8 +78,9 @@ export const initialState: UserState = {
   timestamp: currentTimestamp(),
   URLWarningVisible: true,
   userUnderlyingExchange: 'Uniswap',
-  userUseRelay: false,
-  userETHTip: DEFAULT_ETH_TIP.toString()
+  userUseRelay: true,
+  userETHTip: DEFAULT_ETH_TIP.toString(),
+  userPrivate: true
 }
 
 export default createReducer(initialState, builder =>
@@ -167,5 +170,8 @@ export default createReducer(initialState, builder =>
     })
     .addCase(updateUserETHTip, (state, action) => {
       state.userETHTip = action.payload.userETHTip
+    })
+    .addCase(updateUserPrivate, (state, action) => {
+      state.userPrivate = action.payload.userPrivate
     })
 )

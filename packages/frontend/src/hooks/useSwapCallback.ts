@@ -1,5 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { Contract } from '@ethersproject/contracts'
+import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers'
 import { JSBI, Router, ArcherRouter, SwapParameters, Trade, CurrencyAmount, Percent, TradeType, ChainId } from '@archerswap/sdk'
 import { useMemo } from 'react'
 import { BIPS_BASE, INITIAL_ALLOWED_SLIPPAGE } from '../constants'
@@ -272,17 +273,55 @@ export function useSwapCallback(
                 throw new Error(`Unknown chain ID ${chainId} when building transaction`)
 
               const common = new Common({ chain, hardfork: 'berlin' })
-              // @ts-ignore
-              const tx = TransactionFactory.fromTxData(fullTx, { common })
-              // @ts-ignore
+              const txParams = {
+                nonce: fullTx.nonce !== undefined ? ethers.utils.hexlify(fullTx.nonce) : undefined,
+                gasPrice: fullTx.gasPrice !== undefined ? ethers.utils.hexlify(fullTx.gasPrice) : undefined,
+                gasLimit: fullTx.gasLimit !== undefined ? ethers.utils.hexlify(fullTx.gasLimit) : undefined,
+                to: fullTx.to,
+                value: fullTx.value !== undefined ? ethers.utils.hexlify(fullTx.value) : undefined,
+                data: fullTx.data?.toString(),
+                chainId: fullTx.chainId !== undefined ? ethers.utils.hexlify(fullTx.chainId) : undefined,
+                type: fullTx.type !== undefined ? ethers.utils.hexlify(fullTx.type) : undefined
+              }
+              const tx = TransactionFactory.fromTxData(txParams, { common })
               const unsignedTx = tx.getMessageToSign()
 
-              return ''
+              if (!(contract.signer instanceof JsonRpcSigner)) {
+                throw new Error(`Cannot sign transactions with this wallet type`)
+              }
+              const signer = contract.signer as JsonRpcSigner
+
+              // ethers will change eth_sign to personal_sign if it detects metamask
+              // https://github.com/ethers-io/ethers.js/blob/2a7dbf05718e29e550f7a208d35a095547b9ccc2/packages/providers/src.ts/web3-provider.ts#L33
+
+              let isMetamask: boolean | undefined;
+              let web3Provider: Web3Provider | undefined;
+              if (signer.provider instanceof Web3Provider) {
+                web3Provider = signer.provider as Web3Provider
+                isMetamask = web3Provider.provider.isMetaMask
+                web3Provider.provider.isMetaMask = false
+              }
+              
+              return signer.provider.send("eth_sign", [account, ethers.utils.hexlify(unsignedTx)])
+                .then(signature => {
+                  const signatureParts = ethers.utils.splitSignature(signature)
+
+                  // really crossing the streams here
+                  // @ts-ignore
+                  const txWithSignature = tx._processSignature(signatureParts.v, ethers.utils.arrayify(signatureParts.r), ethers.utils.arrayify(signatureParts.s))
+
+                  return ethers.utils.hexlify(txWithSignature.serialize())
+                })
+                .finally(() => {
+                  if (web3Provider) {
+                    web3Provider.provider.isMetaMask = isMetamask
+                  }
+                })
+
             })
             .then(signedTx => {
-              const hash = ethers.utils.id(signedTx)
+              const hash = ethers.utils.keccak256(signedTx)
 
-              /*
               const inputSymbol = trade.inputAmount.currency.symbol
               const outputSymbol = trade.outputAmount.currency.symbol
               const inputAmount = trade.inputAmount.toSignificant(3)
@@ -301,9 +340,6 @@ export function useSwapCallback(
               addTransaction({hash}, {
                 summary: withRecipient
               })
-              */
-
-              console.log('hash', hash, 'rawTransaction', signedTx)
 
               return {hash, rawTransaction: signedTx}
             })

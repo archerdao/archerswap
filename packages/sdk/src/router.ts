@@ -150,7 +150,7 @@ export abstract class Router {
 
 export interface ArcherTrade {
   amountIn: string,
-  amountOutMin: string,
+  amountOut: string,
   path: string[],
   to: string,
   deadline: string
@@ -189,30 +189,43 @@ export interface ArcherTrade {
         : `0x${options.deadline.toString(16)}`
     const ethTip = toHex(options.ethTip)
 
-    const archerTrade: ArcherTrade = {
-      amountIn,
-      amountOutMin: amountOut,
-      path,
-      to,
-      deadline
-    }
+    const archerTrade: ArcherTrade = { amountIn, amountOut, path, to, deadline }
 
     let methodName: string
     let args: (string | string[] | ArcherTrade)[]
     let value: string
 
-    if (etherIn) {
-      methodName = 'swapETHForTokensWithTipAmount'
-      args = [routerAddress, archerTrade, ethTip]
-      value = toHex(amountInCurrency.add(options.ethTip))
-    } else if (etherOut) {
-      methodName = 'swapTokensForETHAndTipAmount'
-      args = [routerAddress, archerTrade]
-      value = ethTip
-    } else {
-      methodName = 'swapTokensForTokensWithTipAmount'
-      args = [routerAddress, archerTrade]
-      value = ethTip
+    switch (trade.tradeType) {
+      case TradeType.EXACT_INPUT:
+        if (etherIn) {
+          methodName = 'swapExactETHForTokensWithTipAmount'
+          args = [routerAddress, archerTrade, ethTip]
+          value = toHex(amountInCurrency.add(options.ethTip))
+        } else if (etherOut) {
+          methodName = 'swapExactTokensForETHAndTipAmount'
+          args = [routerAddress, archerTrade]
+          value = ethTip
+        } else {
+          methodName = 'swapExactTokensForTokensWithTipAmount'
+          args = [routerAddress, archerTrade]
+          value = ethTip
+        }
+        break
+      case TradeType.EXACT_OUTPUT:
+        if (etherIn) {
+          methodName = 'swapETHForExactTokensWithTipAmount'
+          args = [routerAddress, archerTrade, ethTip]
+          value = toHex(amountInCurrency.add(options.ethTip))
+        } else if (etherOut) {
+          methodName = 'swapTokensForExactETHAndTipAmount'
+          args = [routerAddress, archerTrade]
+          value = ethTip
+        } else {
+          methodName = 'swapTokensForExactTokensWithTipAmount'
+          args = [routerAddress, archerTrade]
+          value = ethTip
+        }
+        break
     }
 
     return {

@@ -29,7 +29,7 @@ contract ArcherSwapRouter {
     /// @notice Trade details
     struct Trade {
         uint amountIn;
-        uint amountOutMin;
+        uint amountOut;
         address[] path;
         address payable to;
         uint256 deadline;
@@ -294,14 +294,13 @@ contract ArcherSwapRouter {
      * @param router Uniswap V2-compliant Router contract
      * @param trade Trade details
      */
-    function swapTokensForETHAndTipAmount(
+    function swapExactTokensForETHAndTipAmount(
         IUniRouter router,
         Trade calldata trade
     ) external payable {
         require(msg.value > 0, "tip amount must be > 0");
         _tipAmountETH(msg.value);
-        _swapTokensForETH(router, trade.amountIn, trade.amountOutMin, trade.path, trade.deadline);
-        _transferContractETHBalance(trade.to);
+        _swapExactTokensForETH(router, trade.amountIn, trade.amountOut, trade.path, trade.to, trade.deadline);
     }
 
     /**
@@ -310,16 +309,15 @@ contract ArcherSwapRouter {
      * @param trade Trade details
      * @param permit Permit details
      */
-    function swapTokensForETHWithPermitAndTipAmount(
+    function swapExactTokensForETHWithPermitAndTipAmount(
         IUniRouter router,
         Trade calldata trade,
         Permit calldata permit
     ) external payable {
         require(msg.value > 0, "tip amount must be > 0");
         _permit(permit.token, permit.amount, permit.deadline, permit.v, permit.r, permit.s);
-        _swapTokensForETH(router, trade.amountIn, trade.amountOutMin, trade.path, trade.deadline);
         _tipAmountETH(msg.value);
-        _transferContractETHBalance(trade.to);
+        _swapExactTokensForETH(router, trade.amountIn, trade.amountOut, trade.path, trade.to, trade.deadline);
     }
 
     /**
@@ -328,13 +326,13 @@ contract ArcherSwapRouter {
      * @param trade Trade details
      * @param tipPct % of resulting ETH to pay as tip
      */
-    function swapTokensForETHAndTipPct(
+    function swapExactTokensForETHAndTipPct(
         IUniRouter router,
         Trade calldata trade,
         uint32 tipPct
     ) external payable {
         require(tipPct > 0, "tipPct must be > 0");
-        _swapTokensForETH(router, trade.amountIn, trade.amountOutMin, trade.path, trade.deadline);
+        _swapExactTokensForETH(router, trade.amountIn, trade.amountOut, trade.path, address(this), trade.deadline);
         _tipPctETH(tipPct);
         _transferContractETHBalance(trade.to);
     }
@@ -346,7 +344,7 @@ contract ArcherSwapRouter {
      * @param permit Permit details
      * @param tipPct % of resulting ETH to pay as tip
      */
-    function swapTokensForETHWithPermitAndTipPct(
+    function swapExactTokensForETHWithPermitAndTipPct(
         IUniRouter router,
         Trade calldata trade,
         Permit calldata permit,
@@ -354,7 +352,75 @@ contract ArcherSwapRouter {
     ) external payable {
         require(tipPct > 0, "tipPct must be > 0");
         _permit(permit.token, permit.amount, permit.deadline, permit.v, permit.r, permit.s);
-        _swapTokensForETH(router, trade.amountIn, trade.amountOutMin, trade.path, trade.deadline);
+        _swapExactTokensForETH(router, trade.amountIn, trade.amountOut, trade.path, address(this), trade.deadline);
+        _tipPctETH(tipPct);
+        _transferContractETHBalance(trade.to);
+    }
+
+    /**
+     * @notice Swap tokens for ETH and pay amount of ETH as tip
+     * @param router Uniswap V2-compliant Router contract
+     * @param trade Trade details
+     */
+    function swapTokensForExactETHAndTipAmount(
+        IUniRouter router,
+        Trade calldata trade
+    ) external payable {
+        require(msg.value > 0, "tip amount must be > 0");
+        _tipAmountETH(msg.value);
+        _swapTokensForExactETH(router, trade.amountOut, trade.amountIn, trade.path, trade.to, trade.deadline);
+    }
+
+    /**
+     * @notice Swap tokens for ETH and pay amount of ETH as tip, using permit for approval
+     * @param router Uniswap V2-compliant Router contract
+     * @param trade Trade details
+     * @param permit Permit details
+     */
+    function swapTokensForExactETHWithPermitAndTipAmount(
+        IUniRouter router,
+        Trade calldata trade,
+        Permit calldata permit
+    ) external payable {
+        require(msg.value > 0, "tip amount must be > 0");
+        _tipAmountETH(msg.value);
+        _permit(permit.token, permit.amount, permit.deadline, permit.v, permit.r, permit.s);
+        _swapTokensForExactETH(router, trade.amountOut, trade.amountIn, trade.path, trade.to, trade.deadline);
+    }
+
+    /**
+     * @notice Swap tokens for ETH and pay % of ETH as tip
+     * @param router Uniswap V2-compliant Router contract
+     * @param trade Trade details
+     * @param tipPct % of resulting ETH to pay as tip
+     */
+    function swapTokensForExactETHAndTipPct(
+        IUniRouter router,
+        Trade calldata trade,
+        uint32 tipPct
+    ) external payable {
+        require(tipPct > 0, "tipPct must be > 0");
+        _swapTokensForExactETH(router, trade.amountOut, trade.amountIn, trade.path, address(this), trade.deadline);
+        _tipPctETH(tipPct);
+        _transferContractETHBalance(trade.to);
+    }
+
+    /**
+     * @notice Swap tokens for ETH and pay % of ETH as tip, using permit for approval
+     * @param router Uniswap V2-compliant Router contract
+     * @param trade Trade details
+     * @param permit Permit details
+     * @param tipPct % of resulting ETH to pay as tip
+     */
+    function swapTokensForExactETHWithPermitAndTipPct(
+        IUniRouter router,
+        Trade calldata trade,
+        Permit calldata permit,
+        uint32 tipPct
+    ) external payable {
+        require(tipPct > 0, "tipPct must be > 0");
+        _permit(permit.token, permit.amount, permit.deadline, permit.v, permit.r, permit.s);
+        _swapTokensForExactETH(router, trade.amountOut, trade.amountIn, trade.path, address(this), trade.deadline);
         _tipPctETH(tipPct);
         _transferContractETHBalance(trade.to);
     }
@@ -365,7 +431,7 @@ contract ArcherSwapRouter {
      * @param trade Trade details
      * @param tipAmount amount of ETH to pay as tip
      */
-    function swapETHForTokensWithTipAmount(
+    function swapExactETHForTokensWithTipAmount(
         IUniRouter router,
         Trade calldata trade,
         uint256 tipAmount
@@ -373,8 +439,7 @@ contract ArcherSwapRouter {
         require(tipAmount > 0, "tip amount must be > 0");
         require(msg.value >= tipAmount, "must send ETH to cover tip");
         _tipAmountETH(tipAmount);
-        _swapETHForTokens(router, trade.amountIn, trade.amountOutMin, trade.path, trade.to, trade.deadline);
-        _transferContractETHBalance(trade.to);
+        _swapExactETHForTokens(router, trade.amountIn, trade.amountOut, trade.path, trade.to, trade.deadline);
     }
 
     /**
@@ -383,7 +448,7 @@ contract ArcherSwapRouter {
      * @param trade Trade details
      * @param tipPct % of ETH to pay as tip
      */
-    function swapETHForTokensWithTipPct(
+    function swapExactETHForTokensWithTipPct(
         IUniRouter router,
         Trade calldata trade,
         uint32 tipPct
@@ -392,8 +457,42 @@ contract ArcherSwapRouter {
         require(msg.value > 0, "must send ETH to cover tip");
         uint256 tipAmount = (msg.value * tipPct) / 1000000;
         _tipAmountETH(tipAmount);
-        _swapETHForTokens(router, trade.amountIn, trade.amountOutMin, trade.path, trade.to, trade.deadline);
-        _transferContractETHBalance(trade.to);
+        _swapExactETHForTokens(router, trade.amountIn, trade.amountOut, trade.path, trade.to, trade.deadline);
+    }
+
+    /**
+     * @notice Swap ETH for tokens and pay amount of ETH input as tip
+     * @param router Uniswap V2-compliant Router contract
+     * @param trade Trade details
+     * @param tipAmount amount of ETH to pay as tip
+     */
+    function swapETHForExactTokensWithTipAmount(
+        IUniRouter router,
+        Trade calldata trade,
+        uint256 tipAmount
+    ) external payable {
+        require(tipAmount > 0, "tip amount must be > 0");
+        require(msg.value >= tipAmount, "must send ETH to cover tip");
+        _tipAmountETH(tipAmount);
+        _swapETHForExactTokens(router, trade.amountOut, trade.amountIn, trade.path, trade.to, trade.deadline);
+    }
+
+    /**
+     * @notice Swap ETH for tokens and pay % of ETH input as tip
+     * @param router Uniswap V2-compliant Router contract
+     * @param trade Trade details
+     * @param tipPct % of ETH to pay as tip
+     */
+    function swapETHForExactTokensWithTipPct(
+        IUniRouter router,
+        Trade calldata trade,
+        uint32 tipPct
+    ) external payable {
+        require(tipPct > 0, "tipPct must be > 0");
+        require(msg.value > 0, "must send ETH to cover tip");
+        uint256 tipAmount = (msg.value * tipPct) / 1000000;
+        _tipAmountETH(tipAmount);
+        _swapETHForExactTokens(router, trade.amountOut, trade.amountIn, trade.path, trade.to, trade.deadline);
     }
 
     /**
@@ -401,14 +500,13 @@ contract ArcherSwapRouter {
      * @param router Uniswap V2-compliant Router contract
      * @param trade Trade details
      */
-    function swapTokensForTokensWithTipAmount(
+    function swapExactTokensForTokensWithTipAmount(
         IUniRouter router,
         Trade calldata trade
     ) external payable {
         require(msg.value > 0, "tip amount must be > 0");
         _tipAmountETH(msg.value);
-        _swapTokensForTokens(router, trade.amountIn, trade.amountOutMin, trade.path, trade.deadline);
-        _transferContractTokenBalance(IERC20Extended(trade.path[trade.path.length]), trade.to);
+        _swapExactTokensForTokens(router, trade.amountIn, trade.amountOut, trade.path, trade.to, trade.deadline);
     }
 
     /**
@@ -417,7 +515,7 @@ contract ArcherSwapRouter {
      * @param trade Trade details
      * @param permit Permit details
      */
-    function swapTokensForTokensWithPermitAndTipAmount(
+    function swapExactTokensForTokensWithPermitAndTipAmount(
         IUniRouter router,
         Trade calldata trade,
         Permit calldata permit
@@ -425,8 +523,7 @@ contract ArcherSwapRouter {
         require(msg.value > 0, "tip amount must be > 0");
         _tipAmountETH(msg.value);
         _permit(permit.token, permit.amount, permit.deadline, permit.v, permit.r, permit.s);
-        _swapTokensForTokens(router, trade.amountIn, trade.amountOutMin, trade.path, trade.deadline);
-        _transferContractTokenBalance(IERC20Extended(trade.path[trade.path.length]), trade.to);
+        _swapExactTokensForTokens(router, trade.amountIn, trade.amountOut, trade.path, trade.to, trade.deadline);
     }
 
     /**
@@ -437,7 +534,7 @@ contract ArcherSwapRouter {
      * @param minEth ETH minimum for tip conversion
      * @param tipPct % of resulting tokens to pay as tip
      */
-    function swapTokensForTokensWithTipPct(
+    function swapExactTokensForTokensWithTipPct(
         IUniRouter router,
         Trade calldata trade,
         address[] calldata pathToEth,
@@ -445,7 +542,7 @@ contract ArcherSwapRouter {
         uint32 tipPct
     ) external payable {
         require(tipPct > 0, "tipPct must be > 0");
-        _swapTokensForTokens(router, trade.amountIn, trade.amountOutMin, trade.path, trade.deadline);
+        _swapExactTokensForTokens(router, trade.amountIn, trade.amountOut, trade.path, address(this), trade.deadline);
         IERC20Extended toToken = IERC20Extended(pathToEth[0]);
         uint256 contractTokenBalance = toToken.balanceOf(address(this));
         uint256 tipAmount = (contractTokenBalance * tipPct) / 1000000;
@@ -462,7 +559,7 @@ contract ArcherSwapRouter {
      * @param minEth ETH minimum for tip conversion
      * @param tipPct % of resulting tokens to pay as tip
      */
-    function swapTokensForTokensWithPermitAndTipPct(
+    function swapExactTokensForTokensWithPermitAndTipPct(
         IUniRouter router,
         Trade calldata trade,
         Permit calldata permit,
@@ -472,7 +569,89 @@ contract ArcherSwapRouter {
     ) external payable {
         require(tipPct > 0, "tipPct must be > 0");
         _permit(permit.token, permit.amount, permit.deadline, permit.v, permit.r, permit.s);
-        _swapTokensForTokens(router, trade.amountIn, trade.amountOutMin, trade.path, trade.deadline);
+        _swapExactTokensForTokens(router, trade.amountIn, trade.amountOut, trade.path, address(this), trade.deadline);
+        IERC20Extended toToken = IERC20Extended(pathToEth[0]);
+        uint256 contractTokenBalance = toToken.balanceOf(address(this));
+        uint256 tipAmount = (contractTokenBalance * tipPct) / 1000000;
+        _tipWithTokens(router, tipAmount, pathToEth, trade.deadline, minEth);
+        _transferContractTokenBalance(toToken, trade.to);
+    }
+
+    /**
+     * @notice Swap tokens for tokens and pay ETH amount as tip
+     * @param router Uniswap V2-compliant Router contract
+     * @param trade Trade details
+     */
+    function swapTokensForExactTokensWithTipAmount(
+        IUniRouter router,
+        Trade calldata trade
+    ) external payable {
+        require(msg.value > 0, "tip amount must be > 0");
+        _tipAmountETH(msg.value);
+        _swapTokensForExactTokens(router, trade.amountOut, trade.amountIn, trade.path, trade.to, trade.deadline);
+    }
+
+    /**
+     * @notice Swap tokens for tokens and pay ETH amount as tip
+     * @param router Uniswap V2-compliant Router contract
+     * @param trade Trade details
+     * @param permit Permit details
+     */
+    function swapTokensForExactTokensWithPermitAndTipAmount(
+        IUniRouter router,
+        Trade calldata trade,
+        Permit calldata permit
+    ) external payable {
+        require(msg.value > 0, "tip amount must be > 0");
+        _tipAmountETH(msg.value);
+        _permit(permit.token, permit.amount, permit.deadline, permit.v, permit.r, permit.s);
+        _swapTokensForExactTokens(router, trade.amountOut, trade.amountIn, trade.path, trade.to, trade.deadline);
+    }
+
+    /**
+     * @notice Swap tokens for tokens and pay % of tokens as tip
+     * @param router Uniswap V2-compliant Router contract
+     * @param trade Trade details
+     * @param pathToEth Path to ETH for tip
+     * @param minEth ETH minimum for tip conversion
+     * @param tipPct % of resulting tokens to pay as tip
+     */
+    function swapTokensForExactTokensWithTipPct(
+        IUniRouter router,
+        Trade calldata trade,
+        address[] calldata pathToEth,
+        uint256 minEth,
+        uint32 tipPct
+    ) external payable {
+        require(tipPct > 0, "tipPct must be > 0");
+        _swapTokensForExactTokens(router, trade.amountOut, trade.amountIn, trade.path, address(this), trade.deadline);
+        IERC20Extended toToken = IERC20Extended(pathToEth[0]);
+        uint256 contractTokenBalance = toToken.balanceOf(address(this));
+        uint256 tipAmount = (contractTokenBalance * tipPct) / 1000000;
+        _tipWithTokens(router, tipAmount, pathToEth, trade.deadline, minEth);
+        _transferContractTokenBalance(toToken, trade.to);
+    }
+
+    /**
+     * @notice Swap tokens for tokens and pay % of tokens as tip, using permit for approval
+     * @param router Uniswap V2-compliant Router contract
+     * @param trade Trade details
+     * @param permit Permit details
+     * @param pathToEth Path to ETH for tip
+     * @param minEth ETH minimum for tip conversion
+     * @param tipPct % of resulting tokens to pay as tip
+     */
+    function swapTokensForExactTokensWithPermitAndTipPct(
+        IUniRouter router,
+        Trade calldata trade,
+        Permit calldata permit,
+        address[] calldata pathToEth,
+        uint256 minEth,
+        uint32 tipPct
+    ) external payable {
+        require(tipPct > 0, "tipPct must be > 0");
+        _permit(permit.token, permit.amount, permit.deadline, permit.v, permit.r, permit.s);
+        _swapTokensForExactTokens(router, trade.amountOut, trade.amountIn, trade.path, address(this), trade.deadline);
         IERC20Extended toToken = IERC20Extended(pathToEth[0]);
         uint256 contractTokenBalance = toToken.balanceOf(address(this));
         uint256 tipAmount = (contractTokenBalance * tipPct) / 1000000;
@@ -575,7 +754,7 @@ contract ArcherSwapRouter {
      * @param path Path for swap
      * @param deadline Block timestamp deadline for trade
      */
-    function _swapETHForTokens(
+    function _swapExactETHForTokens(
         IUniRouter router,
         uint amountIn,
         uint amountOutMin,
@@ -587,23 +766,65 @@ contract ArcherSwapRouter {
     }
 
     /**
+     * @notice Internal implementation of swap ETH for tokens
+     * @param amountOut Amount of ETH out
+     * @param amountInMax Max amount in
+     * @param path Path for swap
+     * @param to Address to receive ETH
+     * @param deadline Block timestamp deadline for trade
+     */
+    function _swapETHForExactTokens(
+        IUniRouter router,
+        uint amountOut,
+        uint amountInMax,
+        address[] calldata path,
+        address to,
+        uint deadline
+    ) internal {
+        router.swapETHForExactTokens{value: amountInMax}(amountOut, path, to, deadline);
+    }
+
+    /**
+     * @notice Internal implementation of swap tokens for ETH
+     * @param amountOut Amount of ETH out
+     * @param amountInMax Max amount in
+     * @param path Path for swap
+     * @param to Address to receive ETH
+     * @param deadline Block timestamp deadline for trade
+     */
+    function _swapTokensForExactETH(
+        IUniRouter router,
+        uint amountOut,
+        uint amountInMax,
+        address[] calldata path,
+        address to,
+        uint deadline
+    ) internal {
+        IERC20Extended fromToken = IERC20Extended(path[0]);
+        fromToken.safeTransferFrom(msg.sender, address(this), amountInMax);
+        fromToken.safeIncreaseAllowance(address(router), amountInMax);
+        router.swapTokensForExactETH(amountOut, amountInMax, path, to, deadline);
+    }
+
+    /**
      * @notice Internal implementation of swap tokens for ETH
      * @param amountIn Amount to swap
      * @param amountOutMin Minimum amount out
      * @param path Path for swap
      * @param deadline Block timestamp deadline for trade
      */
-    function _swapTokensForETH(
+    function _swapExactTokensForETH(
         IUniRouter router,
         uint amountIn,
         uint amountOutMin,
         address[] calldata path,
+        address to,
         uint256 deadline
     ) internal {
         IERC20Extended fromToken = IERC20Extended(path[0]);
         fromToken.safeTransferFrom(msg.sender, address(this), amountIn);
         fromToken.safeIncreaseAllowance(address(router), amountIn);
-        router.swapExactTokensForETHSupportingFeeOnTransferTokens(amountIn, amountOutMin, path, address(this), deadline);
+        router.swapExactTokensForETHSupportingFeeOnTransferTokens(amountIn, amountOutMin, path, to, deadline);
     }
 
     /**
@@ -613,17 +834,40 @@ contract ArcherSwapRouter {
      * @param path Path for swap
      * @param deadline Block timestamp deadline for trade
      */
-    function _swapTokensForTokens(
+    function _swapExactTokensForTokens(
         IUniRouter router,
         uint amountIn,
         uint amountOutMin,
         address[] calldata path,
+        address to,
         uint deadline
     ) internal {
         IERC20Extended fromToken = IERC20Extended(path[0]);
         fromToken.safeTransferFrom(msg.sender, address(this), amountIn);
         fromToken.safeIncreaseAllowance(address(router), amountIn);
-        router.swapExactTokensForTokensSupportingFeeOnTransferTokens(amountIn, amountOutMin, path, address(this), deadline);
+        router.swapExactTokensForTokensSupportingFeeOnTransferTokens(amountIn, amountOutMin, path, to, deadline);
+    }
+
+    /**
+     * @notice Internal implementation of swap tokens for tokens
+     * @param amountOut Amount of tokens out
+     * @param amountInMax Max amount in
+     * @param path Path for swap
+     * @param to Address to receive tokens
+     * @param deadline Block timestamp deadline for trade
+     */
+    function _swapTokensForExactTokens(
+        IUniRouter router,
+        uint amountOut,
+        uint amountInMax,
+        address[] calldata path,
+        address to,
+        uint deadline
+    ) internal {
+        IERC20Extended fromToken = IERC20Extended(path[0]);
+        fromToken.safeTransferFrom(msg.sender, address(this), amountInMax);
+        fromToken.safeIncreaseAllowance(address(router), amountInMax);
+        router.swapTokensForExactTokens(amountOut, amountInMax, path, to, deadline);
     }
 
     /**

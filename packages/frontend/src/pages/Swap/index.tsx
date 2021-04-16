@@ -21,7 +21,7 @@ import TokenWarningModal from '../../components/TokenWarningModal'
 import ProgressSteps from '../../components/ProgressSteps'
 import SwapHeader from '../../components/swap/SwapHeader'
 
-import { ARCHER_RELAY_URI, ARCHER_ROUTER_ADDRESS, INITIAL_ALLOWED_SLIPPAGE } from '../../constants'
+import { ARCHER_RELAY_URI, ARCHER_ROUTER_ADDRESS } from '../../constants'
 import { getTradeVersion } from '../../data/V1'
 import { useActiveWeb3React } from '../../hooks'
 import { useCurrency, useAllTokens } from '../../hooks/Tokens'
@@ -76,7 +76,6 @@ export default function Swap({ history }: RouteComponentProps) {
   const { chainId, account } = useActiveWeb3React()
   const exchange = useUserUnderlyingExchangeAddresses()
   const relay = chainId ? ARCHER_RELAY_URI?.[chainId] : undefined
-  const haveRelay = relay !== undefined
   const theme = useContext(ThemeContext)
 
   // toggle wallet when disconnected
@@ -108,6 +107,7 @@ export default function Swap({ history }: RouteComponentProps) {
   const showWrap: boolean = wrapType !== WrapType.NOT_APPLICABLE
   const { address: recipientAddress } = useENSAddress(recipient)
   const [useRelay] = useUserUseRelay()
+  const doRelay = relay !== undefined && useRelay
   const privateTx = true
 
   const trade = showWrap ? undefined : v2Trade
@@ -192,7 +192,9 @@ export default function Swap({ history }: RouteComponentProps) {
   const atMaxAmountInput = Boolean(maxAmountInput && parsedAmounts[Field.INPUT]?.equalTo(maxAmountInput))
 
   // the callback to execute the swap
-  const { callback: swapCallback, error: swapCallbackError } = useSwapCallback(trade, allowedSlippage, recipient, haveRelay ? ttl : undefined, privateTx )
+  const forceDirectTx = false // for debugging
+  const { callback: swapCallback, error: swapCallbackError } = useSwapCallback(trade, allowedSlippage, recipient,
+    doRelay ? ttl : undefined, !forceDirectTx && doRelay && privateTx )
 
   const { priceImpactWithoutFee } = computeTradePriceBreakdown(trade)
 
@@ -393,16 +395,14 @@ export default function Swap({ history }: RouteComponentProps) {
                       />
                     </RowBetween>
                   )}
-                  {allowedSlippage !== INITIAL_ALLOWED_SLIPPAGE && (
-                    <RowBetween align="center">
-                      <ClickableText fontWeight={500} fontSize={14} color={theme.text2} onClick={toggleSettings}>
-                        Slippage Tolerance
-                      </ClickableText>
-                      <ClickableText fontWeight={500} fontSize={14} color={theme.text2} onClick={toggleSettings}>
-                        {allowedSlippage / 100}%
-                      </ClickableText>
-                    </RowBetween>
-                  )}
+                  <RowBetween align="center">
+                    <ClickableText fontWeight={500} fontSize={14} color={theme.text2} onClick={toggleSettings}>
+                      Slippage Tolerance
+                    </ClickableText>
+                    <ClickableText fontWeight={500} fontSize={14} color={theme.text2} onClick={toggleSettings}>
+                      {allowedSlippage / 100}%
+                    </ClickableText>
+                  </RowBetween>
                 </AutoColumn>
               </Card>
             )}

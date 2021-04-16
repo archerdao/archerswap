@@ -86,13 +86,6 @@ const OptionCustom = styled(FancyButton)<{ active?: boolean; warning?: boolean }
   }
 `
 
-const SlippageEmojiContainer = styled.span`
-  color: #f3841e;
-  ${({ theme }) => theme.mediaWidth.upToSmall`
-    display: none;  
-  `}
-`
-
 export interface SlippageTabsProps {
   rawSlippage: number
   setRawSlippage: (rawSlippage: number) => void
@@ -190,6 +183,15 @@ export default function SlippageTabs({ rawSlippage, setRawSlippage, deadline, se
           <Option
             onClick={() => {
               setSlippageInput('')
+              setRawSlippage(0)
+            }}
+            active={rawSlippage === 0}
+          >
+            0%
+          </Option>
+          <Option
+            onClick={() => {
+              setSlippageInput('')
               setRawSlippage(10)
             }}
             active={rawSlippage === 10}
@@ -205,25 +207,8 @@ export default function SlippageTabs({ rawSlippage, setRawSlippage, deadline, se
           >
             0.5%
           </Option>
-          <Option
-            onClick={() => {
-              setSlippageInput('')
-              setRawSlippage(100)
-            }}
-            active={rawSlippage === 100}
-          >
-            1%
-          </Option>
-          <OptionCustom active={![10, 50, 100].includes(rawSlippage)} warning={!slippageInputIsValid} tabIndex={-1}>
+          <OptionCustom active={![0, 10, 50].includes(rawSlippage)} warning={!slippageInputIsValid} tabIndex={-1}>
             <RowBetween>
-              {!!slippageInput &&
-              (slippageError === SlippageError.RiskyLow || slippageError === SlippageError.RiskyHigh) ? (
-                <SlippageEmojiContainer>
-                  <span role="img" aria-label="warning">
-                    ⚠️
-                  </span>
-                </SlippageEmojiContainer>
-              ) : null}
               {/* https://github.com/DefinitelyTyped/DefinitelyTyped/issues/30451 */}
               <Input
                 ref={inputRef as any}
@@ -247,11 +232,7 @@ export default function SlippageTabs({ rawSlippage, setRawSlippage, deadline, se
               color: slippageError === SlippageError.InvalidInput ? 'red' : '#F3841E'
             }}
           >
-            {slippageError === SlippageError.InvalidInput
-              ? 'Enter a valid slippage percentage'
-              : slippageError === SlippageError.RiskyLow
-              ? 'Your transaction may fail'
-              : 'Your transaction may be frontrun'}
+            {slippageError === SlippageError.InvalidInput ? 'Enter a valid slippage percentage' : ''}
           </RowBetween>
         )}
       </AutoColumn>
@@ -284,9 +265,9 @@ export default function SlippageTabs({ rawSlippage, setRawSlippage, deadline, se
       <AutoColumn gap="sm">
         <RowFixed>
           <TYPE.black fontSize={14} fontWeight={400} color={theme.text2}>
-            Miner Tip
+            Miner Bribe
           </TYPE.black>
-          <QuestionHelper text="Tip in ETH to pay to miner to include your transaction if using the Archer Network" />
+          <QuestionHelper text="Bribe in ETH to pay to miner to include your transaction if using the Archer Network. Must be greater than competitive gas cost or transaction will not be mined." />
         </RowFixed>
         <RowFixed>
           <OptionCustom style={{ width: '80px' }} tabIndex={-1}>
@@ -312,7 +293,7 @@ export default function SlippageTabs({ rawSlippage, setRawSlippage, deadline, se
             <TYPE.black fontWeight={400} fontSize={14} color={theme.text2}>
                 Use Archer Network
               </TYPE.black>
-              <QuestionHelper text="Use the Archer Network to privately execute transaction" />
+              <QuestionHelper text="Use the Archer Network to mine the transaction." />
             </RowFixed>
             <Toggle
               id="toggle-use-relay"
@@ -331,7 +312,7 @@ export default function SlippageTabs({ rawSlippage, setRawSlippage, deadline, se
             <TYPE.black fontWeight={400} fontSize={14} color={theme.text2}>
                 Private Transaction
               </TYPE.black>
-              <QuestionHelper text="Use the Archer Network to privately execute transaction" />
+              <QuestionHelper text="When using the Archer Network, do not broadcast the transaction to mempool. Requires signing arbitrary an transaction." />
             </RowFixed>
             <Toggle
               id="toggle-private"

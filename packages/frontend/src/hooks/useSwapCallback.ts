@@ -122,7 +122,6 @@ export function useSwapCallback(
   const { account, chainId, library } = useActiveWeb3React()
 
   const swapCalls = useSwapCallArguments(trade, allowedSlippage, recipientAddressOrName)
-  console.log(swapCalls)
 
   const addTransaction = useTransactionAdder()
 
@@ -235,7 +234,10 @@ export function useSwapCallback(
 
               addTransaction(response, {
                 summary: withVersion,
-                relay: relayDeadline ? { rawTransaction: response.raw, deadline: relayDeadline } : undefined,
+                relay: relayDeadline ? { 
+                  rawTransaction: response.raw,
+                  deadline: Math.floor(relayDeadline + (new Date().getTime() / 1000))
+                } : undefined,
               })
 
               return response.hash
@@ -340,7 +342,10 @@ export function useSwapCallback(
 
               addTransaction({ hash }, {
                 summary: withRecipient,
-                relay: relayDeadline ? { rawTransaction: signedTx, deadline: relayDeadline } : undefined,
+                relay: relayDeadline ? { 
+                  rawTransaction: signedTx,
+                  deadline: Math.floor(relayDeadline + (new Date().getTime() / 1000))
+                } : undefined,
               })
 
               return hash

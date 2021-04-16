@@ -16,7 +16,6 @@ import { YellowCard } from '../Card'
 
 import Row, { RowFixed } from '../Row'
 import Web3Status from '../Web3Status'
-import ClaimModal from '../claim/ClaimModal'
 import UnderlyingExchangeToggle from '../UnderlyingExchangeToggle'
 
 const HeaderFrame = styled.div`
@@ -223,7 +222,6 @@ export default function Header() {
 
   return (
     <HeaderFrame>
-      <ClaimModal />
       <HeaderRow>
         <Title href=".">
             <img src={ Logo } alt="logo" />

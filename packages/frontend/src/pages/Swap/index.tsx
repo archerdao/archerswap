@@ -37,7 +37,7 @@ import {
   useSwapActionHandlers,
   useSwapState
 } from '../../state/swap/hooks'
-import { useExpertModeManager, useUserSlippageTolerance, useUserSingleHopOnly, useUserUnderlyingExchangeAddresses, useUserUseRelay, useUserTransactionTTL } from '../../state/user/hooks'
+import { useExpertModeManager, useUserSlippageTolerance, useUserSingleHopOnly, useUserUnderlyingExchangeAddresses, useUserUseRelay, useUserTransactionTTL, useUserPrivate, useUserETHTip } from '../../state/user/hooks'
 import { LinkStyledButton, TYPE } from '../../theme'
 import { maxAmountSpend } from '../../utils/maxAmountSpend'
 import { computeTradePriceBreakdown, warningSeverity } from '../../utils/prices'
@@ -88,6 +88,7 @@ export default function Swap({ history }: RouteComponentProps) {
   // get custom setting values for user
   const [allowedSlippage] = useUserSlippageTolerance()
   const [ttl] = useUserTransactionTTL()
+  const [ethTip] = useUserETHTip()
 
   // swap state
   const { independentField, typedValue, recipient } = useSwapState()
@@ -108,7 +109,7 @@ export default function Swap({ history }: RouteComponentProps) {
   const { address: recipientAddress } = useENSAddress(recipient)
   const [useRelay] = useUserUseRelay()
   const doRelay = relay !== undefined && useRelay
-  const privateTx = true
+  const [privateTx] = useUserPrivate()
 
   const trade = showWrap ? undefined : v2Trade
 
@@ -319,6 +320,7 @@ export default function Swap({ history }: RouteComponentProps) {
             txHash={txHash}
             recipient={recipient}
             allowedSlippage={allowedSlippage}
+            ethTip={ethTip}
             onConfirm={handleSwap}
             swapErrorMessage={swapErrorMessage}
             onDismiss={handleConfirmDismiss}
@@ -401,6 +403,14 @@ export default function Swap({ history }: RouteComponentProps) {
                     </ClickableText>
                     <ClickableText fontWeight={500} fontSize={14} color={theme.text2} onClick={toggleSettings}>
                       {allowedSlippage / 100}%
+                    </ClickableText>
+                  </RowBetween>
+                  <RowBetween align="center">
+                    <ClickableText fontWeight={500} fontSize={14} color={theme.text2} onClick={toggleSettings}>
+                      Miner Bribe
+                    </ClickableText>
+                    <ClickableText fontWeight={500} fontSize={14} color={theme.text2} onClick={toggleSettings}>
+                      {CurrencyAmount.ether(ethTip).toExact()} ETH
                     </ClickableText>
                   </RowBetween>
                 </AutoColumn>

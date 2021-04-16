@@ -5,13 +5,12 @@ import { AbstractConnector } from '@web3-react/abstract-connector'
 import { fortmatic, injected, portis, walletconnect, walletlink } from '../connectors'
 
 export const ARCHER_ROUTER_ADDRESS: { [chainId in ChainId]?: string } = {
-  [ChainId.MAINNET]: '0x090D4613473dEE047c3f2706764f49E0821D256e',
+  [ChainId.MAINNET]: '0x87535b160E251167FB7abE239d2467d1127219E4',
   [ChainId.RINKEBY]: '0x21323080D91dD77c420be7775Bf5C33d21Dcc8Fc'
 }
 
 export const ARCHER_RELAY_URI: { [chainId in ChainId]?: string } = {
-  [ChainId.MAINNET]: 'https://api.archerdao.io/v1/bundle',
-  [ChainId.RINKEBY]: 'https://api.archerdao.io/v1/bundle'
+  [ChainId.MAINNET]: 'https://api.archerdao.io/v1/transaction'
 }
 
 export const UNISWAP_ROUTER_ADDRESS = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
@@ -23,10 +22,10 @@ export const SUSHIWAP_INIT_CODE_HASH = '0xe18a34eb0e04b04f7a0ac29a6e80748dca9631
 export const SUSHISWAP_RINKEBY_ROUTER_ADDRESS = '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506'
 export const SUSHISWAP_RINKEBY_FACTORY_ADDRESS = '0xc35DADB65012eC5796536bD9864eD8773aBc74C4'
 
-export const UNDERLYING_EXCHANGES: { [chainId in ChainId]?: {name: string, router: string, factory: string, initCodeHash: string}[] } = {
+export const UNDERLYING_EXCHANGES: { [chainId in ChainId]?: {name: string, router: string, factory: string, initCodeHash: string, pairExplorerPrefix?: string}[] } = {
   [ChainId.MAINNET]: [
-    {name: 'Uniswap', router: UNISWAP_ROUTER_ADDRESS, factory: UNISWAP_FACTORY_ADDRESS, initCodeHash: UNISWAP_INIT_CODE_HASH},
-    {name: 'Sushiswap', router: SUSHISWAP_ROUTER_ADDRESS, factory: SUSHISWAP_FACTORY_ADDRESS, initCodeHash: SUSHIWAP_INIT_CODE_HASH}
+    {name: 'Uniswap', router: UNISWAP_ROUTER_ADDRESS, factory: UNISWAP_FACTORY_ADDRESS, initCodeHash: UNISWAP_INIT_CODE_HASH, pairExplorerPrefix: 'https://info.uniswap.org/pair/'},
+    {name: 'Sushiswap', router: SUSHISWAP_ROUTER_ADDRESS, factory: SUSHISWAP_FACTORY_ADDRESS, initCodeHash: SUSHIWAP_INIT_CODE_HASH, pairExplorerPrefix: 'https://analytics.sushi.com/pairs/'}
   ],
   [ChainId.RINKEBY]: [
     {name: 'Uniswap', router: UNISWAP_ROUTER_ADDRESS, factory: UNISWAP_FACTORY_ADDRESS, initCodeHash: UNISWAP_INIT_CODE_HASH},

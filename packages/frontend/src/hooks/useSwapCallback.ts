@@ -3,7 +3,7 @@ import { Contract } from '@ethersproject/contracts'
 import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers'
 import { JSBI, Router, ArcherRouter, SwapParameters, Trade, CurrencyAmount, Percent, TradeType, ChainId } from '@archerswap/sdk'
 import { useMemo } from 'react'
-import { BIPS_BASE, INITIAL_ALLOWED_SLIPPAGE } from '../constants'
+import { ARCHER_RELAY_URI, BIPS_BASE, INITIAL_ALLOWED_SLIPPAGE } from '../constants'
 import { getTradeVersion } from '../data/V1'
 import { useTransactionAdder } from '../state/transactions/hooks'
 import { calculateGasMargin, getRouterContract, getUnderlyingExchangeRouterContract, isAddress, shortenAddress } from '../utils'
@@ -206,6 +206,30 @@ export function useSwapCallback(
           gasEstimate
         } = successfulEstimation
 
+        const postToRelay = (rawTransaction: string, deadline: number) => {
+          const relayURI = chainId ? ARCHER_RELAY_URI[chainId] : undefined
+          if (!relayURI)
+            throw new Error('Could not determine relay URI for this network')
+
+          const body = JSON.stringify({
+            method: 'archer_submitTx',
+            tx: rawTransaction,
+            deadline: deadline.toString()
+          })
+
+          fetch(relayURI, {
+              method: 'POST',
+              body,
+              headers: {
+                'Authorization': process.env.REACT_APP_ARCHER_API_KEY ?? '',
+                'Content-Type': 'application/json',
+              }
+            })
+            .then(res => res.json())
+            .then(json => console.log(json))
+            .catch(err => console.error(err))
+        }
+
         if (!signOnly) {
           return contract[methodName](...args, {
             from: account,
@@ -232,13 +256,19 @@ export function useSwapCallback(
               const withVersion =
                 tradeVersion === Version.v2 ? withRecipient : `${withRecipient} on ${(tradeVersion as any).toUpperCase()}`
 
+              console.log('response', response)
+              const relay = relayDeadline ? { 
+                rawTransaction: response.raw,
+                deadline: Math.floor(relayDeadline + (new Date().getTime() / 1000))
+              } : undefined
+
               addTransaction(response, {
                 summary: withVersion,
-                relay: relayDeadline ? { 
-                  rawTransaction: response.raw,
-                  deadline: Math.floor(relayDeadline + (new Date().getTime() / 1000))
-                } : undefined,
+                relay
               })
+
+              if (relay)
+                postToRelay(relay.rawTransaction, relay.deadline)
 
               return response.hash
             })
@@ -277,11 +307,11 @@ export function useSwapCallback(
 
               const common = new Common({ chain, hardfork: 'berlin' })
               const txParams = {
-                nonce: fullTx.nonce !== undefined ? ethers.utils.hexlify(fullTx.nonce) : undefined,
-                gasPrice: fullTx.gasPrice !== undefined ? ethers.utils.hexlify(fullTx.gasPrice) : undefined,
-                gasLimit: fullTx.gasLimit !== undefined ? ethers.utils.hexlify(fullTx.gasLimit) : undefined,
+                nonce: fullTx.nonce !== undefined ? ethers.utils.hexlify(fullTx.nonce, { hexPad: "left" }) : undefined,
+                gasPrice: fullTx.gasPrice !== undefined ? ethers.utils.hexlify(fullTx.gasPrice, { hexPad: "left" }) : undefined,
+                gasLimit: fullTx.gasLimit !== undefined ? ethers.utils.hexlify(fullTx.gasLimit, { hexPad: "left" }) : undefined,
                 to: fullTx.to,
-                value: fullTx.value !== undefined ? ethers.utils.hexlify(fullTx.value) : undefined,
+                value: fullTx.value !== undefined ? ethers.utils.hexlify(fullTx.value, { hexPad: "left" }) : undefined,
                 data: fullTx.data?.toString(),
                 chainId: fullTx.chainId !== undefined ? ethers.utils.hexlify(fullTx.chainId) : undefined,
                 type: fullTx.type !== undefined ? ethers.utils.hexlify(fullTx.type) : undefined
@@ -340,13 +370,18 @@ export function useSwapCallback(
                         : recipientAddressOrName
                     }`
 
+              const relay = relayDeadline ? { 
+                rawTransaction: signedTx,
+                deadline: Math.floor(relayDeadline + (new Date().getTime() / 1000))
+              } : undefined
+
               addTransaction({ hash }, {
                 summary: withRecipient,
-                relay: relayDeadline ? { 
-                  rawTransaction: signedTx,
-                  deadline: Math.floor(relayDeadline + (new Date().getTime() / 1000))
-                } : undefined,
+                relay
               })
+
+              if (relay)
+                postToRelay(relay.rawTransaction, relay.deadline)
 
               return hash
             })

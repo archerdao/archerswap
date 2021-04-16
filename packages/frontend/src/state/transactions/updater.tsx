@@ -5,9 +5,6 @@ import { useActiveWeb3React } from '../../hooks'
 import { useAddPopup, useBlockNumber } from '../application/hooks'
 import { AppDispatch, AppState } from '../index'
 import { checkedTransaction, finalizeTransaction } from './actions'
-import { ethers } from 'ethers'
-
-const EPHEMERAL_SIGNER = ethers.Wallet.createRandom()
 
 export function shouldCheck(
   lastBlockNumber: number,
@@ -30,32 +27,6 @@ export function shouldCheck(
     // otherwise every block
     return true
   }
-}
-
-function postBundle(rawTransaction: string, lastBlockNumber: number, relayURI: string) {
-  // as a wise man on the critically acclaimed hit TV series "MTV's Cribs" once said:
-  // "this is where the magic happens"
-
-  const bundle = {
-    jsonrpc: '2.0',
-    id: 1,
-    method: "eth_sendBundle",
-    params: [rawTransaction, ethers.utils.hexlify(lastBlockNumber + 1)]
-  }
-  const body = JSON.stringify(bundle)
-
-  EPHEMERAL_SIGNER.signMessage(ethers.utils.id(body))
-    .then(signature => fetch(relayURI, {
-      method: 'POST',
-      body,
-      headers: {
-        'X-Flashbots-Signature': signature,
-        'Content-Type': 'application/json',
-      }
-    }))
-    .then(res => res.json())
-    .then(json => console.log(json))
-    .catch(err => console.error(err))
 }
 
 export default function Updater(): null {
@@ -110,9 +81,6 @@ export default function Updater(): null {
                 hash
               )
             } else {
-              const relay = transactions[hash].relay
-              if (relayURI && relay)
-                postBundle(relay.rawTransaction, lastBlockNumber, relayURI)
               dispatch(checkedTransaction({ chainId, hash, blockNumber: lastBlockNumber }))
             }
           })

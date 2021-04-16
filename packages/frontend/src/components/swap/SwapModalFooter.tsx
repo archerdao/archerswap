@@ -1,4 +1,4 @@
-import { Trade } from '@archerswap/sdk'
+import { CurrencyAmount, Trade } from '@archerswap/sdk'
 import { TradeType } from '@archerswap/sdk'
 import React, { useContext, useMemo, useState } from 'react'
 import { Repeat } from 'react-feather'
@@ -23,11 +23,13 @@ export default function SwapModalFooter({
   trade,
   onConfirm,
   allowedSlippage,
+  ethTip,
   swapErrorMessage,
   disabledConfirm
 }: {
   trade: Trade
   allowedSlippage: number
+  ethTip: string
   onConfirm: () => void
   swapErrorMessage: string | undefined
   disabledConfirm: boolean
@@ -105,6 +107,17 @@ export default function SwapModalFooter({
           </RowFixed>
           <TYPE.black fontSize={14}>
             {realizedLPFee ? realizedLPFee?.toSignificant(6) + ' ' + trade.inputAmount.currency.symbol : '-'}
+          </TYPE.black>
+        </RowBetween>
+        <RowBetween>
+          <RowFixed>
+            <TYPE.black fontSize={14} fontWeight={400} color={theme.text2}>
+              Miner Bribe
+            </TYPE.black>
+            <QuestionHelper text="Bribe in ETH to pay to miner to include your transaction if using the Archer Network. Must be greater than competitive gas cost or transaction will not be mined." />
+          </RowFixed>
+          <TYPE.black fontSize={14}>
+            {CurrencyAmount.ether(ethTip).toExact()} ETH
           </TYPE.black>
         </RowBetween>
       </AutoColumn>

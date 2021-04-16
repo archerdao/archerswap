@@ -28,6 +28,7 @@ export default function ConfirmSwapModal({
   originalTrade,
   onAcceptChanges,
   allowedSlippage,
+  ethTip,
   onConfirm,
   onDismiss,
   recipient,
@@ -43,6 +44,7 @@ export default function ConfirmSwapModal({
   txHash: string | undefined
   recipient: string | null
   allowedSlippage: number
+  ethTip: string
   onAcceptChanges: () => void
   onConfirm: () => void
   swapErrorMessage: string | undefined
@@ -73,9 +75,10 @@ export default function ConfirmSwapModal({
         disabledConfirm={showAcceptChanges}
         swapErrorMessage={swapErrorMessage}
         allowedSlippage={allowedSlippage}
+        ethTip={ethTip}
       />
     ) : null
-  }, [allowedSlippage, onConfirm, showAcceptChanges, swapErrorMessage, trade])
+  }, [allowedSlippage, onConfirm, showAcceptChanges, swapErrorMessage, trade, ethTip])
 
   // text to show while loading
   const pendingText = `Swapping ${trade?.inputAmount?.toSignificant(6)} ${

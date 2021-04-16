@@ -320,7 +320,7 @@ export default function Swap({ history }: RouteComponentProps) {
             txHash={txHash}
             recipient={recipient}
             allowedSlippage={allowedSlippage}
-            ethTip={ethTip}
+            ethTip={doRelay ? ethTip : undefined}
             onConfirm={handleSwap}
             swapErrorMessage={swapErrorMessage}
             onDismiss={handleConfirmDismiss}
@@ -405,6 +405,7 @@ export default function Swap({ history }: RouteComponentProps) {
                       {allowedSlippage / 100}%
                     </ClickableText>
                   </RowBetween>
+                  { doRelay &&
                   <RowBetween align="center">
                     <ClickableText fontWeight={500} fontSize={14} color={theme.text2} onClick={toggleSettings}>
                       Miner Bribe
@@ -413,6 +414,7 @@ export default function Swap({ history }: RouteComponentProps) {
                       {CurrencyAmount.ether(ethTip).toExact()} ETH
                     </ClickableText>
                   </RowBetween>
+                  }
                 </AutoColumn>
               </Card>
             )}

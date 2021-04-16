@@ -11,6 +11,7 @@ import QuestionHelper from '../QuestionHelper'
 import { RowBetween, RowFixed } from '../Row'
 import FormattedPriceImpact from './FormattedPriceImpact'
 import SwapRoute from './SwapRoute'
+import { useUserUnderlyingExchangeAddresses } from '../../state/user/hooks'
 
 const InfoLink = styled(ExternalLink)`
   width: 100%;
@@ -82,8 +83,10 @@ export function AdvancedSwapDetails({ trade }: AdvancedSwapDetailsProps) {
   const theme = useContext(ThemeContext)
 
   const [allowedSlippage] = useUserSlippageTolerance()
+  const exchange = useUserUnderlyingExchangeAddresses()
 
   const showRoute = Boolean(trade && trade.route.path.length > 2)
+  const pairExplorerPrefix = exchange?.pairExplorerPrefix ?? 'https://info.uniswap.org/pair/'
 
   return (
     <AutoColumn gap="0px">
@@ -106,7 +109,7 @@ export function AdvancedSwapDetails({ trade }: AdvancedSwapDetailsProps) {
           {!showRoute && (
             <AutoColumn style={{ padding: '12px 16px 0 16px' }}>
               <InfoLink
-                href={'https://info.uniswap.org/pair/' + trade.route.pairs[0].liquidityToken.address}
+                href={pairExplorerPrefix + trade.route.pairs[0].liquidityToken.address}
                 target="_blank"
               >
                 View pair analytics ↗

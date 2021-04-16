@@ -29,7 +29,7 @@ export default function SwapModalFooter({
 }: {
   trade: Trade
   allowedSlippage: number
-  ethTip: string
+  ethTip?: string
   onConfirm: () => void
   swapErrorMessage: string | undefined
   disabledConfirm: boolean
@@ -109,6 +109,7 @@ export default function SwapModalFooter({
             {realizedLPFee ? realizedLPFee?.toSignificant(6) + ' ' + trade.inputAmount.currency.symbol : '-'}
           </TYPE.black>
         </RowBetween>
+        { ethTip && 
         <RowBetween>
           <RowFixed>
             <TYPE.black fontSize={14} fontWeight={400} color={theme.text2}>
@@ -120,6 +121,7 @@ export default function SwapModalFooter({
             {CurrencyAmount.ether(ethTip).toExact()} ETH
           </TYPE.black>
         </RowBetween>
+        }
       </AutoColumn>
 
       <AutoRow>

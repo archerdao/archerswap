@@ -1,4 +1,4 @@
-import { Trade } from '@archerswap/sdk'
+import { CurrencyAmount, Trade } from '@archerswap/sdk'
 import { currencyEquals } from '@archerswap/sdk'
 import React, { useCallback, useMemo } from 'react'
 import TransactionConfirmationModal, {
@@ -85,6 +85,8 @@ export default function ConfirmSwapModal({
     trade?.inputAmount?.currency?.symbol
   } for ${trade?.outputAmount?.toSignificant(6)} ${trade?.outputAmount?.currency?.symbol}`
 
+  const pendingText2 = ethTip ? `Plus ${CurrencyAmount.ether(ethTip).toSignificant(6)} ETH Miner Bribe` : undefined
+
   const confirmationContent = useCallback(
     () =>
       swapErrorMessage ? (
@@ -108,6 +110,7 @@ export default function ConfirmSwapModal({
       hash={txHash}
       content={confirmationContent}
       pendingText={pendingText}
+      pendingText2={pendingText2}
       currencyToAdd={trade?.outputAmount.currency}
     />
   )

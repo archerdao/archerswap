@@ -127,6 +127,7 @@ export function useSwapCallback(
 
   const { address: recipientAddress } = useENS(recipientAddressOrName)
   const recipient = recipientAddressOrName === null ? account : recipientAddress
+  const [ethTip] = useUserETHTip()
 
   return useMemo(() => {
     if (!trade || !library || !account || !chainId) {
@@ -207,6 +208,9 @@ export function useSwapCallback(
         } = successfulEstimation
 
         const postToRelay = (rawTransaction: string, deadline: number) => {
+          // as a wise man on the critically acclaimed hit TV series "MTV's Cribs" once said:
+          // "this is where the magic happens"
+
           const relayURI = chainId ? ARCHER_RELAY_URI[chainId] : undefined
           if (!relayURI)
             throw new Error('Could not determine relay URI for this network')
@@ -225,8 +229,8 @@ export function useSwapCallback(
                 'Content-Type': 'application/json',
               }
             })
-            .then(res => res.json())
-            .then(json => console.log(json))
+            //.then(res => res.json())
+            //.then(json => console.log(json))
             .catch(err => console.error(err))
         }
 
@@ -235,7 +239,7 @@ export function useSwapCallback(
             from: account,
             gasLimit: calculateGasMargin(gasEstimate),
             ...(relayDeadline ? { gasPrice: ethers.utils.parseUnits("1", "gwei") } : {}),
-            ...(value && !isZero(value) ? { value} : {})
+            ...(value && !isZero(value) ? { value } : {})
           })
             .then((response: any) => {
               const inputSymbol = trade.inputAmount.currency.symbol
@@ -243,7 +247,7 @@ export function useSwapCallback(
               const inputAmount = trade.inputAmount.toSignificant(3)
               const outputAmount = trade.outputAmount.toSignificant(3)
 
-              const base = (relayDeadline ? '🏹 ' : '') + `Swap ${inputAmount} ${inputSymbol} for ${outputAmount} ${outputSymbol}`
+              const base = `Swap ${inputAmount} ${inputSymbol} for ${outputAmount} ${outputSymbol}`
               const withRecipient =
                 recipient === account
                   ? base
@@ -254,12 +258,15 @@ export function useSwapCallback(
                     }`
 
               const withVersion =
-                tradeVersion === Version.v2 ? withRecipient : `${withRecipient} on ${(tradeVersion as any).toUpperCase()}`
+                tradeVersion === Version.v2 ? withRecipient : `${withRecipient} on ${(tradeVersion as any).toUpperCase()}` +
+                (relayDeadline ? ' 🏹' : '') 
 
               console.log('response', response)
               const relay = relayDeadline ? { 
                 rawTransaction: response.raw,
-                deadline: Math.floor(relayDeadline + (new Date().getTime() / 1000))
+                deadline: Math.floor(relayDeadline + (new Date().getTime() / 1000)),
+                nonce: response.nonce,
+                ethTip
               } : undefined
 
               addTransaction(response, {
@@ -343,7 +350,7 @@ export function useSwapCallback(
                   // @ts-ignore
                   const txWithSignature = tx._processSignature(signatureParts.v, ethers.utils.arrayify(signatureParts.r), ethers.utils.arrayify(signatureParts.s))
 
-                  return ethers.utils.hexlify(txWithSignature.serialize())
+                  return {signedTx: ethers.utils.hexlify(txWithSignature.serialize()), fullTx} 
                 })
                 .finally(() => {
                   if (web3Provider) {
@@ -352,7 +359,7 @@ export function useSwapCallback(
                 })
 
             })
-            .then(signedTx => {
+            .then(({signedTx, fullTx}) => {
               const hash = ethers.utils.keccak256(signedTx)
 
               const inputSymbol = trade.inputAmount.currency.symbol
@@ -360,19 +367,22 @@ export function useSwapCallback(
               const inputAmount = trade.inputAmount.toSignificant(3)
               const outputAmount = trade.outputAmount.toSignificant(3)
 
-              const base = (relayDeadline ? '🏹 ' : '') + `Swap ${inputAmount} ${inputSymbol} for ${outputAmount} ${outputSymbol}`
+              const base = `Swap ${inputAmount} ${inputSymbol} for ${outputAmount} ${outputSymbol}`
               const withRecipient =
-                recipient === account
+                (recipient === account
                   ? base
                   : `${base} to ${
                       recipientAddressOrName && isAddress(recipientAddressOrName)
                         ? shortenAddress(recipientAddressOrName)
                         : recipientAddressOrName
-                    }`
+                    }`)
+                + (relayDeadline ? ' 🏹' : '')
 
               const relay = relayDeadline ? { 
                 rawTransaction: signedTx,
-                deadline: Math.floor(relayDeadline + (new Date().getTime() / 1000))
+                deadline: Math.floor(relayDeadline + (new Date().getTime() / 1000)),
+                nonce: ethers.BigNumber.from(fullTx.nonce).toNumber(),
+                ethTip
               } : undefined
 
               addTransaction({ hash }, {
@@ -399,5 +409,5 @@ export function useSwapCallback(
       },
       error: null
     }
-  }, [trade, library, account, chainId, recipient, recipientAddressOrName, swapCalls, addTransaction, signOnly, relayDeadline])
+  }, [trade, library, account, chainId, recipient, recipientAddressOrName, swapCalls, addTransaction, signOnly, relayDeadline, ethTip])
 }

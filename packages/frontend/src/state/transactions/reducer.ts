@@ -19,7 +19,7 @@ export interface TransactionDetails {
   addedTime: number
   confirmedTime?: number
   from: string
-  relay?: { deadline: number, rawTransaction: string }
+  relay?: { deadline: number, rawTransaction: string, nonce: number, ethTip: string }
 }
 
 export interface TransactionState {

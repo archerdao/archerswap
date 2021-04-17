@@ -19,7 +19,7 @@ export const addTransaction = createAction<{
   approval?: { tokenAddress: string; spender: string }
   claim?: { recipient: string }
   summary?: string
-  relay?: {rawTransaction: string, deadline: number}
+  relay?: { rawTransaction: string, deadline: number, nonce: number, ethTip: string }
 }>('transactions/addTransaction')
 export const clearAllTransactions = createAction<{ chainId: ChainId }>('transactions/clearAllTransactions')
 export const finalizeTransaction = createAction<{

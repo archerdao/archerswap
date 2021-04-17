@@ -38,7 +38,7 @@ const StyledLogo = styled.img`
   margin-left: 6px;
 `
 
-function ConfirmationPendingContent({ onDismiss, pendingText }: { onDismiss: () => void; pendingText: string }) {
+function ConfirmationPendingContent({ onDismiss, pendingText, pendingText2}: { onDismiss: () => void; pendingText: string, pendingText2?: string }) {
   return (
     <Wrapper>
       <Section>
@@ -57,6 +57,11 @@ function ConfirmationPendingContent({ onDismiss, pendingText }: { onDismiss: () 
             <Text fontWeight={600} fontSize={14} color="" textAlign="center">
               {pendingText}
             </Text>
+            {pendingText2 && 
+            <Text fontWeight={600} fontSize={14} color="" textAlign="center">
+              {pendingText2}
+            </Text>
+            }
           </AutoColumn>
           <Text fontSize={12} color="#565A69" textAlign="center">
             Confirm this transaction in your wallet
@@ -189,6 +194,7 @@ interface ConfirmationModalProps {
   content: () => React.ReactNode
   attemptingTxn: boolean
   pendingText: string
+  pendingText2?: string
   currencyToAdd?: Currency | undefined
 }
 
@@ -198,6 +204,7 @@ export default function TransactionConfirmationModal({
   attemptingTxn,
   hash,
   pendingText,
+  pendingText2,
   content,
   currencyToAdd
 }: ConfirmationModalProps) {
@@ -209,7 +216,7 @@ export default function TransactionConfirmationModal({
   return (
     <Modal isOpen={isOpen} onDismiss={onDismiss} maxHeight={90}>
       {attemptingTxn ? (
-        <ConfirmationPendingContent onDismiss={onDismiss} pendingText={pendingText} />
+        <ConfirmationPendingContent onDismiss={onDismiss} pendingText={pendingText} pendingText2={pendingText2} />
       ) : hash ? (
         <TransactionSubmittedContent
           chainId={chainId}

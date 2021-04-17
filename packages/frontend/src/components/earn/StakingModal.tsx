@@ -21,7 +21,7 @@ import { wrappedCurrencyAmount } from '../../utils/wrappedCurrency'
 import { TransactionResponse } from '@ethersproject/providers'
 import { useTransactionAdder } from '../../state/transactions/hooks'
 import { LoadingView, SubmittedView } from '../ModalViews'
-import { useUserUnderlyingExchangeAddresses } from 'state/user/hooks'
+import { useUserUnderlyingExchangeAddresses } from '../../state/user/hooks'
 
 const HypotheticalRewardRate = styled.div<{ dim: boolean }>`
   display: flex;

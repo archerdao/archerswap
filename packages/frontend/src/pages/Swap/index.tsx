@@ -408,7 +408,7 @@ export default function Swap({ history }: RouteComponentProps) {
                   { doRelay &&
                   <RowBetween align="center">
                     <ClickableText fontWeight={500} fontSize={14} color={theme.text2} onClick={toggleSettings}>
-                      Miner Bribe
+                      Miner Tip
                     </ClickableText>
                     <ClickableText fontWeight={500} fontSize={14} color={theme.text2} onClick={toggleSettings}>
                       {CurrencyAmount.ether(ethTip).toExact()} ETH

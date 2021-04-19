@@ -126,7 +126,7 @@ export default function Transaction({ hash }: { hash: string }) {
       </TransactionState>
       {relay && 
       <TransactionStateNoLink>
-        {`...#${relay.nonce} - Bribe ${CurrencyAmount.ether(relay.ethTip).toSignificant(6)} ETH`}
+        {`...#${relay.nonce} - Tip ${CurrencyAmount.ether(relay.ethTip).toSignificant(6)} ETH`}
         {pending &&
           <TransactionCancel onClick={cancelPending}>Cancel</TransactionCancel>
         }

@@ -6,7 +6,7 @@ require('hardhat-abi-exporter');
 require('hardhat-log-remover');
 require("hardhat-gas-reporter");
 
-const RPC_URL = process.env.VUE_APP_RPC_URL || "http://localhost:8545"
+const RPC_URL = process.env.REACT_APP_NETWORK_URL || "http://localhost:8545"
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY
 const DEPLOYER_ADDRESS = process.env.DEPLOYER_ADDRESS
 const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY

@@ -397,14 +397,6 @@
             "decimals": 18,
             "address": "0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e",
             "logoURI": "https://gemini.com/images/currencies/icons/default/yfi.svg"
-        },
-        {
-            "name": "0xProtocol",
-            "chainId": 1,
-            "symbol": "ZRX",
-            "decimals": 18,
-            "address": "0xE41d2489571d322189246DaFA5ebDe1F4699F498",
-            "logoURI": "https://gemini.com/images/currencies/icons/default/zrx.svg"
         }
     ]
 }

@@ -312,7 +312,7 @@ export default function SlippageTabs({ rawSlippage, setRawSlippage, deadline, se
             <TYPE.black fontWeight={400} fontSize={14} color={theme.text2}>
                 Private Transaction
               </TYPE.black>
-              <QuestionHelper text="When using the Archer Network, do not broadcast the transaction to mempool. Requires signing arbitrary an transaction." />
+              <QuestionHelper text="When using the Archer Network, do not broadcast the transaction to mempool. Requires signing raw transaction." />
             </RowFixed>
             <Toggle
               id="toggle-private"

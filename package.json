@@ -7,6 +7,7 @@
   "author": "Chris Piatt (@chpiatt)",
   "license": "MIT",
   "private": true,
+  "homepage": ".",
   "scripts": {
     "chain": "yarn workspace @archerswap/smart-contracts chain",
     "compile": "yarn workspace @archerswap/smart-contracts compile",

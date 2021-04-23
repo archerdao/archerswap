@@ -28,7 +28,11 @@
             "symbol": "1INCH",
             "decimals": 18,
             "address": "0x111111111117dc0aa78b770fa6a738034120c302",
-            "logoURI": "https://gemini.com/images/currencies/icons/default/1inch.svg"
+            "logoURI": "https://gemini.com/images/currencies/icons/default/1inch.svg",
+            "extensions": [{
+                "implements_permit": true,
+                "permit_signature": "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
+            }]
         },
         {
             "name": "AaveToken",
@@ -36,7 +40,11 @@
             "symbol": "AAVE",
             "decimals": 18,
             "address": "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9",
-            "logoURI": "https://gemini.com/images/currencies/icons/default/aave.svg"
+            "logoURI": "https://gemini.com/images/currencies/icons/default/aave.svg",
+            "extensions": [{
+                "implements_permit": true,
+                "permit_signature": "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
+            }]
         },
         {
             "name": "Amp",
@@ -48,11 +56,15 @@
         },
         {
             "name": "Aragon Network Token",
-            "address": "0x960b236A07cf122663c4303350609A66A7B288C0",
-            "symbol": "ANT",
+            "address": "0xa117000000f279d81a1d3cc75430faa017fa5a2e",
+            "symbol": "ANTv2",
             "decimals": 18,
             "chainId": 1,
-            "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x960b236A07cf122663c4303350609A66A7B288C0/logo.png"
+            "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x960b236A07cf122663c4303350609A66A7B288C0/logo.png",
+            "extensions": [{
+                "implements_permit": true,
+                "permit_signature": "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
+            }]
         },
         {
             "name": "Archer DAO Governance Token",
@@ -60,7 +72,11 @@
             "symbol": "ARCH",
             "decimals": 18,
             "address": "0x1F3f9D3068568F8040775be2e8C03C103C61f3aF",
-            "logoURI": "https://assets.coingecko.com/coins/images/13188/thumb/archer_logo.png?1606097487"
+            "logoURI": "https://assets.coingecko.com/coins/images/13188/thumb/archer_logo.png?1606097487",
+            "extensions": [{
+                "implements_permit": true,
+                "permit_signature": "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
+            }]
         },
         {
             "name": "Balancer",
@@ -68,10 +84,14 @@
             "symbol": "BAL",
             "decimals": 18,
             "address": "0xba100000625a3754423978a60c9317c58a424e3D",
-            "logoURI": "https://gemini.com/images/currencies/icons/default/bal.svg"
+            "logoURI": "https://gemini.com/images/currencies/icons/default/bal.svg",
+            "extensions": [{
+                "implements_permit": true,
+                "permit_signature": "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
+            }]
         },
         {
-            "name": "BasicAttentionToken",
+            "name": "Basic Attention Token",
             "chainId": 1,
             "symbol": "BAT",
             "decimals": 18,
@@ -124,7 +144,11 @@
             "symbol": "DAI",
             "decimals": 18,
             "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
-            "logoURI": "https://gemini.com/images/currencies/icons/default/dai.svg"
+            "logoURI": "https://gemini.com/images/currencies/icons/default/dai.svg",
+            "extensions": [{
+                "implements_permit": true,
+                "permit_signature": "Permit(address holder,address spender,uint256 nonce,uint256 expiry,bool allowed)"
+            }]
         },
         {
             "chainId": 1,
@@ -148,10 +172,14 @@
             "symbol": "GRT",
             "decimals": 18,
             "address": "0xc944e90c64b2c07662a292be6244bdf05cda44a7",
-            "logoURI": "https://gemini.com/images/currencies/icons/default/grt.svg"
+            "logoURI": "https://gemini.com/images/currencies/icons/default/grt.svg",
+            "extensions": [{
+                "implements_permit": true,
+                "permit_signature": "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
+            }]
         },
         {
-            "name": "GeminiDollar",
+            "name": "Gemini Dollar",
             "chainId": 1,
             "symbol": "GUSD",
             "decimals": 2,
@@ -167,11 +195,11 @@
             "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x6810e776880C02933D47DB1b9fc05908e5386b96/logo.png"
         },
         {
-            "name": "KyberNetwork",
+            "name": "Kyber Network",
             "chainId": 1,
             "symbol": "KNC",
             "decimals": 18,
-            "address": "0xdd974D5C2e2928deA5F71b9825b8b646686BD200",
+            "address": "0xdeFA4e8a7bcBA345F687a2f1456F5Edd9CE97202",
             "logoURI": "https://gemini.com/images/currencies/icons/default/knc.svg"
         },
         {
@@ -208,7 +236,7 @@
         },
         {
             "name": "Loom Network",
-            "address": "0xA4e8C3Ec456107eA67d3075bF9e3DF3A75823DB0",
+            "address": "0x42476F744292107e34519F9c357927074Ea3F75D",
             "symbol": "LOOM",
             "decimals": 18,
             "chainId": 1,
@@ -247,7 +275,7 @@
             "logoURI": "https://gemini.com/images/currencies/icons/default/oxt.svg"
         },
         {
-            "name": "PaxosGold",
+            "name": "Paxos Gold",
             "chainId": 1,
             "symbol": "PAXG",
             "decimals": 18,
@@ -260,7 +288,11 @@
             "name": "renBTC",
             "symbol": "RENBTC",
             "decimals": 8,
-            "logoURI": "https://assets.coingecko.com/coins/images/11370/thumb/renBTC.png?1589985711"
+            "logoURI": "https://assets.coingecko.com/coins/images/11370/thumb/renBTC.png?1589985711",
+            "extensions": [{
+                "implements_permit": true,
+                "permit_signature": "Permit(address holder,address spender,uint256 nonce,uint256 expiry,bool allowed)"
+            }]
         },
         {
             "name": "Republic",
@@ -284,7 +316,11 @@
             "symbol": "REPv2",
             "decimals": 18,
             "chainId": 1,
-            "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x221657776846890989a759BA2973e427DfF5C9bB/logo.png"
+            "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x221657776846890989a759BA2973e427DfF5C9bB/logo.png",
+            "extensions": [{
+                "implements_permit": true,
+                "permit_signature": "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
+            }]
         },
         {
             "name": "Sandbox",
@@ -364,15 +400,23 @@
             "symbol": "UNI",
             "decimals": 18,
             "address": "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
-            "logoURI": "https://gemini.com/images/currencies/icons/default/uni.svg"
+            "logoURI": "https://gemini.com/images/currencies/icons/default/uni.svg",
+            "extensions": [{
+                "implements_permit": true,
+                "permit_signature": "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
+            }]
         },
         {
-            "name": "USDCoin",
+            "name": "USD Coin",
             "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
             "symbol": "USDC",
             "decimals": 6,
             "chainId": 1,
-            "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png"
+            "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png",
+            "extensions": [{
+                "implements_permit": true,
+                "permit_signature": "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
+            }]
         },
         {
             "name": "Wrapped BTC",

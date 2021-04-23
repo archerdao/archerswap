@@ -19,13 +19,27 @@ export interface TagInfo extends TagDetails {
 export class WrappedTokenInfo extends Token {
   public readonly tokenInfo: TokenInfo
   public readonly tags: TagInfo[]
-  constructor(tokenInfo: TokenInfo, tags: TagInfo[]) {
-    super(tokenInfo.chainId, tokenInfo.address, tokenInfo.decimals, tokenInfo.symbol, tokenInfo.name)
+  public readonly trusted: boolean
+  constructor(tokenInfo: TokenInfo, tags: TagInfo[], trusted: boolean) {
+    super(tokenInfo.chainId, tokenInfo.address, tokenInfo.decimals, tokenInfo.symbol, tokenInfo.name, tokenInfo.extensions)
     this.tokenInfo = tokenInfo
     this.tags = tags
+    this.trusted = trusted
   }
   public get logoURI(): string | undefined {
     return this.tokenInfo.logoURI
+  }
+
+  public get implementsPermit(): boolean {
+    if(
+      this.trusted &&
+      this.tokenInfo.extensions &&
+      this.tokenInfo.extensions.implements_permit &&
+      this.tokenInfo.extensions.permit_signature === "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
+    ) {
+      return true
+    }
+    return false
   }
 }
 
@@ -47,7 +61,7 @@ const EMPTY_LIST: TokenAddressMap = {
 const listCache: WeakMap<TokenList, TokenAddressMap> | null =
   typeof WeakMap !== 'undefined' ? new WeakMap<TokenList, TokenAddressMap>() : null
 
-export function listToTokenMap(list: TokenList): TokenAddressMap {
+export function listToTokenMap(list: TokenList, trusted: boolean): TokenAddressMap {
   const result = listCache?.get(list)
   if (result) return result
 
@@ -60,7 +74,7 @@ export function listToTokenMap(list: TokenList): TokenAddressMap {
             return { ...list.tags[tagId], id: tagId }
           })
           ?.filter((x): x is TagInfo => Boolean(x)) ?? []
-      const token = new WrappedTokenInfo(tokenInfo, tags)
+      const token = new WrappedTokenInfo(tokenInfo, tags, trusted)
       if (tokenMap[token.chainId as ChainId][token.address] !== undefined) throw Error('Duplicate tokens.')
       return {
         ...tokenMap,
@@ -114,9 +128,10 @@ function useCombinedTokenMapFromUrls(urls: string[] | undefined): TokenAddressMa
         .sort(sortByListPriority)
         .reduce((allTokens, currentUrl) => {
           const current = lists[currentUrl]?.current
+          // TODO: If list is default list, pass true as trusted bool
           if (!current) return allTokens
           try {
-            const newTokens = Object.assign(listToTokenMap(current))
+            const newTokens = Object.assign(listToTokenMap(current, false))
             return combineMaps(allTokens, newTokens)
           } catch (error) {
             console.error('Could not show token list due to error', error)
@@ -144,7 +159,7 @@ export function useInactiveListUrls(): string[] {
 export function useCombinedActiveList(): TokenAddressMap {
   const activeListUrls = useActiveListUrls()
   const activeTokens = useCombinedTokenMapFromUrls(activeListUrls)
-  const defaultTokenMap = listToTokenMap(DEFAULT_TOKEN_LIST)
+  const defaultTokenMap = listToTokenMap(DEFAULT_TOKEN_LIST, true)
   return combineMaps(activeTokens, defaultTokenMap)
 }
 
@@ -156,13 +171,13 @@ export function useCombinedInactiveList(): TokenAddressMap {
 
 // used to hide warnings on import for default tokens
 export function useDefaultTokenList(): TokenAddressMap {
-  return listToTokenMap(DEFAULT_TOKEN_LIST)
+  return listToTokenMap(DEFAULT_TOKEN_LIST, true)
 }
 
 // list of tokens not supported on interface, used to show warnings and prevent swaps and adds
 export function useUnsupportedTokenList(): TokenAddressMap {
   // get hard coded unsupported tokens
-  const localUnsupportedListMap = listToTokenMap(UNSUPPORTED_TOKEN_LIST)
+  const localUnsupportedListMap = listToTokenMap(UNSUPPORTED_TOKEN_LIST, false)
 
   // get any loaded unsupported tokens
   const loadedUnsupportedListMap = useCombinedTokenMapFromUrls(UNSUPPORTED_LIST_URLS)

@@ -21,7 +21,7 @@ export class WrappedTokenInfo extends Token {
   public readonly tags: TagInfo[]
   public readonly trusted: boolean
   constructor(tokenInfo: TokenInfo, tags: TagInfo[], trusted: boolean) {
-    super(tokenInfo.chainId, tokenInfo.address, tokenInfo.decimals, tokenInfo.symbol, tokenInfo.name, tokenInfo.extensions)
+    super(tokenInfo.chainId, tokenInfo.address, tokenInfo.decimals, tokenInfo.symbol, tokenInfo.name)
     this.tokenInfo = tokenInfo
     this.tags = tags
     this.trusted = trusted

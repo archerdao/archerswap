@@ -1,5 +1,6 @@
 import { JSBI } from '@archerswap/sdk'
 import { ChainId, Percent, Token, WETH } from '@archerswap/sdk'
+import { BigNumber } from '@ethersproject/bignumber'
 import { AbstractConnector } from '@web3-react/abstract-connector'
 
 import { fortmatic, injected, portis, walletconnect, walletlink } from '../connectors'
@@ -210,6 +211,8 @@ export const INITIAL_ALLOWED_SLIPPAGE = 0
 export const DEFAULT_DEADLINE_FROM_NOW = 60 * 20
 // default tip amount, 0.05 ETH
 export const DEFAULT_ETH_TIP: JSBI = JSBI.multiply(JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(16)), JSBI.BigInt(5))
+// default gas price to use if all other sources unavailable
+export const DEFAULT_GAS_PRICE: BigNumber = BigNumber.from(114000000000)
 
 // used for rewards deadlines
 export const BIG_INT_SECONDS_IN_WEEK = JSBI.BigInt(60 * 60 * 24 * 7)
@@ -228,8 +231,6 @@ export const PRICE_IMPACT_WITHOUT_FEE_CONFIRM_MIN: Percent = new Percent(JSBI.Bi
 // for non expert mode disable swaps above this
 export const BLOCKED_PRICE_IMPACT_NON_EXPERT: Percent = new Percent(JSBI.BigInt(1500), BIPS_BASE) // 15%
 
-// used to ensure the user doesn't send so much ETH so they end up with <.01
-export const MIN_ETH: JSBI = JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(16)) // .01 ETH
 export const BETTER_TRADE_LESS_HOPS_THRESHOLD = new Percent(JSBI.BigInt(50), JSBI.BigInt(10000))
 
 export const ZERO_PERCENT = new Percent('0')

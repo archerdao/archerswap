@@ -6,6 +6,7 @@ import { ParsedQs } from 'qs'
 import { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useActiveWeb3React } from '../../hooks'
+import { useBlockNumber } from '../../state/application/hooks'
 import { useCurrency } from '../../hooks/Tokens'
 import { useTradeExactIn, useTradeExactOut } from '../../hooks/Trades'
 import useParsedQueryString from '../../hooks/useParsedQueryString'
@@ -14,8 +15,13 @@ import { AppDispatch, AppState } from '../index'
 import { useCurrencyBalances } from '../wallet/hooks'
 import { Field, replaceSwapState, selectCurrency, setRecipient, switchCurrencies, typeInput } from './actions'
 import { SwapState } from './reducer'
-import { useUserSlippageTolerance } from '../user/hooks'
+import { useUserSlippageTolerance, useUserGasPrice, useUserETHTip, useUserTipManualOverride } from '../user/hooks'
+import { useSwapCallArguments, EstimatedSwapCall, SuccessfulCall } from '../../hooks/useSwapCallback'
 import { computeSlippageAdjustedAmounts } from '../../utils/prices'
+import { DEFAULT_ETH_TIP } from '../../constants'
+import getGasPrice from '../../utils/getGasPrice'
+import isZero from '../../utils/isZero'
+
 
 export function useSwapState(): AppState['swap'] {
   return useSelector<AppState, AppState['swap']>(state => state.swap)
@@ -192,6 +198,80 @@ export function useDerivedSwapInfo(): {
   if (balanceIn && amountIn && balanceIn.lessThan(amountIn)) {
     inputError = 'Insufficient ' + amountIn.currency.symbol + ' balance'
   }
+
+  const swapCalls = useSwapCallArguments(v2Trade as Trade, allowedSlippage, to)
+
+  const [, setUserETHTip] = useUserETHTip()
+  const [userGasPrice, setUserGasPrice] = useUserGasPrice()
+  const [userTipManualOverride] = useUserTipManualOverride()
+  const blockNumber = useBlockNumber()
+  useEffect(() => {
+    async function getCurrentGasPrice() {
+      const gasPrice = await getGasPrice()
+      setUserGasPrice(gasPrice.toString())
+    }
+    getCurrentGasPrice()
+  }, [blockNumber, userTipManualOverride, setUserGasPrice])
+
+  useEffect(() => {
+    async function calculateSuggestedEthTip() {
+      const estimatedCalls: EstimatedSwapCall[] = await Promise.all(
+        swapCalls.map(call => {
+          const {
+            parameters: { methodName, args, value },
+            contract
+          } = call
+          const options = !value || isZero(value) ? {} : { value }
+  
+          return contract.estimateGas[methodName](...args, options)
+            .then(gasEstimate => {
+              return {
+                call,
+                gasEstimate
+              }
+            })
+            .catch(gasError => {
+              console.debug('Gas estimate failed, trying eth_call to extract error', call)
+  
+              return contract.callStatic[methodName](...args, options)
+                .then(result => {
+                  console.debug('Unexpected successful call after failed estimate gas', call, gasError, result)
+                  return { call, error: new Error('Unexpected issue with estimating the gas. Please try again.') }
+                })
+                .catch(callError => {
+                  console.debug('Call threw error', call, callError)
+                  let errorMessage: string
+                  switch (callError.reason) {
+                    case 'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT':
+                    case 'UniswapV2Router: EXCESSIVE_INPUT_AMOUNT':
+                      errorMessage =
+                        'This transaction will not succeed either due to price movement or fee on transfer. Try increasing your slippage tolerance.'
+                      break
+                    default:
+                      errorMessage = `The transaction cannot succeed due to error: ${callError.reason}. This is probably an issue with one of the tokens you are swapping.`
+                  }
+                  return { call, error: new Error(errorMessage) }
+                })
+            })
+        })
+      )
+  
+      // a successful estimation is a bignumber gas estimate and the next call is also a bignumber gas estimate
+      const successfulEstimation = estimatedCalls.find(
+        (el, ix, list): el is SuccessfulCall =>
+          'gasEstimate' in el && (ix === list.length - 1 || 'gasEstimate' in list[ix + 1])
+      )
+  
+      if (!successfulEstimation) {
+        setUserETHTip(DEFAULT_ETH_TIP.toString())
+      } else {
+        setUserETHTip(successfulEstimation.gasEstimate.mul(userGasPrice).toString())
+      }
+    }
+    if(v2Trade && swapCalls && !userTipManualOverride) {
+      calculateSuggestedEthTip()
+    }
+  }, [v2Trade, swapCalls, userTipManualOverride, userGasPrice, setUserETHTip])
 
   return {
     currencies,

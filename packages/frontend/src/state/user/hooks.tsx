@@ -22,8 +22,9 @@ import {
   updateUserSingleHopOnly,
   updateUserUnderlyingExchange,
   updateUserUseRelay,
+  updateUserGasPrice,
   updateUserETHTip,
-  updateUserPrivate
+  updateUserTipManualOverride
 } from './actions'
 
 function serializeToken(token: Token): SerializedToken {
@@ -313,6 +314,22 @@ export function useUserUseRelay(): [boolean, (newUseRelay: boolean) => void] {
   return [useRelay, setUseRelay]
 }
 
+export function useUserGasPrice(): [string, (newGasPrice: string) => void] {
+  const dispatch = useDispatch<AppDispatch>()
+  const userGasPrice = useSelector<AppState, AppState['user']['userGasPrice']>(state => {
+    return state.user.userGasPrice
+  })
+
+  const setUserGasPrice = useCallback(
+    (newGasPrice: string) => {
+      dispatch(updateUserGasPrice({ userGasPrice: newGasPrice }))
+    },
+    [dispatch]
+  )
+
+  return [userGasPrice, setUserGasPrice]
+}
+
 export function useUserETHTip(): [string, (newETHTip: string) => void] {
   const dispatch = useDispatch<AppDispatch>()
   const userETHTip = useSelector<AppState, AppState['user']['userETHTip']>(state => {
@@ -329,19 +346,18 @@ export function useUserETHTip(): [string, (newETHTip: string) => void] {
   return [userETHTip, setUserETHTip]
 }
 
-export function useUserPrivate(): [boolean, (newPrivate: boolean) => void] {
+export function useUserTipManualOverride(): [boolean, (newManualOverride: boolean) => void] {
   const dispatch = useDispatch<AppDispatch>()
+  const userTipManualOverride = useSelector<AppState, AppState['user']['userTipManualOverride']>(state => {
+    return state.user.userTipManualOverride
+  })
 
-  const priv = useSelector<AppState, AppState['user']['userPrivate']>(
-    state => state.user.userPrivate
-  )
-
-  const setPrivate = useCallback(
-    (newPrivate: boolean) => {
-      dispatch(updateUserPrivate({ userPrivate: newPrivate }))
+  const setUserTipManualOverride = useCallback(
+    (newManualOverride: boolean) => {
+      dispatch(updateUserTipManualOverride({ userTipManualOverride: newManualOverride }))
     },
     [dispatch]
   )
 
-  return [priv, setPrivate]
+  return [userTipManualOverride, setUserTipManualOverride]
 }

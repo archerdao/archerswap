@@ -94,12 +94,12 @@ export interface SlippageTabsProps {
   useRelay: boolean,
   setUseRelay: (useRelay: boolean) => void,
   ethTip: string,
-  setETHTip: (ethTip: string) => void,
-  priv: boolean,
-  setPrivate: (priv: boolean) => void
+  setETHTip: (ethTip: string) => void
+  tipManualOverride: boolean,
+  setTipManualOverride: (manualOverride: boolean) => void
 }
 
-export default function SlippageTabs({ rawSlippage, setRawSlippage, deadline, setDeadline, useRelay, setUseRelay, ethTip, setETHTip, priv, setPrivate }: SlippageTabsProps) {
+export default function SlippageTabs({ rawSlippage, setRawSlippage, deadline, setDeadline, useRelay, setUseRelay, ethTip, setETHTip, tipManualOverride, setTipManualOverride }: SlippageTabsProps) {
   const theme = useContext(ThemeContext)
 
   const inputRef = useRef<HTMLInputElement>()
@@ -111,7 +111,7 @@ export default function SlippageTabs({ rawSlippage, setRawSlippage, deadline, se
   const slippageInputIsValid =
     slippageInput === '' || (rawSlippage / 100).toFixed(2) === Number.parseFloat(slippageInput).toFixed(2)
   const deadlineInputIsValid = deadlineInput === '' || (deadline / 60).toString() === deadlineInput
-  const ethTipInputIsValid = ethTipInput === '' || CurrencyAmount.ether(ethTip).toExact() === ethTipInput
+  const ethTipInputIsValid = ethTipInput === '' || ethTipInput === '0' || CurrencyAmount.ether(ethTip).toExact() === ethTipInput
 
   let slippageError: SlippageError | undefined
   if (slippageInput !== '' && !slippageInputIsValid) {
@@ -164,9 +164,17 @@ export default function SlippageTabs({ rawSlippage, setRawSlippage, deadline, se
     setETHTipInput(value)
 
     try {
-      const valueAsCurrencyAmount = tryParseAmount(value, ETHER)
-      if (valueAsCurrencyAmount)
-        setETHTip(valueAsCurrencyAmount.raw.toString())
+      if(value === '0') {
+        setTipManualOverride(false)
+      } else {
+        const valueAsCurrencyAmount = tryParseAmount(value, ETHER)
+        if (valueAsCurrencyAmount) {
+          setTipManualOverride(true)
+          setETHTip(valueAsCurrencyAmount.raw.toString())
+        } else {
+          setTipManualOverride(false)
+        }
+      } 
     } catch {}
   }
 
@@ -291,6 +299,28 @@ export default function SlippageTabs({ rawSlippage, setRawSlippage, deadline, se
         <RowBetween>
           <RowFixed>
             <TYPE.black fontWeight={400} fontSize={14} color={theme.text2}>
+                Set Tip Manually
+              </TYPE.black>
+              <QuestionHelper text="Manually override the automatic miner tip calculation." />
+            </RowFixed>
+            <Toggle
+              id="toggle-tip-manual-override"
+              isActive={tipManualOverride}
+              toggle={() => {
+                ReactGA.event({
+                  category: 'Tip Manual Override',
+                  action: tipManualOverride ? 'disable tip manual override' : 'enable tip manual override'
+                })
+                setTipManualOverride(!tipManualOverride)
+              }}
+            />
+        </RowBetween>
+      </AutoColumn>
+
+      <AutoColumn gap="sm">
+        <RowBetween>
+          <RowFixed>
+            <TYPE.black fontWeight={400} fontSize={14} color={theme.text2}>
                 Use Archer Network
               </TYPE.black>
               <QuestionHelper text="Use the Archer Network to mine the transaction." />
@@ -304,25 +334,6 @@ export default function SlippageTabs({ rawSlippage, setRawSlippage, deadline, se
                   action: useRelay ? 'disable use relay' : 'enable use relay'
                 })
                 setUseRelay(!useRelay)
-              }}
-            />
-        </RowBetween>
-        <RowBetween>
-          <RowFixed>
-            <TYPE.black fontWeight={400} fontSize={14} color={theme.text2}>
-                Private Transaction
-              </TYPE.black>
-              <QuestionHelper text="When using the Archer Network, do not broadcast the transaction to mempool. Requires signing raw transaction." />
-            </RowFixed>
-            <Toggle
-              id="toggle-private"
-              isActive={priv}
-              toggle={() => {
-                ReactGA.event({
-                  category: 'Private',
-                  action: priv ? 'not private' : 'private'
-                })
-                setPrivate(!priv)
               }}
             />
         </RowBetween>

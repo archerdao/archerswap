@@ -37,7 +37,7 @@ import {
   useSwapActionHandlers,
   useSwapState
 } from '../../state/swap/hooks'
-import { useExpertModeManager, useUserSlippageTolerance, useUserSingleHopOnly, useUserUnderlyingExchangeAddresses, useUserUseRelay, useUserTransactionTTL, useUserPrivate, useUserETHTip } from '../../state/user/hooks'
+import { useExpertModeManager, useUserSlippageTolerance, useUserSingleHopOnly, useUserUnderlyingExchangeAddresses, useUserUseRelay, useUserTransactionTTL, useUserETHTip } from '../../state/user/hooks'
 import { LinkStyledButton, TYPE } from '../../theme'
 import { maxAmountSpend } from '../../utils/maxAmountSpend'
 import { computeTradePriceBreakdown, warningSeverity } from '../../utils/prices'
@@ -109,7 +109,6 @@ export default function Swap({ history }: RouteComponentProps) {
   const { address: recipientAddress } = useENSAddress(recipient)
   const [useRelay] = useUserUseRelay()
   const doRelay = relay !== undefined && useRelay
-  const [privateTx] = useUserPrivate()
 
   const trade = showWrap ? undefined : v2Trade
 
@@ -189,13 +188,13 @@ export default function Swap({ history }: RouteComponentProps) {
     }
   }, [approval, approvalSubmitted])
 
-  const maxAmountInput: CurrencyAmount | undefined = maxAmountSpend(currencyBalances[Field.INPUT])
+  
+  const maxAmountInput: CurrencyAmount | undefined = maxAmountSpend(currencyBalances[Field.INPUT], ethTip)
   const atMaxAmountInput = Boolean(maxAmountInput && parsedAmounts[Field.INPUT]?.equalTo(maxAmountInput))
 
   // the callback to execute the swap
-  const forceDirectTx = false // for debugging
   const { callback: swapCallback, error: swapCallbackError } = useSwapCallback(trade, allowedSlippage, recipient,
-    doRelay ? ttl : undefined, !forceDirectTx && doRelay && privateTx )
+    doRelay ? ttl : undefined)
 
   const { priceImpactWithoutFee } = computeTradePriceBreakdown(trade)
 

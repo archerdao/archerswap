@@ -13,7 +13,7 @@ import {
   useUserSingleHopOnly,
   useUserETHTip,
   useUserUseRelay,
-  useUserPrivate
+  useUserTipManualOverride
 } from '../../state/user/hooks'
 import { TYPE } from '../../theme'
 import { ButtonError } from '../Button'
@@ -131,9 +131,9 @@ export default function SettingsTab() {
   const theme = useContext(ThemeContext)
   const [userSlippageTolerance, setUserslippageTolerance] = useUserSlippageTolerance()
   const [userETHTip, setUserETHTip] = useUserETHTip()
+  const [userTipManualOverride, setUserTipManualOverride] = useUserTipManualOverride()
   const [userUseRelay, setUserUseRelay] = useUserUseRelay()
   const [ttl, setTtl] = useUserTransactionTTL()
-  const [userPrivate, setUserPrivate] = useUserPrivate()
 
   const [expertMode, toggleExpertMode] = useExpertModeManager()
 
@@ -207,10 +207,10 @@ export default function SettingsTab() {
               setDeadline={setTtl}
               ethTip={userETHTip}
               setETHTip={setUserETHTip}
+              tipManualOverride={userTipManualOverride}
+              setTipManualOverride={setUserTipManualOverride}
               useRelay={userUseRelay}
               setUseRelay={setUserUseRelay}
-              priv={userPrivate}
-              setPrivate={setUserPrivate}
             />
             <Text fontWeight={600} fontSize={14}>
               Interface Settings

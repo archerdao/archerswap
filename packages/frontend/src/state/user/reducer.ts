@@ -1,4 +1,4 @@
-import { INITIAL_ALLOWED_SLIPPAGE, DEFAULT_DEADLINE_FROM_NOW, DEFAULT_ETH_TIP } from '../../constants'
+import { INITIAL_ALLOWED_SLIPPAGE, DEFAULT_DEADLINE_FROM_NOW, DEFAULT_ETH_TIP, DEFAULT_GAS_PRICE } from '../../constants'
 import { createReducer } from '@reduxjs/toolkit'
 import { updateVersion } from '../global/actions'
 import {
@@ -17,8 +17,9 @@ import {
   updateUserSingleHopOnly,
   updateUserUnderlyingExchange,
   updateUserUseRelay,
+  updateUserGasPrice,
   updateUserETHTip,
-  updateUserPrivate
+  updateUserTipManualOverride
 } from './actions'
 
 const currentTimestamp = () => new Date().getTime()
@@ -58,8 +59,9 @@ export interface UserState {
 
   userUnderlyingExchange: string // underlying IUniswapV2Router02 to use
   userUseRelay: boolean // use relay or go directly to router
+  userGasPrice: string // Current gas price
   userETHTip: string // ETH tip for relay, as full BigInt string 
-  userPrivate: boolean // when using the relay, don't broadcast transaction
+  userTipManualOverride: boolean // is user manually entering tip
 }
 
 function pairKey(token0Address: string, token1Address: string) {
@@ -79,8 +81,9 @@ export const initialState: UserState = {
   URLWarningVisible: true,
   userUnderlyingExchange: 'Uniswap',
   userUseRelay: true,
+  userGasPrice: DEFAULT_GAS_PRICE.toString(),
   userETHTip: DEFAULT_ETH_TIP.toString(),
-  userPrivate: true
+  userTipManualOverride: false
 }
 
 export default createReducer(initialState, builder =>
@@ -168,10 +171,13 @@ export default createReducer(initialState, builder =>
     .addCase(updateUserUseRelay, (state, action) => {
       state.userUseRelay = action.payload.userUseRelay
     })
+    .addCase(updateUserGasPrice, (state, action) => {
+      state.userGasPrice = action.payload.userGasPrice
+    })
     .addCase(updateUserETHTip, (state, action) => {
       state.userETHTip = action.payload.userETHTip
     })
-    .addCase(updateUserPrivate, (state, action) => {
-      state.userPrivate = action.payload.userPrivate
+    .addCase(updateUserTipManualOverride, (state, action) => {
+      state.userTipManualOverride = action.payload.userTipManualOverride
     })
 )

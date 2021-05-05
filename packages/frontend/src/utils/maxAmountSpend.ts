@@ -13,7 +13,7 @@ export function maxAmountSpend(currencyAmount?: CurrencyAmount, userETHTip?: str
     if (userETHTip) {
       ethTip = JSBI.BigInt(userETHTip)
     }
-    const ethTipWithBuffer = JSBI.divide(JSBI.multiply(ethTip, JSBI.BigInt(115)), JSBI.BigInt(100))
+    const ethTipWithBuffer = JSBI.divide(JSBI.multiply(ethTip, JSBI.BigInt(120)), JSBI.BigInt(100))
     if (JSBI.greaterThan(currencyAmount.raw, ethTipWithBuffer)) {
       return CurrencyAmount.ether(JSBI.subtract(currencyAmount.raw, ethTipWithBuffer))
     } else {

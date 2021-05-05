@@ -203,8 +203,13 @@ export function useDerivedSwapInfo(): {
 
   const [, setUserETHTip] = useUserETHTip()
   const [userGasPrice, setUserGasPrice] = useUserGasPrice()
-  const [userTipManualOverride] = useUserTipManualOverride()
+  const [userTipManualOverride, setUserTipManualOverride] = useUserTipManualOverride()
   const blockNumber = useBlockNumber()
+
+  useEffect(() => {
+    setUserTipManualOverride(false)
+  }, [setUserTipManualOverride])
+
   useEffect(() => {
     async function getCurrentGasPrice() {
       const gasPrice = await getGasPrice()

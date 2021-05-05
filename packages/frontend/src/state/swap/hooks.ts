@@ -208,7 +208,8 @@ export function useDerivedSwapInfo(): {
 
   useEffect(() => {
     setUserTipManualOverride(false)
-  }, [setUserTipManualOverride])
+    setUserETHTip(DEFAULT_ETH_TIP.toString())
+  }, [setUserTipManualOverride, setUserETHTip])
 
   useEffect(() => {
     async function getCurrentGasPrice() {

@@ -21,18 +21,17 @@ export default function useRCSlider(tips: Record<string, string>): [UserSliderRe
   }, [tips]);
 
   const marks = React.useMemo(() => {
-    let sortedTips =
-      Object.keys(tips).map((key: string) => ({
+    return Object.keys(tips)
+      .map((key: string) => ({
         label: key,
         value: BigInt(tips[key])
       }))
-        .sort((left, right) => (left.value < right.value ? -1 : left.value > right.value ? 1 : 0));
-
-    let marks: Record<number, string> = {};
-    sortedTips.forEach((tip, index) => {
-      marks[index] = tip.label;
-    });
-    return marks;
+      .sort((left, right) => 
+        (left.value < right.value ? -1 : left.value > right.value ? 1 : 0))
+      .reduce((acc, tip, index) => {
+        const { label } = tip;
+        return {...acc, [index]: label };
+      }, {});
   }, [tips]);
 
   const max = Object.values(marks).length - 1;

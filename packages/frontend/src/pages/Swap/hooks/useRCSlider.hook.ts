@@ -1,12 +1,12 @@
 import React from 'react';
 
-interface UserRCSliderResponse {
+interface UseRCSliderResponse {
   marks: Record<number, string>,
   value: number
   max: number
 };
 
-export default function useRCSlider(tips: Record<string, string>): [UserRCSliderResponse, (value: number) => void] {
+export default function useRCSlider(tips: Record<string, string>): [UseRCSliderResponse, (value: number) => void] {
   const [value, setValue] = React.useState<number>(0);
 
   const handleChange = React.useCallback(

@@ -1,9 +1,9 @@
 import React from 'react';
 
-type useFetchMinerTipsResponse = Record<string, string>;
+type UseFetchMinerTipsResponse = Record<string, string>;
 
-export default function useFetchMinerTips(isManualMode: boolean): [useFetchMinerTipsResponse] {
-  const [data, setData] = React.useState<useFetchMinerTipsResponse>({});
+export default function useFetchMinerTips(isManualMode: boolean): [UseFetchMinerTipsResponse] {
+  const [data, setData] = React.useState<UseFetchMinerTipsResponse>({});
 
   React.useEffect(() => {
     if (isManualMode) return;

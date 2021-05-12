@@ -37,7 +37,7 @@ export default function SwapMinerTip() {
   const [userTipManualOverride] = useUserTipManualOverride();
   const [ethTip] = useUserETHTip();
 
-  const [tips] = useFetchMinerTips<Record<string, string>>(userTipManualOverride);
+  const [tips] = useFetchMinerTips(userTipManualOverride);
   const [{ marks, value, max }, handleChange] = useRCSlider(tips);
 
   const minerTipContent = React.useMemo(() => {

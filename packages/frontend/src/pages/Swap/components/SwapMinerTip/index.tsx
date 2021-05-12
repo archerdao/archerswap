@@ -38,7 +38,7 @@ export default function SwapMinerTip() {
 	const [ethTip] = useUserETHTip();
 
 	const [tips] = useFetchMinerTips<Record<string, string>>(userTipManualOverride);
-	const [{ marks, value, max }, handleChange] = useCustomSlider(userTipManualOverride, tips);
+	const [{ marks, value, max }, handleChange] = useCustomSlider(tips);
 
 	const ethTipText = React.useMemo(() => {
 		if (userTipManualOverride) {
@@ -50,7 +50,7 @@ export default function SwapMinerTip() {
 				return "Loading...";
 			}
 		}
-	}, [userTipManualOverride, ethTip, tips, marks, value]);
+	}, [userTipManualOverride, ethTip, tips, marks, value, max]);
 
 	return (
 		<>

@@ -18,18 +18,18 @@ function useFetchMinerTips<D>(isManualMode: boolean) {
 				setData(response.data);
 			})
 			.catch(error => console.error('Failed to fetch miner tips', error));
-	}, []);
+	}, [isManualMode]);
 
 	return [data];
 }
 
-interface userSliderResponse {
+interface UserSliderResponse {
 	marks: Record<number, string>,
 	value: number
 	max: number
 };
 
-function useCustomSlider(isManualMode: boolean, tips: Record<string, string>): [userSliderResponse, (value: number) => void] {
+function useCustomSlider(tips: Record<string, string>): [UserSliderResponse, (value: number) => void] {
 	const [value, setValue] = React.useState<number>(0);
 
 	const handleChange = React.useCallback(
@@ -51,7 +51,7 @@ function useCustomSlider(isManualMode: boolean, tips: Record<string, string>): [
 			}))
 				.sort((left, right) => (left.value < right.value ? -1 : left.value > right.value ? 1 : 0));
 
-		let marks: { [key: number]: string } = {};
+		let marks: Record<number, string> = {};
 		sortedTips.forEach((tip, index) => {
 			marks[index] = tip.label;
 		});

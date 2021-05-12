@@ -35,19 +35,13 @@ export default function SwapMinerTip() {
 
   const toggleSettings = useToggleSettingsMenu();
   const [userTipManualOverride] = useUserTipManualOverride();
-  const [ethTip] = useUserETHTip();
+  const [manualEthTip] = useUserETHTip();
 
   const [tips] = useFetchMinerTips(userTipManualOverride);
   const [{ marks, value, max }, handleChange] = useRCSlider(tips);
 
   const isSliderVisible = !userTipManualOverride && max > 0;
-
-  const getEthTip = () => {
-    if (isSliderVisible ) {
-      return CurrencyAmount.ether(tips[marks[value]]).toExact();
-    }
-    return CurrencyAmount.ether(ethTip).toExact();
-  };
+  const ethTip = isSliderVisible ? tips[marks[value]] : manualEthTip;
 
   return (
     <>
@@ -56,7 +50,7 @@ export default function SwapMinerTip() {
           Miner Tip
         </ClickableText>
         <ClickableText {...textStyles} onClick={toggleSettings}>
-          {getEthTip()} ETH
+          {CurrencyAmount.ether(ethTip).toExact()} ETH
         </ClickableText>
       </RowBetween>
       {isSliderVisible && (

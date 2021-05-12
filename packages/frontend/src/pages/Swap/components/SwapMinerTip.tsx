@@ -40,17 +40,15 @@ export default function SwapMinerTip() {
   const [tips] = useFetchMinerTips(userTipManualOverride);
   const [{ marks, value, max }, handleChange] = useRCSlider(tips);
 
-  const minerTipContent = React.useMemo(() => {
-    if (userTipManualOverride) {
-      return CurrencyAmount.ether(ethTip).toExact();
-    } else {
-      if (max > 0 && marks[value] && tips[marks[value]]) {
-        return CurrencyAmount.ether(tips[marks[value]]).toExact();
-      } else {
-        return "";
-      }
+  const getTipContent = () => {
+    if (!userTipManualOverride && marks[value] && tips[marks[value]]
+    ) {
+      return CurrencyAmount.ether(tips[marks[value]]).toExact();
     }
-  }, [userTipManualOverride, ethTip, tips, marks, value, max]);
+    return CurrencyAmount.ether(ethTip).toExact();
+  };
+
+  const isSliderVisible = !userTipManualOverride && max > 0;
 
   return (
     <>
@@ -59,10 +57,10 @@ export default function SwapMinerTip() {
           Miner Tip
         </ClickableText>
         <ClickableText {...textStyles} onClick={toggleSettings}>
-          {minerTipContent}
+          {getTipContent()}
         </ClickableText>
       </RowBetween>
-      {!userTipManualOverride && (
+      {isSliderVisible && (
         <section style={styles.slider}>
           <Slider
             defaultValue={0}

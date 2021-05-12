@@ -40,15 +40,14 @@ export default function SwapMinerTip() {
   const [tips] = useFetchMinerTips(userTipManualOverride);
   const [{ marks, value, max }, handleChange] = useRCSlider(tips);
 
+  const isSliderVisible = !userTipManualOverride && max > 0;
+
   const getEthTip = () => {
-    if (!userTipManualOverride && marks[value] && tips[marks[value]]
-    ) {
+    if (!userTipManualOverride && isSliderVisible ) {
       return CurrencyAmount.ether(tips[marks[value]]).toExact();
     }
     return CurrencyAmount.ether(ethTip).toExact();
   };
-
-  const isSliderVisible = !userTipManualOverride && max > 0;
 
   return (
     <>

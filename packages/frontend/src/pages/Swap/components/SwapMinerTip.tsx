@@ -43,7 +43,7 @@ export default function SwapMinerTip() {
   const isSliderVisible = !userTipManualOverride && max > 0;
 
   const getEthTip = () => {
-    if (!userTipManualOverride && isSliderVisible ) {
+    if (isSliderVisible ) {
       return CurrencyAmount.ether(tips[marks[value]]).toExact();
     }
     return CurrencyAmount.ether(ethTip).toExact();

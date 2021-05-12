@@ -8,14 +8,13 @@ import {
 	useUserETHTip
 } from "state/user/hooks";
 
+import { RowBetween } from "components/Row";
+import { ClickableText } from "pages/Pool/styleds";
+
 import Slider from 'rc-slider';
 import { useFetchMinerTips, useCustomSlider } from './slider.hook';
 import 'rc-slider/assets/index.css';
 import './slider.styles.css';
-
-import { RowBetween } from "components/Row";
-import { ClickableText } from "pages/Pool/styleds";
-
 
 const styles = {
 	slider: {
@@ -26,7 +25,6 @@ const styles = {
 		fontSize: 14,
 	}
 };
-
 
 export default function SwapMinerTip() {
 	const theme = React.useContext(ThemeContext);

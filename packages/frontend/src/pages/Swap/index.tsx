@@ -22,7 +22,6 @@ import ProgressSteps from '../../components/ProgressSteps'
 import SwapHeader from '../../components/swap/SwapHeader'
 import SwapMinerTip from './components/SwapMinerTip';
 
-
 import { ARCHER_RELAY_URI, ARCHER_ROUTER_ADDRESS } from '../../constants'
 import { getTradeVersion } from '../../data/V1'
 import { useActiveWeb3React } from '../../hooks'

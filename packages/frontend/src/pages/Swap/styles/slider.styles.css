@@ -1,0 +1,31 @@
+.rc-slider-mark-text-active {
+  color: #fff !important;
+}
+
+.rc-slider-rail {
+  background-color: #fff;
+}
+
+.rc-slider-mark-text {
+  color: #c3c5cb;
+}
+
+.rc-slider-track {
+  background: linear-gradient(to right, #6caf527f, #6caf52);
+}
+
+.rc-slider-handle {
+  border-color: #6caf52;
+}
+
+.rc-slider-handle:hover {
+  border-color: #4caf52;
+}
+
+.rc-slider-handle-click-focused:focus {
+  border-color: #6caf52;
+}
+
+.rc-slider-dot-active {
+  border-color: #6caf52;
+}

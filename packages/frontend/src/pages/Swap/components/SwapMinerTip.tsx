@@ -14,10 +14,11 @@ import { ClickableText } from "pages/Pool/styleds";
 import Slider from 'rc-slider';
 import useFetchMinerTips from '../hooks/useFetchMinerTips.hook';
 import 'rc-slider/assets/index.css';
+import '../styles/slider.styles.css';
 
 const styles = {
   slider: {
-    margin: '.5rem 1rem 2rem 1rem'
+    margin: '.8rem 1rem 2rem 1rem'
   },
   text: {
     fontWeight: 500,
@@ -25,19 +26,31 @@ const styles = {
   }
 };
 
-const getMarksFromTips = (tips: Record<string, string>) => {
-  return Object.keys(tips)
-      .map((key: string) => ({
-        label: key,
-        value: BigInt(tips[key])
-      }))
-      .sort((left, right) => 
-        (left.value < right.value ? -1 : left.value > right.value ? 1 : 0))
-      .reduce((acc, tip, index) => {
-        const { label } = tip;
-        return {...acc, [index]: label };
-      }, {});
+const getMarkLabel = (index: number, length: number) : string => {
+  switch(index) {
+    case 0:
+      return 'Cheap';
+    case length - 1:
+        return 'Fast';
+    case Math.floor(length/2):
+      return 'Balanced';
+    default:
+      return ''
+  }
 }
+
+const getMarksFromTips = (tips: Record<string, string>) => {
+  const length = Object.values(tips).length;
+  return Object.values(tips)
+    .sort((a, b) => (BigInt(a) < BigInt(b) ? -1 : 1))
+    .reduce(
+      (acc, price, index) => ({
+        ...acc,
+        [index]: { label: getMarkLabel(index, length), price },
+      }),
+      {}
+    );
+};
 
 export default function SwapMinerTip() {
   const theme = React.useContext(ThemeContext);
@@ -52,7 +65,7 @@ export default function SwapMinerTip() {
   const [tips] = useFetchMinerTips(userTipManualOverride);
   const [value, setValue] = React.useState<number>(0);
 
-  const marks:Record<number, string> = React.useMemo(() => getMarksFromTips(tips), [tips]);
+  const marks: Record<number, {label: string, price: string}>= React.useMemo(() => getMarksFromTips(tips), [tips]);
   
   const handleChange = React.useCallback(
     (newValue: number) => {
@@ -62,12 +75,12 @@ export default function SwapMinerTip() {
   );
 
   React.useEffect(() => {
-    setValue(0);
-  }, [tips]);
+    setValue(Math.floor(Object.values(marks).length / 2));
+  }, [marks]);
 
   const max = Object.values(marks).length - 1;
   const isSliderVisible = !userTipManualOverride && max >= 0;
-  const ethTip = isSliderVisible ? tips[marks[value]] : userETHTip;
+  const ethTip = isSliderVisible ? marks[value].price : userETHTip;
 
   return (
     <>

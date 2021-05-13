@@ -13,7 +13,6 @@ import { ClickableText } from "pages/Pool/styleds";
 
 import Slider from 'rc-slider';
 import useFetchMinerTips from '../hooks/useFetchMinerTips.hook';
-import useRCSlider from '../hooks/useRCSlider.hook';
 import 'rc-slider/assets/index.css';
 
 const styles = {
@@ -26,6 +25,20 @@ const styles = {
   }
 };
 
+const getMarksFromTips = (tips: Record<string, string>) => {
+  return Object.keys(tips)
+      .map((key: string) => ({
+        label: key,
+        value: BigInt(tips[key])
+      }))
+      .sort((left, right) => 
+        (left.value < right.value ? -1 : left.value > right.value ? 1 : 0))
+      .reduce((acc, tip, index) => {
+        const { label } = tip;
+        return {...acc, [index]: label };
+      }, {});
+}
+
 export default function SwapMinerTip() {
   const theme = React.useContext(ThemeContext);
   const textStyles = {
@@ -36,11 +49,24 @@ export default function SwapMinerTip() {
   const toggleSettings = useToggleSettingsMenu();
   const [userTipManualOverride] = useUserTipManualOverride();
   const [manualEthTip] = useUserETHTip();
-
   const [tips] = useFetchMinerTips(userTipManualOverride);
-  const [{ marks, value, max }, handleChange] = useRCSlider(tips);
+  const [value, setValue] = React.useState<number>(0);
 
-  const isSliderVisible = !userTipManualOverride && max > 0;
+  const marks:Record<number, string> = React.useMemo(() => getMarksFromTips(tips), [tips]);
+  
+  const handleChange = React.useCallback(
+    (newValue: number) => {
+      setValue(newValue);
+    },
+    [setValue]
+  );
+
+  React.useEffect(() => {
+    setValue(0);
+  }, [tips]);
+
+  const max = Object.values(marks).length - 1;
+  const isSliderVisible = !userTipManualOverride && max >= 0;
   const ethTip = isSliderVisible ? tips[marks[value]] : manualEthTip;
 
   return (

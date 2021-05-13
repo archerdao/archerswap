@@ -48,7 +48,7 @@ export default function SwapMinerTip() {
 
   const toggleSettings = useToggleSettingsMenu();
   const [userTipManualOverride] = useUserTipManualOverride();
-  const [manualEthTip] = useUserETHTip();
+  const [userETHTip] = useUserETHTip();
   const [tips] = useFetchMinerTips(userTipManualOverride);
   const [value, setValue] = React.useState<number>(0);
 
@@ -67,7 +67,7 @@ export default function SwapMinerTip() {
 
   const max = Object.values(marks).length - 1;
   const isSliderVisible = !userTipManualOverride && max >= 0;
-  const ethTip = isSliderVisible ? tips[marks[value]] : manualEthTip;
+  const ethTip = isSliderVisible ? tips[marks[value]] : userETHTip;
 
   return (
     <>

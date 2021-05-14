@@ -405,7 +405,11 @@ export default function Swap({ history }: RouteComponentProps) {
                     </ClickableText>
                   </RowBetween>
                   {doRelay && userHasSpecifiedInputOutput && (
-                    <SwapMinerTip />
+                    <SwapMinerTip 
+                      trade={trade} 
+                      allowedSlippage={allowedSlippage}
+                      recipient={recipient}
+                    />
                   )}
                 </AutoColumn>
               </Card>

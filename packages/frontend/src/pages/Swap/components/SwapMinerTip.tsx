@@ -7,14 +7,22 @@ import {
   useUserTipManualOverride,
   useUserETHTip
 } from "state/user/hooks";
+import { useSwapCallArguments } from 'hooks/useSwapCallback'
+import { useActiveWeb3React } from 'hooks/index';
 
 import { RowBetween } from "components/Row";
 import { ClickableText } from "pages/Pool/styleds";
 
 import Slider from 'rc-slider';
 import useFetchMinerTips from '../hooks/useFetchMinerTips.hook';
+import useFetchEstimateGas from '../hooks/useFetchEstimateGas.hook';
+
+import { SwapMinerTipProps, SwapInfo } from './SwapMinerTip.types'
+
 import 'rc-slider/assets/index.css';
 import '../styles/slider.styles.css';
+
+
 
 const styles = {
   slider: {
@@ -52,7 +60,31 @@ const getMarksFromTips = (tips: Record<string, string>) => {
     );
 };
 
-export default function SwapMinerTip() {
+
+
+export default function SwapMinerTip({trade, allowedSlippage, recipient }: SwapMinerTipProps ) {
+
+  const [swapInfo, setSwapInfo] = React.useState<SwapInfo>({from: null, to: null, value: '0x100000000'});
+  const swapCallBacks = useSwapCallArguments(trade, allowedSlippage, recipient);
+  const { account } = useActiveWeb3React();
+  const [estimatedGas] = useFetchEstimateGas(swapInfo);
+ 
+  React.useEffect(() => {
+    if(swapCallBacks.length > 0 && account) {
+      const call = swapCallBacks[0];
+      const {
+        parameters: { value },
+        contract
+      } = call;
+      setSwapInfo({
+        to: contract.address,
+        from: account,
+        value
+      });
+    }
+  }, [swapCallBacks]);
+
+  
   const theme = React.useContext(ThemeContext);
   const textStyles = {
     ...styles.text,
@@ -80,7 +112,7 @@ export default function SwapMinerTip() {
 
   const max = Object.values(marks).length - 1;
   const isSliderVisible = !userTipManualOverride && max >= 0;
-  const ethTip = isSliderVisible ? marks[value].price : userETHTip;
+  const ethTip = isSliderVisible ? BigInt(marks[value].price) * BigInt(estimatedGas) : userETHTip;
 
   return (
     <>

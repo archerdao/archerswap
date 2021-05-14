@@ -1,9 +1,9 @@
 import React from 'react';
 
-type D = Record<string, string>;
+type T = Record<string, string>;
 
-export default function useFetchEstimateGas(isManualMode: boolean): [D] {
-  const [data, setData] = React.useState<D>({});
+export default function useFetchEstimateGas(isManualMode: boolean): [T] {
+  const [data, setData] = React.useState<T>({});
 
   React.useEffect(() => {
     if (isManualMode) return;
@@ -26,7 +26,7 @@ export default function useFetchEstimateGas(isManualMode: boolean): [D] {
     })
       .then(response => response.json())
       .then(response => {
-        setData(response.result);
+        setData(response.result as T);
       })
       .catch(error => console.error('Failed to fetch estimate gas', error));
   }, [isManualMode]);

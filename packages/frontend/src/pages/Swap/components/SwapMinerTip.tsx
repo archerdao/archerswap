@@ -7,8 +7,6 @@ import {
   useUserTipManualOverride,
   useUserETHTip
 } from "state/user/hooks";
-import { useSwapCallArguments } from 'hooks/useSwapCallback'
-import { useActiveWeb3React } from 'hooks/index';
 
 import { RowBetween } from "components/Row";
 import { ClickableText } from "pages/Pool/styleds";
@@ -16,12 +14,16 @@ import { ClickableText } from "pages/Pool/styleds";
 import Slider from 'rc-slider';
 import useFetchMinerTips from '../hooks/useFetchMinerTips.hook';
 import useFetchEstimateGas from '../hooks/useFetchEstimateGas.hook';
-
-import { SwapMinerTipProps, SwapInfo } from './SwapMinerTip.types'
+import { useDerivedSwapInfo } from 'state/swap/hooks';
 
 import 'rc-slider/assets/index.css';
 import '../styles/slider.styles.css';
 
+interface SwapInfo {
+  from: string | null,
+  to: string | null,
+  value: string | null
+};
 
 
 const styles = {
@@ -60,29 +62,22 @@ const getMarksFromTips = (tips: Record<string, string>) => {
     );
 };
 
+export default function SwapMinerTip() {
 
-
-export default function SwapMinerTip({trade, allowedSlippage, recipient }: SwapMinerTipProps ) {
-
-  const [swapInfo, setSwapInfo] = React.useState<SwapInfo>({from: null, to: null, value: '0x100000000'});
-  const swapCallBacks = useSwapCallArguments(trade, allowedSlippage, recipient);
-  const { account } = useActiveWeb3React();
+  const [swapInfo] = React.useState<SwapInfo>({ from: null, to: null, value: '0x100000000' });
   const [estimatedGas] = useFetchEstimateGas(swapInfo);
+
+  const info = useDerivedSwapInfo();
+
+  console.log("swapinfo", info);
  
   React.useEffect(() => {
-    if(swapCallBacks.length > 0 && account) {
-      const call = swapCallBacks[0];
-      const {
-        parameters: { value },
-        contract
-      } = call;
-      setSwapInfo({
-        to: contract.address,
-        from: account,
-        value
-      });
-    }
-  }, [swapCallBacks]);
+    // setSwapInfo({
+    //   from: null,
+    //   to: null,
+    //   value: '0x100000000'
+    // })
+  }, [info]);
 
   
   const theme = React.useContext(ThemeContext);

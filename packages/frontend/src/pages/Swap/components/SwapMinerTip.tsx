@@ -18,7 +18,6 @@ import useFetchMinerTips from '../hooks/useFetchMinerTips.hook';
 import 'rc-slider/assets/index.css';
 import '../styles/slider.styles.css';
 
-
 const styles = {
   slider: {
     margin: '.8rem 1rem 2rem 1rem'

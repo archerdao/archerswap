@@ -5,7 +5,8 @@ import { CurrencyAmount } from "@archerswap/sdk";
 import { useToggleSettingsMenu } from "state/application/hooks";
 import {
   useUserTipManualOverride,
-  useUserETHTip
+  useUserETHTip,
+  useUserGasPrice
 } from "state/user/hooks";
 
 import { RowBetween } from "components/Row";
@@ -13,17 +14,9 @@ import { ClickableText } from "pages/Pool/styleds";
 
 import Slider from 'rc-slider';
 import useFetchMinerTips from '../hooks/useFetchMinerTips.hook';
-import useFetchEstimateGas from '../hooks/useFetchEstimateGas.hook';
-import { useDerivedSwapInfo } from 'state/swap/hooks';
 
 import 'rc-slider/assets/index.css';
 import '../styles/slider.styles.css';
-
-interface SwapInfo {
-  from: string | null,
-  to: string | null,
-  value: string | null
-};
 
 
 const styles = {
@@ -62,24 +55,7 @@ const getMarksFromTips = (tips: Record<string, string>) => {
     );
 };
 
-export default function SwapMinerTip() {
-
-  const [swapInfo] = React.useState<SwapInfo>({ from: null, to: null, value: '0x100000000' });
-  const [estimatedGas] = useFetchEstimateGas(swapInfo);
-
-  const info = useDerivedSwapInfo();
-
-  console.log("swapinfo", info);
- 
-  React.useEffect(() => {
-    // setSwapInfo({
-    //   from: null,
-    //   to: null,
-    //   value: '0x100000000'
-    // })
-  }, [info]);
-
-  
+export default function SwapMinerTip() {  
   const theme = React.useContext(ThemeContext);
   const textStyles = {
     ...styles.text,
@@ -89,6 +65,7 @@ export default function SwapMinerTip() {
   const toggleSettings = useToggleSettingsMenu();
   const [userTipManualOverride] = useUserTipManualOverride();
   const [userETHTip] = useUserETHTip();
+  const [, setUserGasPrice] = useUserGasPrice();
   const [tips] = useFetchMinerTips(userTipManualOverride);
   const [value, setValue] = React.useState<number>(0);
 
@@ -97,17 +74,21 @@ export default function SwapMinerTip() {
   const handleChange = React.useCallback(
     (newValue: number) => {
       setValue(newValue);
+      setUserGasPrice(marks[newValue].price);
     },
-    [setValue]
+    [marks, setValue, setUserGasPrice]
   );
 
   React.useEffect(() => {
-    setValue(Math.floor(Object.values(marks).length / 2));
-  }, [marks]);
+    if(Object.values(marks).length > 0) {
+      const middleIndex = Math.floor(Object.values(marks).length / 2);
+      setValue(middleIndex);
+      setUserGasPrice(marks[middleIndex].price);
+    }
+  }, [marks, setUserGasPrice, setValue]);
 
   const max = Object.values(marks).length - 1;
   const isSliderVisible = !userTipManualOverride && max >= 0;
-  const ethTip = isSliderVisible ? BigInt(marks[value].price) * BigInt(estimatedGas) : userETHTip;
 
   return (
     <>
@@ -116,7 +97,7 @@ export default function SwapMinerTip() {
           Miner Tip
         </ClickableText>
         <ClickableText {...textStyles} onClick={toggleSettings}>
-          {CurrencyAmount.ether(ethTip).toExact()} ETH
+          {CurrencyAmount.ether(userETHTip).toExact()} ETH
         </ClickableText>
       </RowBetween>
       {isSliderVisible && (

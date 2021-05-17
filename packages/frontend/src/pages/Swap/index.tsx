@@ -403,8 +403,8 @@ export default function Swap({ history }: RouteComponentProps) {
                     <ClickableText fontWeight={500} fontSize={14} color={theme.text2} onClick={toggleSettings}>
                       {allowedSlippage / 100}%
                     </ClickableText>
-                  </RowBetween>
-                  {doRelay && userHasSpecifiedInputOutput && (
+                  </RowBetween>  
+                  {userHasSpecifiedInputOutput && (
                     <SwapMinerTip />
                   )}
                 </AutoColumn>

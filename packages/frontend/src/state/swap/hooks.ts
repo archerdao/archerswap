@@ -6,7 +6,6 @@ import { ParsedQs } from 'qs'
 import { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useActiveWeb3React } from '../../hooks'
-import { useBlockNumber } from '../../state/application/hooks'
 import { useCurrency } from '../../hooks/Tokens'
 import { useTradeExactIn, useTradeExactOut } from '../../hooks/Trades'
 import useParsedQueryString from '../../hooks/useParsedQueryString'
@@ -19,7 +18,6 @@ import { useUserSlippageTolerance, useUserGasPrice, useUserETHTip, useUserTipMan
 import { useSwapCallArguments, EstimatedSwapCall, SuccessfulCall } from '../../hooks/useSwapCallback'
 import { computeSlippageAdjustedAmounts } from '../../utils/prices'
 import { DEFAULT_ETH_TIP } from '../../constants'
-import getGasPrice from '../../utils/getGasPrice'
 import isZero from '../../utils/isZero'
 
 
@@ -202,22 +200,15 @@ export function useDerivedSwapInfo(): {
   const swapCalls = useSwapCallArguments(v2Trade as Trade, allowedSlippage, to)
 
   const [, setUserETHTip] = useUserETHTip()
-  const [userGasPrice, setUserGasPrice] = useUserGasPrice()
+  const [userGasPrice] = useUserGasPrice()
   const [userTipManualOverride, setUserTipManualOverride] = useUserTipManualOverride()
-  const blockNumber = useBlockNumber()
 
   useEffect(() => {
     setUserTipManualOverride(false)
-    setUserETHTip(DEFAULT_ETH_TIP.toString())
-  }, [setUserTipManualOverride, setUserETHTip])
-
-  useEffect(() => {
-    async function getCurrentGasPrice() {
-      const gasPrice = await getGasPrice()
-      setUserGasPrice(gasPrice.toString())
+    if(userTipManualOverride) {
+      setUserETHTip(DEFAULT_ETH_TIP.toString())
     }
-    getCurrentGasPrice()
-  }, [blockNumber, userTipManualOverride, setUserGasPrice])
+  }, [setUserTipManualOverride, setUserETHTip])
 
   useEffect(() => {
     async function calculateSuggestedEthTip() {

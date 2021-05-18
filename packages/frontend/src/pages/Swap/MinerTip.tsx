@@ -42,7 +42,7 @@ const getMarksFromTips = (tips: Record<string, string>) => {
     );
 };
 
-export default function SwapMinerTip() {
+export default function MinerTip() {
   const theme = React.useContext(ThemeContext);
   const textStyleProps = {
     fontWeight: 500,

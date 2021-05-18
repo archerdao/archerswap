@@ -1,9 +1,7 @@
 import styled from 'styled-components';
 import Slider from "rc-slider";
-
 import "rc-slider/assets/index.css";
  
-
 export const StyledSlider = styled(Slider)`
   margin: .8rem auto 2rem auto;  
   width: 90% !important;

@@ -6,40 +6,28 @@ import { useToggleSettingsMenu } from "state/application/hooks";
 import {
   useUserTipManualOverride,
   useUserETHTip,
-  useUserGasPrice
+  useUserGasPrice,
 } from "state/user/hooks";
 
 import { RowBetween } from "components/Row";
 import { ClickableText } from "pages/Pool/styleds";
 
-import Slider from 'rc-slider';
-import useFetchMinerTips from '../hooks/useFetchMinerTips.hook';
+import useArcherMinerTips from "hooks/useArcherMinerTips";
 
-import 'rc-slider/assets/index.css';
-import '../styles/slider.styles.css';
+import { StyledSlider } from './styleds';
 
-const styles = {
-  slider: {
-    margin: '.8rem 1rem 2rem 1rem'
-  },
-  text: {
-    fontWeight: 500,
-    fontSize: 14,
+const getMarkLabel = (index: number, length: number): string => {
+  switch (index) {
+    case 0:
+      return "Cheap";
+    case length - 1:
+      return "Fast";
+    case Math.floor(length / 2):
+      return "Balanced";
+    default:
+      return "";
   }
 };
-
-const getMarkLabel = (index: number, length: number) : string => {
-  switch(index) {
-    case 0:
-      return 'Cheap';
-    case length - 1:
-        return 'Fast';
-    case Math.floor(length/2):
-      return 'Balanced';
-    default:
-      return ''
-  }
-}
 
 const getMarksFromTips = (tips: Record<string, string>) => {
   const length = Object.values(tips).length;
@@ -54,22 +42,26 @@ const getMarksFromTips = (tips: Record<string, string>) => {
     );
 };
 
-export default function SwapMinerTip() {  
+export default function SwapMinerTip() {
   const theme = React.useContext(ThemeContext);
-  const textStyles = {
-    ...styles.text,
-    color: theme.text2
+  const textStyleProps = {
+    fontWeight: 500,
+    fontSize: 14,
+    color: theme.text2,
   };
 
   const toggleSettings = useToggleSettingsMenu();
   const [userTipManualOverride] = useUserTipManualOverride();
   const [userETHTip] = useUserETHTip();
   const [, setUserGasPrice] = useUserGasPrice();
-  const [tips] = useFetchMinerTips(userTipManualOverride);
+  const { data: tips } = useArcherMinerTips();
   const [value, setValue] = React.useState<number>(0);
 
-  const marks: Record<number, {label: string, price: string}>= React.useMemo(() => getMarksFromTips(tips), [tips]);
-  
+  const marks: Record<number, { label: string, price: string }> = React.useMemo(
+    () => getMarksFromTips(tips),
+    [tips]
+  );
+
   const handleChange = React.useCallback(
     (newValue: number) => {
       setValue(newValue);
@@ -79,37 +71,37 @@ export default function SwapMinerTip() {
   );
 
   React.useEffect(() => {
-    if(Object.values(marks).length > 0) {
+    if (Object.values(marks).length > 0) {
       const middleIndex = Math.floor(Object.values(marks).length / 2);
       setValue(middleIndex);
       setUserGasPrice(marks[middleIndex].price);
     }
-  }, [marks, setUserGasPrice, setValue]);
+  }, [marks, setUserGasPrice, setValue, userTipManualOverride]);
 
   const max = Object.values(marks).length - 1;
-  const isSliderVisible = !userTipManualOverride && max >= 0;
+  const isSliderVisible = !userTipManualOverride;
+
+  if(max < 0 && !userTipManualOverride ) return null;
 
   return (
     <>
       <RowBetween align="center">
-        <ClickableText {...textStyles} onClick={toggleSettings}>
+        <ClickableText {...textStyleProps} onClick={toggleSettings}>
           Miner Tip
         </ClickableText>
-        <ClickableText {...textStyles} onClick={toggleSettings}>
+        <ClickableText {...textStyleProps} onClick={toggleSettings}>
           {CurrencyAmount.ether(userETHTip).toExact()} ETH
         </ClickableText>
       </RowBetween>
       {isSliderVisible && (
-        <section style={styles.slider}>
-          <Slider
-            defaultValue={0}
-            marks={marks}
-            max={max}
-            onChange={handleChange}
-            value={value}
-            step={null}
-          />
-        </section>
+        <StyledSlider
+          defaultValue={0}
+          marks={marks}
+          max={max}
+          onChange={handleChange}
+          value={value}
+          step={null}
+        />
       )}
     </>
   );

@@ -20,7 +20,7 @@ import TradePrice from '../../components/swap/TradePrice'
 import TokenWarningModal from '../../components/TokenWarningModal'
 import ProgressSteps from '../../components/ProgressSteps'
 import SwapHeader from '../../components/swap/SwapHeader'
-import SwapMinerTip from './components/SwapMinerTip';
+import MinerTip from './MinerTip';
 
 import { ARCHER_RELAY_URI, ARCHER_ROUTER_ADDRESS } from '../../constants'
 import { getTradeVersion } from '../../data/V1'
@@ -405,7 +405,7 @@ export default function Swap({ history }: RouteComponentProps) {
                     </ClickableText>
                   </RowBetween>  
                   {userHasSpecifiedInputOutput && (
-                    <SwapMinerTip />
+                    <MinerTip />
                   )}
                 </AutoColumn>
               </Card>

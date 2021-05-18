@@ -71,7 +71,6 @@ export default function MinerTip() {
       const middleIndex = Math.floor(Object.values(marks).length / 2);
       setValue(middleIndex);
       setUserGasPrice(marks[middleIndex].price);
-      console.log("set middle index--------------", marks[middleIndex].price);
     }
   }, [marks, setUserGasPrice, setValue, userTipManualOverride]);
 

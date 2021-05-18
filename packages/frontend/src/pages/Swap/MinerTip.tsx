@@ -1,6 +1,5 @@
 import React from "react";
 import { ThemeContext } from "styled-components";
-
 import { CurrencyAmount } from "@archerswap/sdk";
 import { useToggleSettingsMenu } from "state/application/hooks";
 import {
@@ -8,12 +7,9 @@ import {
   useUserETHTip,
   useUserGasPrice,
 } from "state/user/hooks";
-
+import useArcherMinerTips from "hooks/useArcherMinerTips";
 import { RowBetween } from "components/Row";
 import { ClickableText } from "pages/Pool/styleds";
-
-import useArcherMinerTips from "hooks/useArcherMinerTips";
-
 import { StyledSlider } from './styleds';
 
 const getMarkLabel = (index: number, length: number): string => {

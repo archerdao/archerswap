@@ -93,7 +93,7 @@ export default function Transaction({ hash }: { hash: string }) {
 
   const cancelPending = useCallback(() => {
 
-    resetSwapTokenFromURLSearch();
+    resetSwapTokenFromURLSearch()
 
     if (!chainId) return
 

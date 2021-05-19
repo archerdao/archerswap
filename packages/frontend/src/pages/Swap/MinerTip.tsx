@@ -74,9 +74,7 @@ export default function MinerTip() {
     }
   }, [marks, setUserGasPrice, setValue, userTipManualOverride]);
 
-  const max = Object.values(marks).length - 1;
-  const isSliderVisible = !userTipManualOverride;
-
+  const max = ;
   if(max < 0 && !userTipManualOverride ) return null;
 
   return (
@@ -89,11 +87,11 @@ export default function MinerTip() {
           {CurrencyAmount.ether(userETHTip).toExact()} ETH
         </ClickableText>
       </RowBetween>
-      {isSliderVisible && (
+      {!userTipManualOverride && (
         <StyledSlider
           defaultValue={0}
           marks={marks}
-          max={max}
+          max={}
           onChange={handleChange}
           value={value}
           step={null}

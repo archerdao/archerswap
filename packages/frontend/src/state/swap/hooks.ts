@@ -205,9 +205,7 @@ export function useDerivedSwapInfo(): {
 
   useEffect(() => {
     setUserTipManualOverride(false)
-    if(userTipManualOverride) {
-      setUserETHTip(DEFAULT_ETH_TIP.toString())
-    }
+    setUserETHTip(DEFAULT_ETH_TIP.toString())    
   }, [setUserTipManualOverride, setUserETHTip])
 
   useEffect(() => {

@@ -17,8 +17,8 @@ export default function useFetchArcherMinerTips(): { status: string, data: T } {
               'Referrer-Policy': 'no-referrer'
             }
           });
-          const responseData = await response.json();
-          setData(responseData.data as T);
+          const json = await response.json();
+          setData(json.data as T);
           setStatus('fetched');
       };
       fetchData();

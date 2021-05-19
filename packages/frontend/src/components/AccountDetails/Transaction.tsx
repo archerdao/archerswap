@@ -3,9 +3,13 @@ import styled from 'styled-components'
 import { CheckCircle, Triangle } from 'react-feather'
 
 import { useActiveWeb3React } from '../../hooks'
+import useParsedQueryString  from 'hooks/useParsedQueryString'
 import { getEtherscanLink } from '../../utils'
 import { ExternalLink } from '../../theme'
 import { useAllTransactions } from '../../state/transactions/hooks'
+import { Field, replaceSwapState } from 'state/swap/actions'
+import { queryParametersToSwapState } from 'state/swap/hooks'
+
 import { RowFixed } from '../Row'
 import Loader from '../Loader'
 import { CurrencyAmount } from '@archerswap/sdk'
@@ -64,6 +68,7 @@ const IconWrapper = styled.div<{ pending: boolean; success?: boolean }>`
 export default function Transaction({ hash }: { hash: string }) {
   const { chainId } = useActiveWeb3React()
   const allTransactions = useAllTransactions()
+  const parsedQs = useParsedQueryString();
   const dispatch = useDispatch<AppDispatch>()
 
   const tx = allTransactions?.[hash]
@@ -72,7 +77,24 @@ export default function Transaction({ hash }: { hash: string }) {
   const success = !pending && tx && (tx.receipt?.status === 1 || typeof tx.receipt?.status === 'undefined')
   const relay = tx?.relay
 
+  const resetSwapTokenFromURLSearch = () => {
+    const parsed = queryParametersToSwapState(parsedQs);
+
+    dispatch(
+      replaceSwapState({
+        typedValue: parsed.typedValue,
+        field: parsed.independentField,
+        inputCurrencyId: parsed[Field.INPUT].currencyId,
+        outputCurrencyId: parsed[Field.OUTPUT].currencyId,
+        recipient: parsed.recipient
+      })
+    )
+  };
+
   const cancelPending = useCallback(() => {
+
+    resetSwapTokenFromURLSearch();
+
     if (!chainId) return
 
     const relayURI = ARCHER_RELAY_URI[chainId]

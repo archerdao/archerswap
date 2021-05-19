@@ -89,7 +89,7 @@ export default function Transaction({ hash }: { hash: string }) {
         recipient: parsed.recipient
       })
     )
-  };
+  }
 
   const cancelPending = useCallback(() => {
 

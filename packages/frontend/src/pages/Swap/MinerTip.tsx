@@ -74,7 +74,6 @@ export default function MinerTip() {
     }
   }, [marks, setUserGasPrice, setValue, userTipManualOverride]);
 
-  const max = ;
   if(max < 0 && !userTipManualOverride ) return null;
 
   return (

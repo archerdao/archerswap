@@ -78,7 +78,6 @@ export default function Transaction({ hash }: { hash: string }) {
   const relay = tx?.relay
 
   const cancelPending = useCallback(() => {
-
     const resetSwapTokenFromURLSearch = () => {
       const parsed = queryParametersToSwapState(parsedQs);
   
@@ -93,12 +92,16 @@ export default function Transaction({ hash }: { hash: string }) {
       )
     }
 
-    resetSwapTokenFromURLSearch();
-
-    if (!chainId) return
+    if (!chainId) {
+      resetSwapTokenFromURLSearch()
+      return
+    }
 
     const relayURI = ARCHER_RELAY_URI[chainId]
-    if (!relayURI) return
+    if (!relayURI) {
+      resetSwapTokenFromURLSearch()
+      return
+    }
 
     const body = JSON.stringify({
       method: 'archer_cancelTx',
@@ -130,6 +133,7 @@ export default function Transaction({ hash }: { hash: string }) {
           }
         })
       )
+      resetSwapTokenFromURLSearch()
     })
     .catch(err => console.error(err))
   }, [dispatch, chainId, relay, hash, parsedQs])

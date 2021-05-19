@@ -74,7 +74,8 @@ export default function MinerTip() {
     }
   }, [marks, setUserGasPrice, setValue, userTipManualOverride]);
 
-  if(max < 0 && !userTipManualOverride ) return null;
+  const max = Object.values(marks).length - 1;
+  if( max < 0 && !userTipManualOverride ) return null;
 
   return (
     <>
@@ -90,7 +91,7 @@ export default function MinerTip() {
         <StyledSlider
           defaultValue={0}
           marks={marks}
-          max={}
+          max={max}
           onChange={handleChange}
           value={value}
           step={null}

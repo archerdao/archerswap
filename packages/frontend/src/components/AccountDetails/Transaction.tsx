@@ -132,7 +132,7 @@ export default function Transaction({ hash }: { hash: string }) {
       )
     })
     .catch(err => console.error(err))
-  }, [dispatch, chainId, relay, hash])
+  }, [dispatch, resetSwapTokenFromURLSearch, chainId, relay, hash])
 
   if (!chainId) return null
 

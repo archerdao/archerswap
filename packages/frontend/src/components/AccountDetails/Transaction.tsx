@@ -77,23 +77,23 @@ export default function Transaction({ hash }: { hash: string }) {
   const success = !pending && tx && (tx.receipt?.status === 1 || typeof tx.receipt?.status === 'undefined')
   const relay = tx?.relay
 
-  const resetSwapTokenFromURLSearch = () => {
-    const parsed = queryParametersToSwapState(parsedQs);
-
-    dispatch(
-      replaceSwapState({
-        typedValue: parsed.typedValue,
-        field: parsed.independentField,
-        inputCurrencyId: parsed[Field.INPUT].currencyId,
-        outputCurrencyId: parsed[Field.OUTPUT].currencyId,
-        recipient: parsed.recipient
-      })
-    )
-  }
-
   const cancelPending = useCallback(() => {
 
-    resetSwapTokenFromURLSearch()
+    const resetSwapTokenFromURLSearch = () => {
+      const parsed = queryParametersToSwapState(parsedQs);
+  
+      dispatch(
+        replaceSwapState({
+          typedValue: parsed.typedValue,
+          field: parsed.independentField,
+          inputCurrencyId: parsed[Field.INPUT].currencyId,
+          outputCurrencyId: parsed[Field.OUTPUT].currencyId,
+          recipient: parsed.recipient
+        })
+      )
+    }
+
+    resetSwapTokenFromURLSearch();
 
     if (!chainId) return
 
@@ -132,7 +132,7 @@ export default function Transaction({ hash }: { hash: string }) {
       )
     })
     .catch(err => console.error(err))
-  }, [dispatch, resetSwapTokenFromURLSearch, chainId, relay, hash])
+  }, [dispatch, chainId, relay, hash, parsedQs])
 
   if (!chainId) return null
 

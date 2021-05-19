@@ -6,6 +6,7 @@ import {
   useUserTipManualOverride,
   useUserETHTip,
   useUserGasPrice,
+  useUserSlippageTolerance
 } from "state/user/hooks";
 import useArcherMinerTips from "hooks/useArcherMinerTips";
 import { RowBetween } from "components/Row";
@@ -24,6 +25,17 @@ const getMarkLabel = (index: number, length: number): string => {
       return "";
   }
 };
+const getMarkSlippage = (index: number) : number => {
+  if (index === 6) {
+    return 50
+  } else if (index === 5) {
+    return 10
+  } else if (index === 4) {
+    return 5
+  } else {
+    return 0
+  }
+}
 
 const getMarksFromTips = (tips: Record<string, string>) => {
   const length = Object.values(tips).length;
@@ -32,7 +44,7 @@ const getMarksFromTips = (tips: Record<string, string>) => {
     .reduce(
       (acc, price, index) => ({
         ...acc,
-        [index]: { label: getMarkLabel(index, length), price },
+        [index]: { label: getMarkLabel(index, length), price, slippage: getMarkSlippage(index) },
       }),
       {}
     );
@@ -50,10 +62,11 @@ export default function MinerTip() {
   const [userTipManualOverride] = useUserTipManualOverride();
   const [userETHTip] = useUserETHTip();
   const [, setUserGasPrice] = useUserGasPrice();
+  const [, setUserSlippageTolerance] = useUserSlippageTolerance();
   const { data: tips } = useArcherMinerTips();
   const [value, setValue] = React.useState<number>(0);
 
-  const marks: Record<number, { label: string, price: string }> = React.useMemo(
+  const marks: Record<number, { label: string, price: string, slippage: number }> = React.useMemo(
     () => getMarksFromTips(tips),
     [tips]
   );
@@ -62,8 +75,9 @@ export default function MinerTip() {
     (newValue: number) => {
       setValue(newValue);
       setUserGasPrice(marks[newValue].price);
+      setUserSlippageTolerance(marks[newValue].slippage);
     },
-    [marks, setValue, setUserGasPrice]
+    [marks, setValue, setUserGasPrice, setUserSlippageTolerance]
   );
 
   React.useEffect(() => {
@@ -71,8 +85,9 @@ export default function MinerTip() {
       const middleIndex = Math.floor(Object.values(marks).length / 2);
       setValue(middleIndex);
       setUserGasPrice(marks[middleIndex].price);
+      setUserSlippageTolerance(marks[middleIndex].slippage);
     }
-  }, [marks, setUserGasPrice, setValue, userTipManualOverride]);
+  }, [marks, setUserGasPrice, setValue, userTipManualOverride, setUserSlippageTolerance]);
 
   const max = Object.values(marks).length - 1;
   if( max < 0 && !userTipManualOverride ) return null;
@@ -84,7 +99,7 @@ export default function MinerTip() {
           Miner Tip
         </ClickableText>
         <ClickableText {...textStyleProps} onClick={toggleSettings}>
-          {CurrencyAmount.ether(userETHTip).toExact()} ETH
+          {CurrencyAmount.ether(userETHTip).toFixed(3)} ETH
         </ClickableText>
       </RowBetween>
       {!userTipManualOverride && (

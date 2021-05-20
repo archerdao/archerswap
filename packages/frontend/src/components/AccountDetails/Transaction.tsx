@@ -109,25 +109,25 @@ export default function Transaction({ hash }: { hash: string }) {
         'Content-Type': 'application/json',
       }
     })
-      .then(() => {
-        dispatch(
-          finalizeTransaction({
-            chainId,
-            hash,
-            receipt: {
-              blockHash: '',
-              blockNumber: 0,
-              contractAddress: '',
-              from: '',
-              status: 1337,
-              to: '',
-              transactionHash: '',
-              transactionIndex: 0
-            }
-          })
-        )
-      })
-      .catch(err => console.error(err))
+    .then(() => {
+      dispatch(
+        finalizeTransaction({
+          chainId,
+          hash,
+          receipt: {
+            blockHash: '',
+            blockNumber: 0,
+            contractAddress: '',
+            from: '',
+            status: 1337,
+            to: '',
+            transactionHash: '',
+            transactionIndex: 0
+          }
+        })
+      )
+    })
+    .catch(err => console.error(err))
   }, [dispatch, chainId, relay, hash])
 
   if (!chainId) return null

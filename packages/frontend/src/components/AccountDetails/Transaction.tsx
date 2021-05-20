@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import styled from 'styled-components'
 import { CheckCircle, Triangle } from 'react-feather'
 
@@ -13,6 +13,7 @@ import { ARCHER_RELAY_URI } from '../../constants'
 import { finalizeTransaction } from '../../state/transactions/actions'
 import { useDispatch } from 'react-redux'
 import { AppDispatch } from '../../state'
+import { TransactionDetails } from 'state/transactions/reducer'
 
 const TransactionWrapper = styled.div``
 
@@ -61,6 +62,22 @@ const IconWrapper = styled.div<{ pending: boolean; success?: boolean }>`
   color: ${({ pending, success, theme }) => (pending ? theme.primary1 : success ? theme.green1 : theme.red1)};
 `
 
+const TransactionExpiredBadge = styled.span`
+  color:  ${({ theme }) => theme.red1}; 
+`
+
+const TransactionRemainingTimeBadge = styled.span`
+  color:  ${({ theme }) => theme.primary1}; 
+`
+
+const caculateRemaingTimeByMinutes = (tx: TransactionDetails): number => {
+  if(tx?.relay?.deadline && tx?.addedTime) {
+    const  remaingTimeMilliSeconds = tx.relay.deadline * 1000 - (Date.now() - tx.addedTime)
+    return remaingTimeMilliSeconds < 0 ? -1 : Math.ceil(remaingTimeMilliSeconds / 60000 )
+  }
+  return -1
+}
+
 export default function Transaction({ hash }: { hash: string }) {
   const { chainId } = useActiveWeb3React()
   const allTransactions = useAllTransactions()
@@ -71,6 +88,7 @@ export default function Transaction({ hash }: { hash: string }) {
   const pending = !tx?.receipt
   const success = !pending && tx && (tx.receipt?.status === 1 || typeof tx.receipt?.status === 'undefined')
   const relay = tx?.relay
+  const remaingTime = useMemo(() => caculateRemaingTimeByMinutes(tx), [tx])
 
   const cancelPending = useCallback(() => {
     if (!chainId) return
@@ -82,7 +100,7 @@ export default function Transaction({ hash }: { hash: string }) {
       method: 'archer_cancelTx',
       tx: relay?.rawTransaction
     })
-    
+
     fetch(relayURI, {
       method: 'POST',
       body,
@@ -91,25 +109,25 @@ export default function Transaction({ hash }: { hash: string }) {
         'Content-Type': 'application/json',
       }
     })
-    .then(() => {
-      dispatch(
-        finalizeTransaction({
-          chainId,
-          hash,
-          receipt: {
-            blockHash: '',
-            blockNumber: 0,
-            contractAddress: '',
-            from: '',
-            status: 1337,
-            to: '',
-            transactionHash: '',
-            transactionIndex: 0
-          }
-        })
-      )
-    })
-    .catch(err => console.error(err))
+      .then(() => {
+        dispatch(
+          finalizeTransaction({
+            chainId,
+            hash,
+            receipt: {
+              blockHash: '',
+              blockNumber: 0,
+              contractAddress: '',
+              from: '',
+              status: 1337,
+              to: '',
+              transactionHash: '',
+              transactionIndex: 0
+            }
+          })
+        )
+      })
+      .catch(err => console.error(err))
   }, [dispatch, chainId, relay, hash])
 
   if (!chainId) return null
@@ -124,14 +142,21 @@ export default function Transaction({ hash }: { hash: string }) {
           {pending ? <Loader /> : success ? <CheckCircle size="16" /> : <Triangle size="16" />}
         </IconWrapper>
       </TransactionState>
-      {relay && 
-      <TransactionStateNoLink>
-        {`...#${relay.nonce} - Tip ${CurrencyAmount.ether(relay.ethTip).toSignificant(6)} ETH`}
-        {pending &&
-          <TransactionCancel onClick={cancelPending}>Cancel</TransactionCancel>
-        }
-      </TransactionStateNoLink>
-      }
+      {relay && (
+        <TransactionStateNoLink>
+          {`...#${relay.nonce} - Tip ${CurrencyAmount.ether(relay.ethTip).toSignificant(6)} ETH`}
+          {pending && (
+            <>
+              {remaingTime === -1 ? (
+                <TransactionExpiredBadge>Expired</TransactionExpiredBadge>
+              ) : (
+                <TransactionRemainingTimeBadge>&#128337; {`${remaingTime} minus`} </TransactionRemainingTimeBadge>
+              )}
+              <TransactionCancel onClick={cancelPending}>Cancel</TransactionCancel>
+            </>
+          )}
+        </TransactionStateNoLink>
+      )}
     </TransactionWrapper>
   )
 }

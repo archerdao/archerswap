@@ -257,9 +257,7 @@ export function useDerivedSwapInfo(): {
           'gasEstimate' in el && (ix === list.length - 1 || 'gasEstimate' in list[ix + 1])
       )
   
-      if (!successfulEstimation) {
-        setUserETHTip(DEFAULT_ETH_TIP.toString())
-      } else {
+      if (successfulEstimation) {
         setUserETHTip(successfulEstimation.gasEstimate.mul(userGasPrice).toString())
       }
     }

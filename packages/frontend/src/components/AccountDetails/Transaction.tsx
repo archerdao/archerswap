@@ -149,7 +149,7 @@ export default function Transaction({ hash }: { hash: string }) {
               {minutesUntilDeadline === -1 ? (
                 <TransactionExpiredBadge>Expired</TransactionExpiredBadge>
               ) : (
-                <TransactionRemainingTimeBadge>&#128337; {`${minutesUntilDeadline} minus`} </TransactionRemainingTimeBadge>
+                <TransactionRemainingTimeBadge>&#128337; {`${minutesUntilDeadline} mins`} </TransactionRemainingTimeBadge>
               )}
               <TransactionCancel onClick={cancelPending}>Cancel</TransactionCancel>
             </>

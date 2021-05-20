@@ -100,7 +100,6 @@ export default function Transaction({ hash }: { hash: string }) {
       method: 'archer_cancelTx',
       tx: relay?.rawTransaction
     })
-
     fetch(relayURI, {
       method: 'POST',
       body,

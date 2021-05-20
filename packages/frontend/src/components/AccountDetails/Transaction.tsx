@@ -1,6 +1,6 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import styled from 'styled-components'
-import { CheckCircle, Triangle } from 'react-feather'
+import { CheckCircle, Triangle, X } from 'react-feather'
 
 import { useActiveWeb3React } from '../../hooks'
 import { getEtherscanLink } from '../../utils'
@@ -13,6 +13,7 @@ import { ARCHER_RELAY_URI } from '../../constants'
 import { finalizeTransaction } from '../../state/transactions/actions'
 import { useDispatch } from 'react-redux'
 import { AppDispatch } from '../../state'
+import { TransactionDetails } from 'state/transactions/reducer'
 
 const TransactionWrapper = styled.div``
 
@@ -57,9 +58,29 @@ const TransactionCancel = styled.div`
   }
 `
 
-const IconWrapper = styled.div<{ pending: boolean; success?: boolean }>`
-  color: ${({ pending, success, theme }) => (pending ? theme.primary1 : success ? theme.green1 : theme.red1)};
+const IconWrapper = styled.div<{ pending: boolean; success?: boolean; cancelled?: boolean }>`
+  color: ${({ pending, success, cancelled, theme }) => (pending ? theme.primary1 : success ? theme.green1 : cancelled ? theme.red3 : theme.red1)};
 `
+
+const TransactionExpiredBadge = styled.span`
+  color:  ${({ theme }) => theme.red1}; 
+`
+
+const TransactionCancelledBadge = styled.span`
+  color:  ${({ theme }) => theme.red3}; 
+`
+
+const TransactionRemainingTimeBadge = styled.span`
+  color:  ${({ theme }) => theme.primary1}; 
+`
+
+const calculateSecondsUntilDeadline = (tx: TransactionDetails): number => {
+  if(tx?.relay?.deadline && tx?.addedTime) {
+    const  millisecondsUntilUntilDeadline = (tx.relay.deadline * 1000) - Date.now()
+    return millisecondsUntilUntilDeadline < 0 ? -1 : Math.ceil(millisecondsUntilUntilDeadline / 1000 )
+  }
+  return -1
+}
 
 export default function Transaction({ hash }: { hash: string }) {
   const { chainId } = useActiveWeb3React()
@@ -68,9 +89,13 @@ export default function Transaction({ hash }: { hash: string }) {
 
   const tx = allTransactions?.[hash]
   const summary = tx?.summary
-  const pending = !tx?.receipt
-  const success = !pending && tx && (tx.receipt?.status === 1 || typeof tx.receipt?.status === 'undefined')
   const relay = tx?.relay
+  const secondsUntilDeadline = useMemo(() => calculateSecondsUntilDeadline(tx), [tx])
+  const mined = tx?.receipt && tx.receipt.status !== 1337
+  const cancelled = tx?.receipt && tx.receipt.status === 1337
+  const expired = secondsUntilDeadline === -1
+  const pending = !mined && !cancelled && !expired
+  const success = !pending && tx && tx.receipt?.status === 1
 
   const cancelPending = useCallback(() => {
     if (!chainId) return
@@ -82,7 +107,6 @@ export default function Transaction({ hash }: { hash: string }) {
       method: 'archer_cancelTx',
       tx: relay?.rawTransaction
     })
-    
     fetch(relayURI, {
       method: 'POST',
       body,
@@ -120,18 +144,29 @@ export default function Transaction({ hash }: { hash: string }) {
         <RowFixed>
           <TransactionStatusText>{summary ?? hash} ↗</TransactionStatusText>
         </RowFixed>
-        <IconWrapper pending={pending} success={success}>
-          {pending ? <Loader /> : success ? <CheckCircle size="16" /> : <Triangle size="16" />}
+        <IconWrapper pending={pending} success={success} cancelled={cancelled}>
+          {pending ? <Loader /> : success ? <CheckCircle size="16" /> : cancelled ? <X size="16" /> : <Triangle size="16" />}
         </IconWrapper>
       </TransactionState>
-      {relay && 
-      <TransactionStateNoLink>
-        {`...#${relay.nonce} - Tip ${CurrencyAmount.ether(relay.ethTip).toSignificant(6)} ETH`}
-        {pending &&
-          <TransactionCancel onClick={cancelPending}>Cancel</TransactionCancel>
-        }
-      </TransactionStateNoLink>
-      }
+      {relay && (
+        <TransactionStateNoLink>
+          {`...#${relay.nonce} - Tip ${CurrencyAmount.ether(relay.ethTip).toSignificant(6)} ETH`}
+          {pending ? (
+            <>
+              {secondsUntilDeadline >= 60 ? (
+                <TransactionRemainingTimeBadge>&#128337; {`${Math.ceil(secondsUntilDeadline / 60)} mins`} </TransactionRemainingTimeBadge>
+              ) : (
+                <TransactionRemainingTimeBadge>&#128337; {`<1 min`} </TransactionRemainingTimeBadge>
+              )}
+              <TransactionCancel onClick={cancelPending}>Cancel</TransactionCancel>
+            </>
+          ) : (cancelled ? (
+            <TransactionCancelledBadge>Cancelled</TransactionCancelledBadge>
+          ) : (!mined && expired && (
+            <TransactionExpiredBadge>Expired</TransactionExpiredBadge>
+          )))}
+        </TransactionStateNoLink>
+      )}
     </TransactionWrapper>
   )
 }

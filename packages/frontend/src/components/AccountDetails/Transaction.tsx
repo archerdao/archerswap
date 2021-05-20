@@ -70,10 +70,10 @@ const TransactionRemainingTimeBadge = styled.span`
   color:  ${({ theme }) => theme.primary1}; 
 `
 
-const caculateRemaingTimeByMinutes = (tx: TransactionDetails): number => {
+const calculateMinutesUntilDeadline = (tx: TransactionDetails): number => {
   if(tx?.relay?.deadline && tx?.addedTime) {
-    const  remaingTimeMilliSeconds = tx.relay.deadline * 1000 - (Date.now() - tx.addedTime)
-    return remaingTimeMilliSeconds < 0 ? -1 : Math.ceil(remaingTimeMilliSeconds / 60000 )
+    const  minutesUntilDeadlineMilliSeconds = tx.relay.deadline * 1000 - (Date.now() - tx.addedTime)
+    return minutesUntilDeadlineMilliSeconds < 0 ? -1 : Math.ceil(minutesUntilDeadlineMilliSeconds / 60000 )
   }
   return -1
 }
@@ -88,7 +88,7 @@ export default function Transaction({ hash }: { hash: string }) {
   const pending = !tx?.receipt
   const success = !pending && tx && (tx.receipt?.status === 1 || typeof tx.receipt?.status === 'undefined')
   const relay = tx?.relay
-  const remaingTime = useMemo(() => caculateRemaingTimeByMinutes(tx), [tx])
+  const minutesUntilDeadline = useMemo(() => calculateMinutesUntilDeadline(tx), [tx])
 
   const cancelPending = useCallback(() => {
     if (!chainId) return
@@ -146,10 +146,10 @@ export default function Transaction({ hash }: { hash: string }) {
           {`...#${relay.nonce} - Tip ${CurrencyAmount.ether(relay.ethTip).toSignificant(6)} ETH`}
           {pending && (
             <>
-              {remaingTime === -1 ? (
+              {minutesUntilDeadline === -1 ? (
                 <TransactionExpiredBadge>Expired</TransactionExpiredBadge>
               ) : (
-                <TransactionRemainingTimeBadge>&#128337; {`${remaingTime} minus`} </TransactionRemainingTimeBadge>
+                <TransactionRemainingTimeBadge>&#128337; {`${minutesUntilDeadline} minus`} </TransactionRemainingTimeBadge>
               )}
               <TransactionCancel onClick={cancelPending}>Cancel</TransactionCancel>
             </>

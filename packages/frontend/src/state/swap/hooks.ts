@@ -14,10 +14,10 @@ import { AppDispatch, AppState } from '../index'
 import { useCurrencyBalances } from '../wallet/hooks'
 import { Field, replaceSwapState, selectCurrency, setRecipient, switchCurrencies, typeInput } from './actions'
 import { SwapState } from './reducer'
-import { useUserSlippageTolerance, useUserGasPrice, useUserETHTip, useUserTipManualOverride } from '../user/hooks'
+import { useUserSlippageTolerance, useUserGasPrice, useUserETHTip, useUserGasEstimate, useUserTipManualOverride } from '../user/hooks'
 import { useSwapCallArguments, EstimatedSwapCall, SuccessfulCall } from '../../hooks/useSwapCallback'
 import { computeSlippageAdjustedAmounts } from '../../utils/prices'
-import { DEFAULT_ETH_TIP } from '../../constants'
+import { DEFAULT_ETH_TIP, DEFAULT_GAS_ESTIMATE } from '../../constants'
 import isZero from '../../utils/isZero'
 
 
@@ -200,16 +200,24 @@ export function useDerivedSwapInfo(): {
   const swapCalls = useSwapCallArguments(v2Trade as Trade, allowedSlippage, to)
 
   const [, setUserETHTip] = useUserETHTip()
+  const [userGasEstimate, setUserGasEstimate] = useUserGasEstimate()
   const [userGasPrice] = useUserGasPrice()
   const [userTipManualOverride, setUserTipManualOverride] = useUserTipManualOverride()
 
   useEffect(() => {
     setUserTipManualOverride(false)
-    setUserETHTip(DEFAULT_ETH_TIP.toString())    
-  }, [setUserTipManualOverride, setUserETHTip])
+    setUserETHTip(DEFAULT_ETH_TIP.toString())
+    setUserGasEstimate(DEFAULT_GAS_ESTIMATE.toString())
+  }, [setUserTipManualOverride, setUserETHTip, setUserGasEstimate])
 
   useEffect(() => {
-    async function calculateSuggestedEthTip() {
+    if(!userTipManualOverride) {
+      setUserETHTip(JSBI.multiply(JSBI.BigInt(userGasEstimate), JSBI.BigInt(userGasPrice)).toString())
+    }
+  }, [userGasEstimate, userGasPrice, userTipManualOverride, setUserETHTip])
+
+  useEffect(() => {
+    async function estimateGas() {
       const estimatedCalls: EstimatedSwapCall[] = await Promise.all(
         swapCalls.map(call => {
           const {
@@ -258,13 +266,13 @@ export function useDerivedSwapInfo(): {
       )
   
       if (successfulEstimation) {
-        setUserETHTip(successfulEstimation.gasEstimate.mul(userGasPrice).toString())
+        setUserGasEstimate(successfulEstimation.gasEstimate.toString())
       }
     }
     if(v2Trade && swapCalls && !userTipManualOverride) {
-      calculateSuggestedEthTip()
+      estimateGas()
     }
-  }, [v2Trade, swapCalls, userTipManualOverride, userGasPrice, setUserETHTip])
+  }, [v2Trade, swapCalls, userTipManualOverride, setUserGasEstimate])
 
   return {
     currencies,

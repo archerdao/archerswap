@@ -1,4 +1,4 @@
-import { INITIAL_ALLOWED_SLIPPAGE, DEFAULT_DEADLINE_FROM_NOW, DEFAULT_ETH_TIP, DEFAULT_GAS_PRICE } from '../../constants'
+import { INITIAL_ALLOWED_SLIPPAGE, DEFAULT_DEADLINE_FROM_NOW, DEFAULT_ETH_TIP, DEFAULT_GAS_PRICES, DEFAULT_GAS_ESTIMATE } from '../../constants'
 import { createReducer } from '@reduxjs/toolkit'
 import { updateVersion } from '../global/actions'
 import {
@@ -19,6 +19,7 @@ import {
   updateUserUseRelay,
   updateUserGasPrice,
   updateUserETHTip,
+  updateUserGasEstimate,
   updateUserTipManualOverride
 } from './actions'
 
@@ -61,6 +62,7 @@ export interface UserState {
   userUseRelay: boolean // use relay or go directly to router
   userGasPrice: string // Current gas price
   userETHTip: string // ETH tip for relay, as full BigInt string 
+  userGasEstimate: string // Gas estimate for trade
   userTipManualOverride: boolean // is user manually entering tip
 }
 
@@ -81,8 +83,9 @@ export const initialState: UserState = {
   URLWarningVisible: true,
   userUnderlyingExchange: 'Uniswap',
   userUseRelay: true,
-  userGasPrice: DEFAULT_GAS_PRICE.toString(),
+  userGasPrice: DEFAULT_GAS_PRICES[4].toString(),
   userETHTip: DEFAULT_ETH_TIP.toString(),
+  userGasEstimate: DEFAULT_GAS_ESTIMATE.toString(),
   userTipManualOverride: false
 }
 
@@ -176,6 +179,9 @@ export default createReducer(initialState, builder =>
     })
     .addCase(updateUserETHTip, (state, action) => {
       state.userETHTip = action.payload.userETHTip
+    })
+    .addCase(updateUserGasEstimate, (state, action) => {
+      state.userGasEstimate = action.payload.userGasEstimate
     })
     .addCase(updateUserTipManualOverride, (state, action) => {
       state.userTipManualOverride = action.payload.userTipManualOverride

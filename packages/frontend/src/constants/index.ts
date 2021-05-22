@@ -209,10 +209,20 @@ export const NetworkContextName = 'NETWORK'
 export const INITIAL_ALLOWED_SLIPPAGE = 0
 // 20 minutes, denominated in seconds
 export const DEFAULT_DEADLINE_FROM_NOW = 60 * 20
-// default tip amount, 0.05 ETH
-export const DEFAULT_ETH_TIP: JSBI = JSBI.multiply(JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(16)), JSBI.BigInt(5))
-// default gas price to use if all other sources unavailable
-export const DEFAULT_GAS_PRICE: BigNumber = BigNumber.from(114000000000)
+// default gas estimate, 250k wei
+export const DEFAULT_GAS_ESTIMATE: BigNumber = BigNumber.from(250000)
+// default gas prices to use if all other sources unavailable
+export const DEFAULT_GAS_PRICES: BigNumber[] = [
+  BigNumber.from(60000000000),
+  BigNumber.from(70000000000),
+  BigNumber.from(100000000000),
+  BigNumber.from(140000000000),
+  BigNumber.from(300000000000),
+  BigNumber.from(800000000000),
+  BigNumber.from(2000000000000)
+]
+// default miner tip, equal to median gas price * default gas estimate
+export const DEFAULT_ETH_TIP: JSBI = JSBI.BigInt(DEFAULT_GAS_ESTIMATE.mul(DEFAULT_GAS_PRICES[4]).toString())
 
 // used for rewards deadlines
 export const BIG_INT_SECONDS_IN_WEEK = JSBI.BigInt(60 * 60 * 24 * 7)

@@ -32,4 +32,5 @@ export const updateUserUnderlyingExchange = createAction<{ userUnderlyingExchang
 export const updateUserUseRelay = createAction<{ userUseRelay: boolean }>('user/updateUserUseRelay')
 export const updateUserGasPrice = createAction<{ userGasPrice: string }>('user/updateUserGasPrice')
 export const updateUserETHTip = createAction<{ userETHTip: string }>('user/updateUserETHTip')
+export const updateUserGasEstimate = createAction<{ userGasEstimate: string }>('user/updateUserGasEstimate')
 export const updateUserTipManualOverride = createAction<{ userTipManualOverride: boolean }>('user/updateUserTipManualOverride')

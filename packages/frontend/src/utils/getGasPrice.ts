@@ -1,5 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber'
-import { DEFAULT_GAS_PRICE } from '../constants'
+import { DEFAULT_GAS_PRICES } from '../constants'
 
 const ARCHER_GAS_URL = process.env.REACT_APP_ARCHER_GAS_URL
 const GAS_NOW_URL = process.env.REACT_APP_GAS_NOW_URL
@@ -11,7 +11,7 @@ const GAS_NOW_URL = process.env.REACT_APP_GAS_NOW_URL
 export default async function getGasPrice(
   quantile: string = 'median'
 ): Promise<BigNumber> {
-    let gasPrice = DEFAULT_GAS_PRICE
+    let gasPrice = DEFAULT_GAS_PRICES[4]
     let json
     try {
       const response = await fetch(ARCHER_GAS_URL as string)

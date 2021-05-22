@@ -24,6 +24,7 @@ import {
   updateUserUseRelay,
   updateUserGasPrice,
   updateUserETHTip,
+  updateUserGasEstimate,
   updateUserTipManualOverride
 } from './actions'
 
@@ -344,6 +345,22 @@ export function useUserETHTip(): [string, (newETHTip: string) => void] {
   )
 
   return [userETHTip, setUserETHTip]
+}
+
+export function useUserGasEstimate(): [string, (newGasEstimate: string) => void] {
+  const dispatch = useDispatch<AppDispatch>()
+  const userGasEstimate = useSelector<AppState, AppState['user']['userGasEstimate']>(state => {
+    return state.user.userGasEstimate
+  })
+
+  const setUserGasEstimate = useCallback(
+    (newGasEstimate: string) => {
+      dispatch(updateUserGasEstimate({ userGasEstimate: newGasEstimate }))
+    },
+    [dispatch]
+  )
+
+  return [userGasEstimate, setUserGasEstimate]
 }
 
 export function useUserTipManualOverride(): [boolean, (newManualOverride: boolean) => void] {

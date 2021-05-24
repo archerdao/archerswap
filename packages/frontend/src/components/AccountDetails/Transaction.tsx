@@ -21,7 +21,6 @@ import { SwapState, LOCAL_STORAGE_KEY_SWAP_STATE } from 'state/swap/reducer'
 import useLocalStorage from 'hooks/useLocalStorage'
 import { resetSwapState } from 'state/swap/actions'
 
-
 const TransactionWrapper = styled.div``
 
 const TransactionStatusText = styled.div`

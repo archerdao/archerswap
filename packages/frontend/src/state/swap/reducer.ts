@@ -82,10 +82,5 @@ export default createReducer<SwapState>(initialState, builder =>
     .addCase(setRecipient, (state, { payload: { recipient } }) => {
       state.recipient = recipient
     })
-    .addCase(resetSwapState, (state, { payload: newState }) => {
-      return {
-        ...state,
-        ...newState
-      }
-    })
+    .addCase(resetSwapState, (state, { payload: newState }) => newState)
 )

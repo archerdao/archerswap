@@ -14,6 +14,13 @@ import { finalizeTransaction } from '../../state/transactions/actions'
 import { useDispatch } from 'react-redux'
 import { AppDispatch } from '../../state'
 import { TransactionDetails } from 'state/transactions/reducer'
+import {
+  useSwapState
+} from 'state/swap/hooks'
+import { SwapState, LOCAL_STORAGE_KEY_SWAP_STATE } from 'state/swap/reducer'
+import useLocalStorage from 'hooks/useLocalStorage'
+import { resetSwapState } from 'state/swap/actions'
+
 
 const TransactionWrapper = styled.div``
 
@@ -96,8 +103,11 @@ export default function Transaction({ hash }: { hash: string }) {
   const expired = secondsUntilDeadline === -1
   const pending = !mined && !cancelled && !expired
   const success = !pending && tx && tx.receipt?.status === 1
+  const swapState = useSwapState();
+  const [lastTxSwapState] = useLocalStorage<SwapState>(LOCAL_STORAGE_KEY_SWAP_STATE, swapState)
 
   const cancelPending = useCallback(() => {
+    dispatch(resetSwapState(lastTxSwapState))
     if (!chainId) return
 
     const relayURI = ARCHER_RELAY_URI[chainId]
@@ -134,7 +144,7 @@ export default function Transaction({ hash }: { hash: string }) {
       )
     })
     .catch(err => console.error(err))
-  }, [dispatch, chainId, relay, hash])
+  }, [dispatch, chainId, relay, hash, lastTxSwapState])
 
   if (!chainId) return null
 

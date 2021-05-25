@@ -300,7 +300,7 @@ export default function Swap({ history }: RouteComponentProps) {
     if(parsedAmounts[Field.INPUT] && maxAmountInput && parsedAmounts[Field.INPUT]?.greaterThan(maxAmountInput)) {
       handleMaxInput();
     }
-  }, [handleMaxInput, maxAmountInput]);
+  }, [handleMaxInput, parsedAmounts, maxAmountInput]);
 
   const swapIsUnsupported = useIsTransactionUnsupported(currencies?.INPUT, currencies?.OUTPUT)
 

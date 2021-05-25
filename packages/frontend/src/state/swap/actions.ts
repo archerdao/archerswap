@@ -1,4 +1,5 @@
 import { createAction } from '@reduxjs/toolkit'
+import { SwapState } from './reducer'
 
 export enum Field {
   INPUT = 'INPUT',
@@ -15,4 +16,5 @@ export const replaceSwapState = createAction<{
   outputCurrencyId?: string
   recipient: string | null
 }>('swap/replaceSwapState')
+export const resetSwapState = createAction<SwapState>('swap/resetSwapState')
 export const setRecipient = createAction<{ recipient: string | null }>('swap/setRecipient')

@@ -106,11 +106,16 @@ export default function Transaction({ hash }: { hash: string }) {
   const [lastTxSwapState] = useLocalStorage<SwapState>(LOCAL_STORAGE_KEY_SWAP_STATE, swapState)
 
   const cancelPending = useCallback(() => {
-    dispatch(resetSwapState(lastTxSwapState))
-    if (!chainId) return
+    if (!chainId) {
+      dispatch(resetSwapState(lastTxSwapState))
+      return
+    }
 
     const relayURI = ARCHER_RELAY_URI[chainId]
-    if (!relayURI) return
+    if (!relayURI) {
+      dispatch(resetSwapState(lastTxSwapState))
+      return
+    }
 
     const body = JSON.stringify({
       method: 'archer_cancelTx',
@@ -141,6 +146,7 @@ export default function Transaction({ hash }: { hash: string }) {
           }
         })
       )
+      dispatch(resetSwapState(lastTxSwapState))
     })
     .catch(err => console.error(err))
   }, [dispatch, chainId, relay, hash, lastTxSwapState])

@@ -394,12 +394,24 @@ export default function AccountDetails({
       </UpperSection>
       {!!pendingTransactions.length || !!confirmedTransactions.length ? (
         <LowerSection>
-          <AutoRow mb={'1rem'} style={{ justifyContent: 'space-between' }}>
-            <TYPE.body>Recent Transactions</TYPE.body>
-            <LinkStyledButton onClick={clearAllTransactionsCallback}>(clear all)</LinkStyledButton>
-          </AutoRow>
-          {renderTransactions(pendingTransactions)}
-          {renderTransactions(confirmedTransactions)}
+          {!!confirmedTransactions.length && (
+            <>
+              <AutoRow mb={'1rem'} style={{ justifyContent: 'space-between' }}>
+                <TYPE.body>Recent Transactions</TYPE.body>
+                <LinkStyledButton onClick={clearAllTransactionsCallback}>(clear all)</LinkStyledButton>
+              </AutoRow>
+              {renderTransactions(confirmedTransactions)}
+            </>
+          )}
+          {!!pendingTransactions.length && (
+            <>
+              <AutoRow mb={'1rem'} style={{ justifyContent: 'space-between' }}>
+                <TYPE.body>Pending Transactions</TYPE.body>
+                <LinkStyledButton onClick={clearAllTransactionsCallback}>(clear all)</LinkStyledButton>
+              </AutoRow>
+              {renderTransactions(pendingTransactions)}
+            </>
+          )}
         </LowerSection>
       ) : (
         <LowerSection>

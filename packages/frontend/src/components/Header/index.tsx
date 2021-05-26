@@ -15,7 +15,6 @@ import { YellowCard } from '../Card'
 
 
 import Row, { RowFixed } from '../Row'
-import Menu from 'components/Menu'
 import Web3Status from '../Web3Status'
 import UnderlyingExchangeToggle from '../UnderlyingExchangeToggle'
 
@@ -114,19 +113,6 @@ const AccountElement = styled.div<{ active: boolean }>`
 const HideSmall = styled.span`
   ${({ theme }) => theme.mediaWidth.upToSmall`
     display: none;
-  `};
-`
-
-const HideMedium = styled.span`
-  ${({ theme }) => theme.mediaWidth.upToMedium`
-    display: none;
-  `};
-`
-
-const ShowMedium = styled.span`
-  display: none;
-  ${({ theme }) => theme.mediaWidth.upToMedium`
-    display: inherit;
   `};
 `
 
@@ -245,9 +231,6 @@ export default function Header() {
             {t('swap')}
           </StyledNavLink>
         </HeaderLinks>
-        <ShowMedium>
-          <Menu/>
-        </ShowMedium>
       </HeaderRow>
       <HeaderControls>
         <HeaderElement>
@@ -265,9 +248,6 @@ export default function Header() {
             ) : null}
             <Web3Status />
           </AccountElement>
-          <HideMedium>
-            <Menu/>
-          </HideMedium>
         </HeaderElement>
       </HeaderControls>
     </HeaderFrame>

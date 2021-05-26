@@ -290,14 +290,14 @@ export default function AccountDetails({
       dispatch(
         clearTransactions({ chainId, txHashArray: pendingTransactions })
       )
-  }, [dispatch, chainId])
+  }, [dispatch, chainId, pendingTransactions])
 
   const clearRecentTransactions = useCallback(() => {
     if (chainId)
       dispatch(
         clearTransactions({ chainId, txHashArray: confirmedTransactions })
       )
-  }, [dispatch, chainId])
+  }, [dispatch, chainId, confirmedTransactions])
 
   return (
     <>

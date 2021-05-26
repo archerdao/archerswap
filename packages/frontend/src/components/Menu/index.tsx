@@ -60,7 +60,7 @@ const MenuFlyout = styled.span`
   flex-direction: column;
   font-size: 1rem;
   position: absolute;
-  top: 2.8rem;
+  top: 4rem;
   right: 0rem;
   z-index: 100;
 
@@ -83,7 +83,6 @@ const MenuItem = styled(ExternalLink)`
   }
 `
 
-// const ABOUT_LINK = 'https://archerdao.io/'
 const CODE_LINK = 'https://github.com/archerdao/archerswap'
 const DOCS_LINK = 'https://docs.archerdao.io/'
 const DISCORD_LINK = 'https://discord.com/invite/98GV73f'
@@ -105,27 +104,23 @@ export default function Menu() {
 
       {open && (
         <MenuFlyout>
-          {/* <MenuItem id="link" href={ABOUT_LINK}>
-            <Info size={14} />
-            About
-          </MenuItem> */}
-          <MenuItem id="link" href={DOCS_LINK}>
+          <MenuItem id="DOCS_LINK" href={DOCS_LINK}>
             <BookOpen size={14} />
             Docs
           </MenuItem>
-          <MenuItem id="link" href={CODE_LINK}>
+          <MenuItem id="CODE_LINK" href={CODE_LINK}>
             <Code size={14} />
             Code
           </MenuItem>
-          <MenuItem id="link" href={TWITTER_LINK}>
+          <MenuItem id="TWITTER_LINK" href={TWITTER_LINK}>
             <Twitter size={14} />
             Twitter
           </MenuItem>
-          <MenuItem id="link" href={DISCORD_LINK}>
+          <MenuItem id="DISCORD_LINK" href={DISCORD_LINK}>
             <MessageCircle size={14} />
             Discord
           </MenuItem>
-          <MenuItem id="link" href={TELEGRAM_LINK}>
+          <MenuItem id="TELEGRAM_LINK" href={TELEGRAM_LINK}>
             <Navigation size={14} />
             Telegram
           </MenuItem>

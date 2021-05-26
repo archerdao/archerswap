@@ -286,12 +286,18 @@ export default function AccountDetails({
   }
 
   const clearPendingTransactions = useCallback(() => {
-    if (chainId) dispatch(clearTransactions({ chainId, txHashArray: pendingTransactions }))
+    if (chainId)
+      dispatch(
+        clearTransactions({ chainId, txHashArray: pendingTransactions })
+      )
   }, [dispatch, chainId])
 
   const clearRecentTransactions = useCallback(() => {
-    if (chainId) dispatch(clearTransactions({ chainId, txHashArray: confirmedTransactions }))
-  }, [dispatch, chainId]) 
+    if (chainId)
+      dispatch(
+        clearTransactions({ chainId, txHashArray: confirmedTransactions })
+      )
+  }, [dispatch, chainId])
 
   return (
     <>
@@ -400,18 +406,26 @@ export default function AccountDetails({
         <LowerSection>
           {!!pendingTransactions.length && (
             <>
-              <AutoRow mb={'1rem'} style={{ justifyContent: 'space-between' }}>
+              <AutoRow mb={"1rem"} style={{ justifyContent: "space-between" }}>
                 <TYPE.body>Pending Transactions</TYPE.body>
-                <LinkStyledButton onClick={clearPendingTransactions}>(clear all)</LinkStyledButton>
+                <LinkStyledButton onClick={clearPendingTransactions}>
+                  (clear all)
+                </LinkStyledButton>
               </AutoRow>
               {renderTransactions(pendingTransactions)}
             </>
           )}
           {!!confirmedTransactions.length && (
             <>
-              <AutoRow mb={'1rem'} mt={'3rem'} style={{ justifyContent: 'space-between' }}>
+              <AutoRow
+                mb={"1rem"}
+                mt={pendingTransactions.length > 0 ? "3rem" : "0rem"}
+                style={{ justifyContent: "space-between" }}
+              >
                 <TYPE.body>Recent Transactions</TYPE.body>
-                <LinkStyledButton onClick={clearRecentTransactions}>(clear all)</LinkStyledButton>
+                <LinkStyledButton onClick={clearRecentTransactions}>
+                  (clear all)
+                </LinkStyledButton>
               </AutoRow>
               {renderTransactions(confirmedTransactions)}
             </>
@@ -419,7 +433,9 @@ export default function AccountDetails({
         </LowerSection>
       ) : (
         <LowerSection>
-          <TYPE.body color={theme.text1}>Your transactions will appear here...</TYPE.body>
+          <TYPE.body color={theme.text1}>
+            Your transactions will appear here...
+          </TYPE.body>
         </LowerSection>
       )}
     </>

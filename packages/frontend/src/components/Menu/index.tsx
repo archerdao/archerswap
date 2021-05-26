@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { BookOpen, Code, Info, MessageCircle } from 'react-feather'
+import { BookOpen, Code, MessageCircle, Twitter, Navigation } from 'react-feather'
 import styled from 'styled-components'
 import { ReactComponent as MenuIcon } from '../../assets/images/menu.svg'
 import { useOnClickOutside } from '../../hooks/useOnClickOutside'
@@ -60,12 +60,12 @@ const MenuFlyout = styled.span`
   flex-direction: column;
   font-size: 1rem;
   position: absolute;
-  top: 4rem;
+  top: 2.8rem;
   right: 0rem;
   z-index: 100;
 
   ${({ theme }) => theme.mediaWidth.upToMedium`
-    top: -17.25rem;
+    top: 2.6rem;
   `};
 `
 
@@ -83,7 +83,12 @@ const MenuItem = styled(ExternalLink)`
   }
 `
 
+// const ABOUT_LINK = 'https://archerdao.io/'
 const CODE_LINK = 'https://github.com/archerdao/archerswap'
+const DOCS_LINK = 'https://docs.archerdao.io/'
+const DISCORD_LINK = 'https://discord.com/invite/98GV73f'
+const TWITTER_LINK = 'https://twitter.com/archer_dao'
+const TELEGRAM_LINK = 'https://t.me/archerdao'
 
 export default function Menu() {
   const node = useRef<HTMLDivElement>()
@@ -100,11 +105,11 @@ export default function Menu() {
 
       {open && (
         <MenuFlyout>
-          <MenuItem id="link" href="https://archerdao.io/">
+          {/* <MenuItem id="link" href={ABOUT_LINK}>
             <Info size={14} />
             About
-          </MenuItem>
-          <MenuItem id="link" href="https://docs.archerdao.io">
+          </MenuItem> */}
+          <MenuItem id="link" href={DOCS_LINK}>
             <BookOpen size={14} />
             Docs
           </MenuItem>
@@ -112,9 +117,17 @@ export default function Menu() {
             <Code size={14} />
             Code
           </MenuItem>
-          <MenuItem id="link" href="https://discord.gg/fuDFCJAs">
+          <MenuItem id="link" href={TWITTER_LINK}>
+            <Twitter size={14} />
+            Twitter
+          </MenuItem>
+          <MenuItem id="link" href={DISCORD_LINK}>
             <MessageCircle size={14} />
             Discord
+          </MenuItem>
+          <MenuItem id="link" href={TELEGRAM_LINK}>
+            <Navigation size={14} />
+            Telegram
           </MenuItem>
         </MenuFlyout>
       )}

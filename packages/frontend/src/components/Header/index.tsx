@@ -10,14 +10,15 @@ import styled from 'styled-components'
 import Logo from '../../assets/images/logo.png'
 import { useActiveWeb3React } from '../../hooks'
 import { useETHBalances } from '../../state/wallet/hooks'
+import { useWindowSize } from 'hooks/useWindowSize'
 
 import { YellowCard } from '../Card'
-
 
 import Row, { RowFixed } from '../Row'
 import Menu from 'components/Menu'
 import Web3Status from '../Web3Status'
 import UnderlyingExchangeToggle from '../UnderlyingExchangeToggle'
+import { MEDIA_WIDTHS } from 'theme'
 
 const HeaderFrame = styled.div`
   display: grid;
@@ -114,19 +115,6 @@ const AccountElement = styled.div<{ active: boolean }>`
 const HideSmall = styled.span`
   ${({ theme }) => theme.mediaWidth.upToSmall`
     display: none;
-  `};
-`
-
-const HideMedium = styled.span`
-  ${({ theme }) => theme.mediaWidth.upToMedium`
-    display: none;
-  `};
-`
-
-const ShowMedium = styled.span`
-  display: none;
-  ${({ theme }) => theme.mediaWidth.upToMedium`
-    display: inherit;
   `};
 `
 
@@ -233,6 +221,9 @@ export default function Header() {
   const { t } = useTranslation()
 
   const userEthBalance = useETHBalances(account ? [account] : [])?.[account ?? '']
+  
+  const { width } = useWindowSize()
+  const isMediumScreenView = width && width < MEDIA_WIDTHS.upToMedium
 
   return (
     <HeaderFrame>
@@ -245,9 +236,7 @@ export default function Header() {
             {t('swap')}
           </StyledNavLink>
         </HeaderLinks>
-        <ShowMedium>
-          <Menu/>
-        </ShowMedium>
+        {isMediumScreenView && <Menu/>}
       </HeaderRow>
       <HeaderControls>
         <HeaderElement>
@@ -265,9 +254,7 @@ export default function Header() {
             ) : null}
             <Web3Status />
           </AccountElement>
-          <HideMedium>
-            <Menu/>
-          </HideMedium>
+          {!isMediumScreenView && <Menu/> }
         </HeaderElement>
       </HeaderControls>
     </HeaderFrame>

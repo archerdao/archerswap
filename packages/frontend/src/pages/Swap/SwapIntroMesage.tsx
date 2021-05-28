@@ -56,8 +56,12 @@ const CloseColor = styled(Close)`
   }
 `
 
+const StyledCardBGImage = styled(CardBGImage)`
+  opacity: 0.15;
+`
+
 const VoteCard = styled(DataCard)`
-  background: radial-gradient(75% 75% at 1.84% 0%,#212429 0%,#000000 100%);
+  background: radial-gradient(75% 75% at 1.84% 0%,#40444f 0%,#212429 100%);
   overflow: hidden;
 `
 
@@ -77,7 +81,6 @@ export default function SwapIntroMesage() {
     <PageWrapper gap="lg" justify="center">
       <TopSection gap="md">
         <VoteCard>
-          <CardBGImage />
           <CardNoise />
           <CardSection>
             <AutoColumn gap="md">
@@ -100,7 +103,7 @@ export default function SwapIntroMesage() {
               </ExternalLink>
             </AutoColumn>
           </CardSection>
-          <CardBGImage />
+          <StyledCardBGImage />
           <CardNoise />
         </VoteCard>
       </TopSection>

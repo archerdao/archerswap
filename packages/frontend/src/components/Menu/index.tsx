@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { BookOpen, Code, MessageCircle, Twitter, Navigation } from 'react-feather'
+import { Info, BookOpen, Code, MessageCircle, Twitter, Navigation } from 'react-feather'
 import styled from 'styled-components'
 import { ReactComponent as MenuIcon } from '../../assets/images/menu.svg'
 import { useOnClickOutside } from '../../hooks/useOnClickOutside'
@@ -60,12 +60,12 @@ const MenuFlyout = styled.span`
   flex-direction: column;
   font-size: 1rem;
   position: absolute;
-  top: 4rem;
+  top: 3rem;
   right: 0rem;
   z-index: 100;
-
+  
   ${({ theme }) => theme.mediaWidth.upToMedium`
-    top: -17.25rem;
+    top: 2.6rem;
   `};
 `
 
@@ -83,6 +83,7 @@ const MenuItem = styled(ExternalLink)`
   }
 `
 
+const ABOUT_LINK = 'https://medium.com/archer-dao/introducing-archer-swap-e13fe521d5d0'
 const CODE_LINK = 'https://github.com/archerdao/archerswap'
 const DOCS_LINK = 'https://docs.archerdao.io/'
 const DISCORD_LINK = 'https://discord.com/invite/98GV73f'
@@ -104,6 +105,10 @@ export default function Menu() {
 
       {open && (
         <MenuFlyout>
+          <MenuItem id="ABOUT_LINK" href={ABOUT_LINK}>
+            <Info size={14} />
+            About
+          </MenuItem>
           <MenuItem id="DOCS_LINK" href={DOCS_LINK}>
             <BookOpen size={14} />
             Docs

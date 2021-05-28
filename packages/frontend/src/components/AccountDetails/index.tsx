@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux'
 import styled, { ThemeContext } from 'styled-components'
 import { useActiveWeb3React } from '../../hooks'
 import { AppDispatch } from '../../state'
-import { clearAllTransactions } from '../../state/transactions/actions'
+import { clearTransactions } from '../../state/transactions/actions'
 import { shortenAddress } from '../../utils'
 import { AutoRow } from '../Row'
 import Copy from './Copy'
@@ -285,9 +285,19 @@ export default function AccountDetails({
     return null
   }
 
-  const clearAllTransactionsCallback = useCallback(() => {
-    if (chainId) dispatch(clearAllTransactions({ chainId }))
-  }, [dispatch, chainId])
+  const clearPendingTransactions = useCallback(() => {
+    if (chainId)
+      dispatch(
+        clearTransactions({ chainId, txHashArray: pendingTransactions })
+      )
+  }, [dispatch, chainId, pendingTransactions])
+
+  const clearRecentTransactions = useCallback(() => {
+    if (chainId)
+      dispatch(
+        clearTransactions({ chainId, txHashArray: confirmedTransactions })
+      )
+  }, [dispatch, chainId, confirmedTransactions])
 
   return (
     <>
@@ -394,16 +404,38 @@ export default function AccountDetails({
       </UpperSection>
       {!!pendingTransactions.length || !!confirmedTransactions.length ? (
         <LowerSection>
-          <AutoRow mb={'1rem'} style={{ justifyContent: 'space-between' }}>
-            <TYPE.body>Recent Transactions</TYPE.body>
-            <LinkStyledButton onClick={clearAllTransactionsCallback}>(clear all)</LinkStyledButton>
-          </AutoRow>
-          {renderTransactions(pendingTransactions)}
-          {renderTransactions(confirmedTransactions)}
+          {!!pendingTransactions.length && (
+            <>
+              <AutoRow mb={"1rem"} style={{ justifyContent: "space-between" }}>
+                <TYPE.body>Pending Transactions</TYPE.body>
+                <LinkStyledButton onClick={clearPendingTransactions}>
+                  (clear all)
+                </LinkStyledButton>
+              </AutoRow>
+              {renderTransactions(pendingTransactions)}
+            </>
+          )}
+          {!!confirmedTransactions.length && (
+            <>
+              <AutoRow
+                mb={"1rem"}
+                mt={pendingTransactions.length > 0 ? "3rem" : "0rem"}
+                style={{ justifyContent: "space-between" }}
+              >
+                <TYPE.body>Recent Transactions</TYPE.body>
+                <LinkStyledButton onClick={clearRecentTransactions}>
+                  (clear all)
+                </LinkStyledButton>
+              </AutoRow>
+              {renderTransactions(confirmedTransactions)}
+            </>
+          )}
         </LowerSection>
       ) : (
         <LowerSection>
-          <TYPE.body color={theme.text1}>Your transactions will appear here...</TYPE.body>
+          <TYPE.body color={theme.text1}>
+            Your transactions will appear here...
+          </TYPE.body>
         </LowerSection>
       )}
     </>

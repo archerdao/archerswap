@@ -23,6 +23,7 @@ import SwapHeader from '../../components/swap/SwapHeader'
 import MinerTip from './MinerTip';
 
 import { ARCHER_RELAY_URI, ARCHER_ROUTER_ADDRESS } from '../../constants'
+import { SwapState, LOCAL_STORAGE_KEY_SWAP_STATE } from 'state/swap/reducer'
 import { getTradeVersion } from '../../data/V1'
 import { useActiveWeb3React } from '../../hooks'
 import { useCurrency, useAllTokens } from '../../hooks/Tokens'
@@ -31,6 +32,7 @@ import useENSAddress from '../../hooks/useENSAddress'
 import { useSwapCallback } from '../../hooks/useSwapCallback'
 import useWrapCallback, { WrapType } from '../../hooks/useWrapCallback'
 import { useToggleSettingsMenu, useWalletModalToggle } from '../../state/application/hooks'
+import useLocalStorage from 'hooks/useLocalStorage'
 import { Field } from '../../state/swap/actions'
 import {
   useDefaultsFromURLSearch,
@@ -92,7 +94,9 @@ export default function Swap({ history }: RouteComponentProps) {
   const [ethTip] = useUserETHTip()
 
   // swap state
-  const { independentField, typedValue, recipient } = useSwapState()
+  const swapState = useSwapState()
+  const { independentField, typedValue, recipient } = swapState
+  const [,setLastTxSwapState] = useLocalStorage<SwapState>(LOCAL_STORAGE_KEY_SWAP_STATE, swapState)
   const {
     v2Trade,
     currencyBalances,
@@ -211,6 +215,7 @@ export default function Swap({ history }: RouteComponentProps) {
     swapCallback()
       .then(hash => {
         setSwapState({ attemptingTxn: false, tradeToConfirm, showConfirm, swapErrorMessage: undefined, txHash: hash })
+        setLastTxSwapState(swapState);
 
         ReactGA.event({
           category: 'Swap',
@@ -246,11 +251,13 @@ export default function Swap({ history }: RouteComponentProps) {
     swapCallback,
     tradeToConfirm,
     showConfirm,
+    setLastTxSwapState,
     recipient,
     recipientAddress,
     account,
     trade,
-    singleHopOnly
+    singleHopOnly,
+    swapState
   ])
 
   // errors

@@ -22,6 +22,7 @@ export const addTransaction = createAction<{
   relay?: { rawTransaction: string, deadline: number, nonce: number, ethTip: string }
 }>('transactions/addTransaction')
 export const clearAllTransactions = createAction<{ chainId: ChainId }>('transactions/clearAllTransactions')
+export const clearTransactions = createAction<{chainId: ChainId, txHashArray: string[]}>('transactions/clearTransactions')
 export const finalizeTransaction = createAction<{
   chainId: ChainId
   hash: string

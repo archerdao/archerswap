@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { BookOpen, Code, Info, MessageCircle } from 'react-feather'
+import { BookOpen, Code, MessageCircle, Twitter, Navigation } from 'react-feather'
 import styled from 'styled-components'
 import { ReactComponent as MenuIcon } from '../../assets/images/menu.svg'
 import { useOnClickOutside } from '../../hooks/useOnClickOutside'
@@ -84,6 +84,10 @@ const MenuItem = styled(ExternalLink)`
 `
 
 const CODE_LINK = 'https://github.com/archerdao/archerswap'
+const DOCS_LINK = 'https://docs.archerdao.io/'
+const DISCORD_LINK = 'https://discord.com/invite/98GV73f'
+const TWITTER_LINK = 'https://twitter.com/archer_dao'
+const TELEGRAM_LINK = 'https://t.me/archerdao'
 
 export default function Menu() {
   const node = useRef<HTMLDivElement>()
@@ -100,21 +104,25 @@ export default function Menu() {
 
       {open && (
         <MenuFlyout>
-          <MenuItem id="link" href="https://archerdao.io/">
-            <Info size={14} />
-            About
-          </MenuItem>
-          <MenuItem id="link" href="https://docs.archerdao.io">
+          <MenuItem id="DOCS_LINK" href={DOCS_LINK}>
             <BookOpen size={14} />
             Docs
           </MenuItem>
-          <MenuItem id="link" href={CODE_LINK}>
+          <MenuItem id="CODE_LINK" href={CODE_LINK}>
             <Code size={14} />
             Code
           </MenuItem>
-          <MenuItem id="link" href="https://discord.gg/fuDFCJAs">
+          <MenuItem id="TWITTER_LINK" href={TWITTER_LINK}>
+            <Twitter size={14} />
+            Twitter
+          </MenuItem>
+          <MenuItem id="DISCORD_LINK" href={DISCORD_LINK}>
             <MessageCircle size={14} />
             Discord
+          </MenuItem>
+          <MenuItem id="TELEGRAM_LINK" href={TELEGRAM_LINK}>
+            <Navigation size={14} />
+            Telegram
           </MenuItem>
         </MenuFlyout>
       )}

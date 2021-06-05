@@ -34,3 +34,4 @@ export const updateUserGasPrice = createAction<{ userGasPrice: string }>('user/u
 export const updateUserETHTip = createAction<{ userETHTip: string }>('user/updateUserETHTip')
 export const updateUserGasEstimate = createAction<{ userGasEstimate: string }>('user/updateUserGasEstimate')
 export const updateUserTipManualOverride = createAction<{ userTipManualOverride: boolean }>('user/updateUserTipManualOverride')
+export const updateUserUseGaslessTransaction = createAction<{ userUseGaslessTransaction: boolean }>('user/updateUserUseGaslessTransaction')

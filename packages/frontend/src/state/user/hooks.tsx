@@ -25,7 +25,8 @@ import {
   updateUserGasPrice,
   updateUserETHTip,
   updateUserGasEstimate,
-  updateUserTipManualOverride
+  updateUserTipManualOverride,
+  updateUserUseGaslessTransaction
 } from './actions'
 
 function serializeToken(token: Token): SerializedToken {
@@ -345,6 +346,22 @@ export function useUserETHTip(): [string, (newETHTip: string) => void] {
   )
 
   return [userETHTip, setUserETHTip]
+}
+
+export function useUserUseGaslessTransaction(): [boolean, (newGaslessTransaction: boolean) => void] {
+  const dispatch = useDispatch<AppDispatch>()
+  const userUseGaslessTransaction = useSelector<AppState, AppState['user']['userUseGaslessTransaction']>(state => {
+    return state.user.userUseGaslessTransaction
+  })
+
+  const setUserUseGaslessTransaction = useCallback(
+    (newGaslessTransaction: boolean) => {
+      dispatch(updateUserUseGaslessTransaction({ userUseGaslessTransaction: newGaslessTransaction }))
+    },
+    [dispatch]
+  )
+
+  return [userUseGaslessTransaction, setUserUseGaslessTransaction]
 }
 
 export function useUserGasEstimate(): [string, (newGasEstimate: string) => void] {

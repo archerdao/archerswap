@@ -96,10 +96,25 @@ export interface SlippageTabsProps {
   ethTip: string,
   setETHTip: (ethTip: string) => void
   tipManualOverride: boolean,
-  setTipManualOverride: (manualOverride: boolean) => void
+  setTipManualOverride: (manualOverride: boolean) => void,
+  userUseGaslessTransaction: boolean,
+  setUserUseGaslessTransaction: (userUseGaslessTransaction: boolean) => void
 }
 
-export default function SlippageTabs({ rawSlippage, setRawSlippage, deadline, setDeadline, useRelay, setUseRelay, ethTip, setETHTip, tipManualOverride, setTipManualOverride }: SlippageTabsProps) {
+export default function SlippageTabs({ 
+  rawSlippage, 
+  setRawSlippage, 
+  deadline, 
+  setDeadline, 
+  useRelay, 
+  setUseRelay, 
+  ethTip, 
+  setETHTip, 
+  tipManualOverride, 
+  setTipManualOverride,
+  userUseGaslessTransaction,
+  setUserUseGaslessTransaction 
+}: SlippageTabsProps) {
   const theme = useContext(ThemeContext)
 
   const inputRef = useRef<HTMLInputElement>()
@@ -334,6 +349,28 @@ export default function SlippageTabs({ rawSlippage, setRawSlippage, deadline, se
                   action: useRelay ? 'disable use relay' : 'enable use relay'
                 })
                 setUseRelay(!useRelay)
+              }}
+            />
+        </RowBetween>
+      </AutoColumn>
+
+      <AutoColumn gap="sm">
+        <RowBetween>
+          <RowFixed>
+            <TYPE.black fontWeight={400} fontSize={14} color={theme.text2}>
+              Pay With Tokens
+            </TYPE.black>
+            <QuestionHelper text="Estimate the amount of the resulting ETH that is expected from the trade and calculate the tip as % of that ETH that equates to the roughly same effective gas price." />
+            </RowFixed>
+            <Toggle
+              id="toggle-tip-manual-override"
+              isActive={userUseGaslessTransaction}
+              toggle={() => {
+                ReactGA.event({
+                  category: 'Use Gasless Transaction',
+                  action: userUseGaslessTransaction ? 'disable gasless transaction' : 'enable gasless transaction'
+                })
+                setUserUseGaslessTransaction(!userUseGaslessTransaction)
               }}
             />
         </RowBetween>

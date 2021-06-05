@@ -20,7 +20,8 @@ import {
   updateUserGasPrice,
   updateUserETHTip,
   updateUserGasEstimate,
-  updateUserTipManualOverride
+  updateUserTipManualOverride,
+  updateUserUseGaslessTransaction
 } from './actions'
 
 const currentTimestamp = () => new Date().getTime()
@@ -63,7 +64,8 @@ export interface UserState {
   userGasPrice: string // Current gas price
   userETHTip: string // ETH tip for relay, as full BigInt string 
   userGasEstimate: string // Gas estimate for trade
-  userTipManualOverride: boolean // is user manually entering tip
+  userTipManualOverride: boolean // is user manually entering tip,
+  userUseGaslessTransaction: boolean // is gasless transaction enabled
 }
 
 function pairKey(token0Address: string, token1Address: string) {
@@ -71,6 +73,7 @@ function pairKey(token0Address: string, token1Address: string) {
 }
 
 export const initialState: UserState = {
+  userUseGaslessTransaction: false,
   userDarkMode: true,
   matchesDarkMode: false,
   userExpertMode: false,
@@ -185,5 +188,8 @@ export default createReducer(initialState, builder =>
     })
     .addCase(updateUserTipManualOverride, (state, action) => {
       state.userTipManualOverride = action.payload.userTipManualOverride
+    })
+    .addCase(updateUserUseGaslessTransaction, (state, action) => {
+      state.userUseGaslessTransaction = action.payload.userUseGaslessTransaction
     })
 )

@@ -97,8 +97,8 @@ export interface SlippageTabsProps {
   setETHTip: (ethTip: string) => void
   tipManualOverride: boolean,
   setTipManualOverride: (manualOverride: boolean) => void,
-  userUseGaslessTransaction: boolean,
-  setUserUseGaslessTransaction: (userUseGaslessTransaction: boolean) => void
+  useGaslessTransaction: boolean,
+  setUseGaslessTransaction: (useGaslessTransaction: boolean) => void
 }
 
 export default function SlippageTabs({ 
@@ -112,8 +112,8 @@ export default function SlippageTabs({
   setETHTip, 
   tipManualOverride, 
   setTipManualOverride,
-  userUseGaslessTransaction,
-  setUserUseGaslessTransaction 
+  useGaslessTransaction,
+  setUseGaslessTransaction 
 }: SlippageTabsProps) {
   const theme = useContext(ThemeContext)
 
@@ -336,45 +336,47 @@ export default function SlippageTabs({
         <RowBetween>
           <RowFixed>
             <TYPE.black fontWeight={400} fontSize={14} color={theme.text2}>
-                Use Archer Network
-              </TYPE.black>
-              <QuestionHelper text="Use the Archer Network to mine the transaction." />
-            </RowFixed>
-            <Toggle
-              id="toggle-use-relay"
-              isActive={useRelay}
-              toggle={() => {
-                ReactGA.event({
-                  category: 'Routing',
-                  action: useRelay ? 'disable use relay' : 'enable use relay'
-                })
-                setUseRelay(!useRelay)
-              }}
-            />
-        </RowBetween>
-      </AutoColumn>
-
-      <AutoColumn gap="sm">
-        <RowBetween>
-          <RowFixed>
-            <TYPE.black fontWeight={400} fontSize={14} color={theme.text2}>
               Pay With Tokens
             </TYPE.black>
             <QuestionHelper text="Estimate the amount of the resulting ETH that is expected from the trade and calculate the tip as % of that ETH that equates to the roughly same effective gas price." />
             </RowFixed>
             <Toggle
               id="toggle-tip-manual-override"
-              isActive={userUseGaslessTransaction}
+              isActive={useGaslessTransaction}
               toggle={() => {
                 ReactGA.event({
                   category: 'Use Gasless Transaction',
-                  action: userUseGaslessTransaction ? 'disable gasless transaction' : 'enable gasless transaction'
+                  action: useGaslessTransaction ? 'disable gasless transaction' : 'enable gasless transaction'
                 })
-                setUserUseGaslessTransaction(!userUseGaslessTransaction)
+                setUseGaslessTransaction(!useGaslessTransaction)
               }}
             />
         </RowBetween>
       </AutoColumn>
+
+      {!useGaslessTransaction && (
+        <AutoColumn gap="sm">
+          <RowBetween>
+            <RowFixed>
+              <TYPE.black fontWeight={400} fontSize={14} color={theme.text2}>
+                  Use Archer Network
+                </TYPE.black>
+                <QuestionHelper text="Use the Archer Network to mine the transaction." />
+              </RowFixed>
+              <Toggle
+                id="toggle-use-relay"
+                isActive={useRelay}
+                toggle={() => {
+                  ReactGA.event({
+                    category: 'Routing',
+                    action: useRelay ? 'disable use relay' : 'enable use relay'
+                  })
+                  setUseRelay(!useRelay)
+                }}
+              />
+          </RowBetween>
+        </AutoColumn> 
+      )}
 
     </AutoColumn>
   )

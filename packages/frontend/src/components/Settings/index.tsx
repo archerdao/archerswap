@@ -213,8 +213,8 @@ export default function SettingsTab() {
               setTipManualOverride={setUserTipManualOverride}
               useRelay={userUseRelay}
               setUseRelay={setUserUseRelay}
-              userUseGaslessTransaction={userUseGaslessTransaction}
-              setUserUseGaslessTransaction={setUserUseGaslessTransaction}
+              useGaslessTransaction={userUseGaslessTransaction}
+              setUseGaslessTransaction={setUserUseGaslessTransaction}
             />
             <Text fontWeight={600} fontSize={14}>
               Interface Settings

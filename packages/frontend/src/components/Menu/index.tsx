@@ -60,12 +60,12 @@ const MenuFlyout = styled.span`
   flex-direction: column;
   font-size: 1rem;
   position: absolute;
-  top: 3rem;
+  top: 3.2rem;
   right: 0rem;
   z-index: 100;
   
   ${({ theme }) => theme.mediaWidth.upToMedium`
-    top: 2.6rem;
+    top: 2.8rem;
   `};
 `
 

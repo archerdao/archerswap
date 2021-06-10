@@ -50,6 +50,7 @@ import Loader from '../../components/Loader'
 import { useIsTransactionUnsupported } from 'hooks/Trades'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import { RouteComponentProps } from 'react-router-dom'
+import SwapIntroMesage from './SwapIntroMesage'
 
 export default function Swap({ history }: RouteComponentProps) {
   const loadedUrlParams = useDefaultsFromURLSearch()
@@ -313,6 +314,7 @@ export default function Swap({ history }: RouteComponentProps) {
 
   return (
     <>
+      <SwapIntroMesage/>
       <TokenWarningModal
         isOpen={importTokensNotInDefault.length > 0 && !dismissTokenWarning}
         tokens={importTokensNotInDefault}

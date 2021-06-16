@@ -40,7 +40,7 @@ import {
   useSwapActionHandlers,
   useSwapState
 } from '../../state/swap/hooks'
-import { useExpertModeManager, useUserSlippageTolerance, useUserSingleHopOnly, useUserUnderlyingExchangeAddresses, useUserUseRelay, useUserTransactionTTL, useUserETHTip } from '../../state/user/hooks'
+import { useExpertModeManager, useUserSlippageTolerance, useUserSingleHopOnly, useUserUnderlyingExchangeAddresses, useUserUseRelay, useUserTransactionTTL, useUserETHTip, useUserUseGaslessTransaction } from '../../state/user/hooks'
 import { LinkStyledButton, TYPE } from '../../theme'
 import { maxAmountSpend } from '../../utils/maxAmountSpend'
 import { computeTradePriceBreakdown, warningSeverity } from '../../utils/prices'
@@ -113,6 +113,8 @@ export default function Swap({ history }: RouteComponentProps) {
   const showWrap: boolean = wrapType !== WrapType.NOT_APPLICABLE
   const { address: recipientAddress } = useENSAddress(recipient)
   const [useRelay] = useUserUseRelay()
+  const [useGaslessTransaction] = useUserUseGaslessTransaction();
+  console.log("useGaslessTransaction", useGaslessTransaction);
   const doRelay = relay !== undefined && useRelay
 
   const trade = showWrap ? undefined : v2Trade
@@ -268,7 +270,7 @@ export default function Swap({ history }: RouteComponentProps) {
 
   // show approve flow when: no error on inputs, not approved or pending, or approved in current session
   // never show if price impact is above threshold in non expert mode
-  const showApproveFlow =
+  const showApproveFlow = 
     !swapInputError &&
     (approval === ApprovalState.NOT_APPROVED ||
       approval === ApprovalState.PENDING ||

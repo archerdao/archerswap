@@ -8,6 +8,7 @@ import {
   useUserGasPrice,
   useUserSlippageTolerance
 } from "state/user/hooks";
+// import { useDerivedSwapInfo } from "state/swap/hooks";
 import useArcherMinerTips from "hooks/useArcherMinerTips";
 import { RowBetween } from "components/Row";
 import { ClickableText } from "pages/Pool/styleds";
@@ -65,6 +66,9 @@ export default function MinerTip() {
   const [, setUserSlippageTolerance] = useUserSlippageTolerance();
   const { data: tips } = useArcherMinerTips();
   const [value, setValue] = React.useState<number>(0);
+  // const {
+  //   currencies
+  // } = useDerivedSwapInfo()
 
   const marks: Record<number, { label: string, price: string, slippage: number }> = React.useMemo(
     () => getMarksFromTips(tips),

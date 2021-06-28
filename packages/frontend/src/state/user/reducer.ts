@@ -1,4 +1,4 @@
-import { INITIAL_ALLOWED_SLIPPAGE, DEFAULT_DEADLINE_FROM_NOW, DEFAULT_ETH_TIP, DEFAULT_GAS_PRICES, DEFAULT_GAS_ESTIMATE } from '../../constants'
+import { INITIAL_ALLOWED_SLIPPAGE, DEFAULT_DEADLINE_FROM_NOW, DEFAULT_ETH_TIP, DEFAULT_GAS_PRICES, DEFAULT_GAS_ESTIMATE, DEFAULT_TOKEN_TIP } from '../../constants'
 import { createReducer } from '@reduxjs/toolkit'
 import { updateVersion } from '../global/actions'
 import {
@@ -20,7 +20,9 @@ import {
   updateUserGasPrice,
   updateUserETHTip,
   updateUserGasEstimate,
-  updateUserTipManualOverride
+  updateUserTipManualOverride,
+  updateUserUseGaslessTransaction,
+  updateUserTokenTip
 } from './actions'
 
 const currentTimestamp = () => new Date().getTime()
@@ -61,9 +63,11 @@ export interface UserState {
   userUnderlyingExchange: string // underlying IUniswapV2Router02 to use
   userUseRelay: boolean // use relay or go directly to router
   userGasPrice: string // Current gas price
-  userETHTip: string // ETH tip for relay, as full BigInt string 
+  userETHTip: string // ETH tip for relay, as full BigInt string,
+  userTokenTip: number // Percent of Token tip for Gasless Transaction,
   userGasEstimate: string // Gas estimate for trade
-  userTipManualOverride: boolean // is user manually entering tip
+  userTipManualOverride: boolean // is user manually entering tip,
+  userUseGaslessTransaction: boolean // is gasless transaction enabled,
 }
 
 function pairKey(token0Address: string, token1Address: string) {
@@ -71,6 +75,8 @@ function pairKey(token0Address: string, token1Address: string) {
 }
 
 export const initialState: UserState = {
+  userTokenTip: DEFAULT_TOKEN_TIP,
+  userUseGaslessTransaction: false,
   userDarkMode: true,
   matchesDarkMode: false,
   userExpertMode: false,
@@ -89,7 +95,8 @@ export const initialState: UserState = {
   userTipManualOverride: false
 }
 
-export default createReducer(initialState, builder =>
+
+export default createReducer(initialState, builder => 
   builder
     .addCase(updateVersion, state => {
       // slippage isnt being tracked in local storage, reset to default
@@ -185,5 +192,11 @@ export default createReducer(initialState, builder =>
     })
     .addCase(updateUserTipManualOverride, (state, action) => {
       state.userTipManualOverride = action.payload.userTipManualOverride
+    })
+    .addCase(updateUserUseGaslessTransaction, (state, action) => {
+      state.userUseGaslessTransaction = action.payload.userUseGaslessTransaction
+    })
+    .addCase(updateUserTokenTip, (state, action) => {
+      state.userTokenTip = action.payload.userTokenTip
     })
 )

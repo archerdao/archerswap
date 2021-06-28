@@ -35,6 +35,7 @@ const HeaderWrapper = styled.div`
 `
 
 const BodyWrapper = styled.div`
+  min-height: 810px;
   display: flex;
   flex-direction: column;
   width: 100%;

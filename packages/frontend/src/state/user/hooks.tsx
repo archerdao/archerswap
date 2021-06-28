@@ -25,7 +25,9 @@ import {
   updateUserGasPrice,
   updateUserETHTip,
   updateUserGasEstimate,
-  updateUserTipManualOverride
+  updateUserTipManualOverride,
+  updateUserUseGaslessTransaction,
+  updateUserTokenTip
 } from './actions'
 
 function serializeToken(token: Token): SerializedToken {
@@ -345,6 +347,38 @@ export function useUserETHTip(): [string, (newETHTip: string) => void] {
   )
 
   return [userETHTip, setUserETHTip]
+}
+
+export function useUserTokenTip(): [number, (newTokenTip: number) => void] {
+  const dispatch = useDispatch<AppDispatch>()
+  const userTokenTip = useSelector<AppState, AppState['user']['userTokenTip']>(state => {
+    return state.user.userTokenTip
+  })
+
+  const setUserTokenTip = useCallback(
+    (newTokenTip: number) => {
+      dispatch(updateUserTokenTip({ userTokenTip: newTokenTip }))
+    },
+    [dispatch]
+  )
+
+  return [userTokenTip, setUserTokenTip]
+}
+
+export function useUserUseGaslessTransaction(): [boolean, (newGaslessTransaction: boolean) => void] {
+  const dispatch = useDispatch<AppDispatch>()
+  const userUseGaslessTransaction = useSelector<AppState, AppState['user']['userUseGaslessTransaction']>(state => {
+    return state.user.userUseGaslessTransaction
+  })
+
+  const setUserUseGaslessTransaction = useCallback(
+    (newGaslessTransaction: boolean) => {
+      dispatch(updateUserUseGaslessTransaction({ userUseGaslessTransaction: newGaslessTransaction }))
+    },
+    [dispatch]
+  )
+
+  return [userUseGaslessTransaction, setUserUseGaslessTransaction]
 }
 
 export function useUserGasEstimate(): [string, (newGasEstimate: string) => void] {

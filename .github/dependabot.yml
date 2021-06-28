@@ -8,12 +8,14 @@ updates:
   open-pull-requests-limit: 10
 - package-ecosystem: npm
   directory: "/packages/frontend/"
+  target-branch: "dev"
   schedule:
     interval: monthly
     time: "21:00"
   open-pull-requests-limit: 10
 - package-ecosystem: npm
   directory: "/packages/smart-contracts/"
+  target-branch: "dev"
   schedule:
     interval: monthly
     time: "22:00"

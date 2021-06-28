@@ -12,7 +12,7 @@ import { useActiveWeb3React } from './index'
 import useTransactionDeadline from './useTransactionDeadline'
 import useENS from './useENS'
 import { Version } from './useToggledVersion'
-import { useUserETHTip, useUserUnderlyingExchangeAddresses, useUserUseRelay, useUserUseGaslessTransaction} from '../state/user/hooks'
+import { useUserETHTip, useUserUnderlyingExchangeAddresses, useUserUseRelay, useUserUseGaslessTransaction, useUserTokenTip} from '../state/user/hooks'
 import { ethers } from 'ethers'
 import Common from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
@@ -56,6 +56,7 @@ export function useSwapCallArguments(
   const [useRelay] = useUserUseRelay()
   const [useGaslessTransaction] = useUserUseGaslessTransaction();
   const [ethTip] = useUserETHTip()
+  const [userTokenTip] = useUserTokenTip();
 
   const { address: recipientAddress } = useENS(recipientAddressOrName)
   const recipient = recipientAddressOrName === null ? account : recipientAddress
@@ -111,13 +112,13 @@ export function useSwapCallArguments(
           allowedSlippage: new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE),
           recipient,
           deadline: deadline.toNumber(),
-          ethTip: CurrencyAmount.ether(ethTip)
-        })
-      )
+          ethTip: CurrencyAmount.ether(ethTip),
+        }, {tipPct: userTokenTip, pathToEth: "0x7889123", minEth: 0}),
+      );
     }
 
     return swapMethods.map(parameters => ({ parameters, contract }))
-  }, [account, allowedSlippage, chainId, deadline, library, recipient, trade, useRelay, exchange, ethTip, useGaslessTransaction])
+  }, [account, allowedSlippage, chainId, deadline, library, recipient, trade, useRelay, exchange, ethTip, useGaslessTransaction, useUserTokenTip, userTokenTip])
 }
 
 // returns a function that will execute a swap, if the parameters are all valid
@@ -216,6 +217,7 @@ export function useSwapCallback(
           },
           gasEstimate
         } = successfulEstimation
+
 
         const postToRelay = (rawTransaction: string, deadline: number) => {
           // as a wise man on the critically acclaimed hit TV series "MTV's Cribs" once said:

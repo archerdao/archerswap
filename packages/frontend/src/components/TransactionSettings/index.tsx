@@ -12,6 +12,8 @@ import { CurrencyAmount, ETHER } from '@archerswap/sdk'
 import { tryParseAmount } from '../../state/swap/hooks'
 import Toggle from '../Toggle'
 
+import { useUserTokenTip } from 'state/user/hooks'
+
 enum SlippageError {
   InvalidInput = 'InvalidInput',
   RiskyLow = 'RiskyLow',
@@ -23,6 +25,10 @@ enum DeadlineError {
 }
 
 enum ETHTipError {
+  InvalidInput = 'InvalidInput'
+}
+
+enum TokenTipError {
   InvalidInput = 'InvalidInput'
 }
 
@@ -122,10 +128,13 @@ export default function SlippageTabs({
   const [slippageInput, setSlippageInput] = useState('')
   const [deadlineInput, setDeadlineInput] = useState('')
   const [ethTipInput, setETHTipInput] = useState('')
+  const [tokenTipInput, setTokenTipInput] = useState('')
+  const [userTokenTip, setTokenTip] = useUserTokenTip();
 
   const slippageInputIsValid =
     slippageInput === '' || (rawSlippage / 100).toFixed(2) === Number.parseFloat(slippageInput).toFixed(2)
   const deadlineInputIsValid = deadlineInput === '' || (deadline / 60).toString() === deadlineInput
+  const tokenTipInputIsValid = tokenTipInput === '' || userTokenTip.toString() === tokenTipInput
   const ethTipInputIsValid = ethTipInput === '' || ethTipInput === '0' || CurrencyAmount.ether(ethTip).toExact() === ethTipInput
 
   let slippageError: SlippageError | undefined
@@ -144,6 +153,13 @@ export default function SlippageTabs({
     deadlineError = DeadlineError.InvalidInput
   } else {
     deadlineError = undefined
+  }
+
+  let tokenTipError: TokenTipError | undefined
+  if (tokenTipInput !== '' && !tokenTipInputIsValid) {
+    tokenTipError = TokenTipError.InvalidInput
+  } else {
+    tokenTipError = undefined
   }
 
   let ethTipError: ETHTipError | undefined
@@ -171,6 +187,17 @@ export default function SlippageTabs({
       const valueAsInt: number = Number.parseInt(value) * 60
       if (!Number.isNaN(valueAsInt) && valueAsInt > 0) {
         setDeadline(valueAsInt)
+      }
+    } catch {}
+  }
+
+  function parseTokenTip(value: string) {
+    setTokenTipInput(value)
+
+    try {
+      const valueAsInt: number = Number.parseFloat(value)
+      if (!Number.isNaN(valueAsInt) && valueAsInt > 0) {
+        setTokenTip(Math.floor(valueAsInt * 1000000))
       }
     } catch {}
   }
@@ -286,28 +313,57 @@ export default function SlippageTabs({
       </AutoColumn>
 
       <AutoColumn gap="sm">
-        <RowFixed>
-          <TYPE.black fontSize={14} fontWeight={400} color={theme.text2}>
-            Miner Tip
-          </TYPE.black>
-          <QuestionHelper text="Tip in ETH to pay to miner to include your transaction if using the Archer Network. Must be greater than competitive gas cost or transaction will not be mined." />
-        </RowFixed>
-        <RowFixed>
-          <OptionCustom style={{ width: '80px' }} tabIndex={-1}>
-            <Input
-              color={!!ethTipError ? 'red' : undefined}
-              onBlur={() => {
-                parseCustomETHTip(CurrencyAmount.ether(ethTip).toExact())
-              }}
-              placeholder={CurrencyAmount.ether(ethTip).toExact()}
-              value={ethTipInput}
-              onChange={e => parseCustomETHTip(e.target.value)}
-            />
-          </OptionCustom>
-          <TYPE.body style={{ paddingLeft: '8px' }} fontSize={14}>
-            ETH
-          </TYPE.body>
-        </RowFixed>
+        {!useGaslessTransaction ? (
+          <>
+            <RowFixed>
+              <TYPE.black fontSize={14} fontWeight={400} color={theme.text2}>
+                Miner Tip
+              </TYPE.black>
+              <QuestionHelper text="Tip in ETH to pay to miner to include your transaction if using the Archer Network. Must be greater than competitive gas cost or transaction will not be mined." />
+            </RowFixed>
+            <RowFixed>
+              <OptionCustom style={{ width: '80px' }} tabIndex={-1}>
+                <Input
+                  color={!!ethTipError ? 'red' : undefined}
+                  onBlur={() => {
+                    parseCustomETHTip(CurrencyAmount.ether(ethTip).toExact())
+                  }}
+                  placeholder={CurrencyAmount.ether(ethTip).toExact()}
+                  value={ethTipInput}
+                  onChange={e => parseCustomETHTip(e.target.value)}
+                />
+              </OptionCustom>
+              <TYPE.body style={{ paddingLeft: '8px' }} fontSize={14}>
+                ETH
+              </TYPE.body>
+            </RowFixed>
+          </>
+          ) : (
+          <>
+            <RowFixed>
+              <TYPE.black fontSize={14} fontWeight={400} color={theme.text2}>
+                Miner Tip
+              </TYPE.black>
+              <QuestionHelper text="Tip in Destination Token to pay to miner to include your transaction using the Archer Network. Must be greater than competitive gas cost or transaction will not be mined." />
+            </RowFixed>
+            <RowFixed>
+              <OptionCustom style={{ width: '80px' }} tabIndex={-1}>
+                <Input
+                  color={!!tokenTipError ? 'red' : undefined}
+                  onBlur={() => {
+                    return userTokenTip;
+                  }}
+                  placeholder={(String)(userTokenTip / 1000000)}
+                  value={tokenTipInput}
+                  onChange={e => parseTokenTip(e.target.value)}
+                />
+              </OptionCustom>
+              <TYPE.body style={{ paddingLeft: '8px' }} fontSize={14}>
+                %
+              </TYPE.body>
+            </RowFixed>
+          </>
+        )}
       </AutoColumn>
 
       <AutoColumn gap="sm">
@@ -348,12 +404,14 @@ export default function SlippageTabs({
                   category: 'Use Gasless Transaction',
                   action: useGaslessTransaction ? 'disable gasless transaction' : 'enable gasless transaction'
                 })
+                setUseRelay(!useGaslessTransaction);
                 setUseGaslessTransaction(!useGaslessTransaction)
               }}
             />
         </RowBetween>
       </AutoColumn>
 
+      
       {!useGaslessTransaction && (
         <AutoColumn gap="sm">
           <RowBetween>

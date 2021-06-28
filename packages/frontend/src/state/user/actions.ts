@@ -35,3 +35,4 @@ export const updateUserETHTip = createAction<{ userETHTip: string }>('user/updat
 export const updateUserGasEstimate = createAction<{ userGasEstimate: string }>('user/updateUserGasEstimate')
 export const updateUserTipManualOverride = createAction<{ userTipManualOverride: boolean }>('user/updateUserTipManualOverride')
 export const updateUserUseGaslessTransaction = createAction<{ userUseGaslessTransaction: boolean }>('user/updateUserUseGaslessTransaction')
+export const updateUserTokenTip = createAction<{ userTokenTip: number }>('user/updateUserTokenTip')

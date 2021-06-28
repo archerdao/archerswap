@@ -6,7 +6,9 @@ import {
   useUserTipManualOverride,
   useUserETHTip,
   useUserGasPrice,
-  useUserSlippageTolerance
+  useUserSlippageTolerance,
+  useUserUseGaslessTransaction,
+  useUserTokenTip
 } from "state/user/hooks";
 // import { useDerivedSwapInfo } from "state/swap/hooks";
 import useArcherMinerTips from "hooks/useArcherMinerTips";
@@ -66,9 +68,16 @@ export default function MinerTip() {
   const [, setUserSlippageTolerance] = useUserSlippageTolerance();
   const { data: tips } = useArcherMinerTips();
   const [value, setValue] = React.useState<number>(0);
+  const [gaslessTransaction] = useUserUseGaslessTransaction();
+  const [tokenTip] = useUserTokenTip();
+  
   // const {
-  //   currencies
-  // } = useDerivedSwapInfo()
+  //   currencies,
+  //   currencyBalances,
+  //   parsedAmount,
+  //   v2Trade,
+  //   inputError
+  // } = useDerivedSwapInfo();
 
   const marks: Record<number, { label: string, price: string, slippage: number }> = React.useMemo(
     () => getMarksFromTips(tips),
@@ -103,7 +112,7 @@ export default function MinerTip() {
           Miner Tip
         </ClickableText>
         <ClickableText {...textStyleProps} onClick={toggleSettings}>
-          {CurrencyAmount.ether(userETHTip).toFixed(3)} ETH
+        {!gaslessTransaction ? `${CurrencyAmount.ether(userETHTip).toFixed(3)} ETH` : `${tokenTip/1000000} %`}
         </ClickableText>
       </RowBetween>
       {!userTipManualOverride && (

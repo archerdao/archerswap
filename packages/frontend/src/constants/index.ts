@@ -3,7 +3,14 @@ import { ChainId, Percent, Token, WETH } from '@archerswap/sdk'
 import { BigNumber } from '@ethersproject/bignumber'
 import { AbstractConnector } from '@web3-react/abstract-connector'
 
-import { fortmatic, injected, portis, walletconnect, walletlink } from '../connectors'
+import { 
+  fortmatic, 
+  injected, 
+  portis, 
+  walletconnect, 
+  walletlink, 
+  ledger 
+} from '../connectors'
 
 export const ARCHER_ROUTER_ADDRESS: { [chainId in ChainId]?: string } = {
   [ChainId.MAINNET]: '0x87535b160E251167FB7abE239d2467d1127219E4',
@@ -156,6 +163,15 @@ export const SUPPORTED_WALLETS: { [key: string]: WalletInfo } = {
     description: 'Easy-to-use browser extension.',
     href: null,
     color: '#E8831D'
+  },
+  Leadger: {
+    connector: ledger,
+    name: 'Leadger',
+    iconName: 'leadgerWallet.svg',
+    description: 'Connect with Leadger Device',
+    href: null,
+    color: '#315CF5',
+    mobile: true,
   },
   WALLET_CONNECT: {
     connector: walletconnect,

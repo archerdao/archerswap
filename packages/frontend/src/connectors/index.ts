@@ -1,17 +1,20 @@
 import { Web3Provider } from '@ethersproject/providers'
+
 import { InjectedConnector } from '@web3-react/injected-connector'
 import { WalletConnectConnector } from '@web3-react/walletconnect-connector'
 import { WalletLinkConnector } from '@web3-react/walletlink-connector'
 import { PortisConnector } from '@web3-react/portis-connector'
-
 import { FortmaticConnector } from './Fortmatic'
 import { NetworkConnector } from './NetworkConnector'
+import { LedgerConnector } from '@web3-react/ledger-connector'
 import ARCHERSWAP_LOGO_URL from '../assets/images/logo.png'
 
 const NETWORK_URL = process.env.REACT_APP_NETWORK_URL
 const FORMATIC_KEY = process.env.REACT_APP_FORTMATIC_KEY
 const PORTIS_ID = process.env.REACT_APP_PORTIS_ID
 const WALLETCONNECT_BRIDGE_URL = process.env.REACT_APP_WALLETCONNECT_BRIDGE_URL
+
+const POLLING_INTERVAL = 12000
 
 export const NETWORK_CHAIN_ID: number = parseInt(process.env.REACT_APP_CHAIN_ID ?? '1')
 
@@ -57,4 +60,11 @@ export const walletlink = new WalletLinkConnector({
   url: NETWORK_URL,
   appName: 'Archerswap',
   appLogoUrl: ARCHERSWAP_LOGO_URL
+})
+
+//mainnet only
+export const ledger = new LedgerConnector({ 
+  chainId: 1, 
+  url: NETWORK_URL, 
+  pollingInterval: POLLING_INTERVAL
 })

@@ -52,7 +52,7 @@ const LedgerConnect = ({ open, handleDismiss} : LedgerConnectProps ) => {
   }
 
   const confirmAccount = () => {
-
+    handleDismiss();
   }
 
   React.useEffect(() => {

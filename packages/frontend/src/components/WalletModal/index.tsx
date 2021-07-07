@@ -179,10 +179,6 @@ export default function WalletModal({
       }
       return true
     })
-
-    if(connector === ledger) {
-      toggleLedgerConnectModal();
-    }
     // log selected wallet
     ReactGA.event({
       category: 'Wallet',

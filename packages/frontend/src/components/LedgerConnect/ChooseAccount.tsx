@@ -76,7 +76,6 @@ const ChooseAccount = ({ handleConfirm, derivationPath }: ChooseAccountProps ) =
   }
 
   const handleConfirmAccount = () => {
-    fetchAccounts();
     handleConfirm();
   }
 
@@ -108,7 +107,7 @@ const ChooseAccount = ({ handleConfirm, derivationPath }: ChooseAccountProps ) =
   }
 
   return (
-    <>
+    <div style={{textAlign: 'center'}}>
       <SectionTitle style={{marginBottom: '30px'}}>Available Ledger Accounts</SectionTitle>
       <div style={{ marginBottom: '30px' }}>
         {accounts.map(account => (
@@ -129,10 +128,10 @@ const ChooseAccount = ({ handleConfirm, derivationPath }: ChooseAccountProps ) =
           Load More...
         </ButtonLight>
       )}
-      <ButtonPrimary onClick={handleConfirmAccount} style={{marginTop: '50px'}}>
+      <ButtonPrimary onClick={handleConfirmAccount} style={{marginTop: '20px'}}>
         Confirm
       </ButtonPrimary>
-    </>
+    </div>
   )
 }
 

@@ -30,7 +30,7 @@ const ChooseAccount = ({ handleConfirm, derivationPath }: ChooseAccountProps ) =
   const [fetchingAccounts, setFetchingAccounts] = React.useState(false);
   const [pageNumber, setPageNumber] = React.useState(1);
  
-  const tryActivation = React.useCallback(() => {
+  const tryActivation = () => {
     setLoading(true);
     activate(ledger, undefined, true).then(() => {
       setLoading(false);
@@ -41,9 +41,9 @@ const ChooseAccount = ({ handleConfirm, derivationPath }: ChooseAccountProps ) =
         setPendingError(true);
       }
     });
-  }, [activate]);
+  }
 
-  const fetchAccounts = React.useCallback(() => {
+  const fetchAccounts = () => {
     setFetchingAccounts(true);
     (connector as LedgerConnector).getAccounts(pageNumber).then(res => {
       setAccounts([...accounts, ...res]);
@@ -52,7 +52,7 @@ const ChooseAccount = ({ handleConfirm, derivationPath }: ChooseAccountProps ) =
       setPendingError(true);
       setFetchingAccounts(false);
     })
-  }, [accounts, connector, pageNumber ]);
+  }
 
   const handleLoadMore = () => {
     setPageNumber(pageNumber + 1);
@@ -69,14 +69,14 @@ const ChooseAccount = ({ handleConfirm, derivationPath }: ChooseAccountProps ) =
     tryActivation();
     setAccounts([]);
     setPageNumber(0);
-  }, [tryActivation]);
+  }, []);
 
 
   React.useEffect(() => {
     if(!loading) {
       fetchAccounts();
     }
-  }, [loading, fetchAccounts])
+  }, [loading, connector])
 
   if(error || loading) {
     return (
@@ -110,7 +110,7 @@ const ChooseAccount = ({ handleConfirm, derivationPath }: ChooseAccountProps ) =
       <SectionTitle style={{marginBottom: '30px'}}>Available Ledger Accounts</SectionTitle>
       <div style={{ marginBottom: '30px' }}>
         {accounts.map((account, index) => (
-          <RowFixed key={index}>
+          <RowFixed key={account}>
             <TYPE.black fontWeight={400} fontSize={14} color={theme.text2}>
               {account}
             </TYPE.black>

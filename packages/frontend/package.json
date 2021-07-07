@@ -131,6 +131,7 @@
   "license": "GPL-3.0-or-later",
   "dependencies": {
     "@uniswap/default-token-list": "^2.0.0",
-    "@web3-react/ledger-connector": "git+https://github.com/Dire-0x/ledger-connector.git"
+    "@web3-react/ledger-connector": "git+https://github.com/Dire-0x/ledger-connector.git",
+    "web3-provider-ledger": "^1.0.6"
   }
 }

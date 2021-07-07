@@ -164,11 +164,11 @@ export const SUPPORTED_WALLETS: { [key: string]: WalletInfo } = {
     href: null,
     color: '#E8831D'
   },
-  Leadger: {
+  Ledger: {
     connector: ledger,
-    name: 'Leadger',
+    name: 'Ledger',
     iconName: 'ledgerWalletIcon.svg',
-    description: 'Connect with Leadger Device',
+    description: 'Connect with Ledger Device',
     href: null,
     color: '#315CF5',
     mobile: true,

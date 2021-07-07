@@ -110,12 +110,12 @@ const ChooseAccount = ({ handleConfirm, derivationPath }: ChooseAccountProps ) =
     <div style={{textAlign: 'center'}}>
       <SectionTitle style={{marginBottom: '30px'}}>Available Ledger Accounts</SectionTitle>
       <div style={{ marginBottom: '30px' }}>
-        {accounts.map(account => (
-            <RowFixed>
-              <TYPE.black fontWeight={400} fontSize={14} color={theme.text2}>
-                {account}
-              </TYPE.black>
-            </RowFixed>
+        {accounts.map((account, index) => (
+          <RowFixed key={index}>
+            <TYPE.black fontWeight={400} fontSize={14} color={theme.text2}>
+              {account}
+            </TYPE.black>
+          </RowFixed>
         ))}
       </div>
       {fetchingAccounts ? (

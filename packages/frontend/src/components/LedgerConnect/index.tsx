@@ -39,11 +39,10 @@ const LedgerConnect = ({ open, handleDismiss} : LedgerConnectProps ) => {
     }
   }
 
-  const handleNext = React.useCallback(() => {
+  const handleNext = () => {
     const newStep = step + 1;
     setStep(newStep);
-  
-  }, [setStep, step, handleDismiss])
+  }
 
   const confirmDerivationPath = (newDerivationPath: string) => {
     setDerivationPath(newDerivationPath);
@@ -79,14 +78,14 @@ const LedgerConnect = ({ open, handleDismiss} : LedgerConnectProps ) => {
           </HeaderRow>
           <ContentWrapper>
             {
-              step == WINDOWS.CONNECTION_TIP && (
+              step === WINDOWS.CONNECTION_TIP && (
                 <ConnectionTip 
                   handleNext={handleNext} 
                 />
               ) 
             }
             {
-              step == WINDOWS.SELECT_DERIVATION_PATH && (
+              step === WINDOWS.SELECT_DERIVATION_PATH && (
                 <SelectDerivationPath 
                   derivationPath={derivationPath} 
                   handleConfirm={confirmDerivationPath} 
@@ -94,7 +93,7 @@ const LedgerConnect = ({ open, handleDismiss} : LedgerConnectProps ) => {
               )
             }
             {
-              step == WINDOWS.CHOOSE_ACCOUNT && (
+              step === WINDOWS.CHOOSE_ACCOUNT && (
                 <ChooseAccount 
                   derivationPath={derivationPath} 
                   handleConfirm={confirmAccount}

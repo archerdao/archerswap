@@ -28,9 +28,9 @@ const ChooseAccount = ({ handleConfirm, derivationPath }: ChooseAccountProps ) =
   const [error, setPendingError] = React.useState(false);
   const [accounts, setAccounts] = React.useState<string[]>([]);
   const [fetchingAccounts, setFetchingAccounts] = React.useState(false);
-  const [pageNumber, setPageNumber] = React.useState(0);
+  const [pageNumber, setPageNumber] = React.useState(1);
  
-  const tryActivation = () => {
+  const tryActivation = React.useCallback(() => {
     setLoading(true);
     activate(ledger, undefined, true).then(() => {
       setLoading(false);
@@ -41,22 +41,9 @@ const ChooseAccount = ({ handleConfirm, derivationPath }: ChooseAccountProps ) =
         setPendingError(true);
       }
     });
-  }
+  }, [activate]);
 
-  React.useEffect(() => {
-    tryActivation();
-    setAccounts([]);
-    setPageNumber(0);
-  }, []);
-
-
-  React.useEffect(() => {
-    if(!loading) {
-      fetchAccounts();
-    }
-  }, [loading, connector])
-
-  const fetchAccounts = () => {
+  const fetchAccounts = React.useCallback(() => {
     setFetchingAccounts(true);
     (connector as LedgerConnector).getAccounts(pageNumber).then(res => {
       setAccounts([...accounts, ...res]);
@@ -65,19 +52,31 @@ const ChooseAccount = ({ handleConfirm, derivationPath }: ChooseAccountProps ) =
       setPendingError(true);
       setFetchingAccounts(false);
     })
-  }
+  }, [accounts, connector, pageNumber ]);
 
   const handleLoadMore = () => {
     setPageNumber(pageNumber + 1);
     setTimeout(() => {
       fetchAccounts();
     }, 0);
-
   }
 
   const handleConfirmAccount = () => {
     handleConfirm();
   }
+
+  React.useEffect(() => {
+    tryActivation();
+    setAccounts([]);
+    setPageNumber(0);
+  }, [tryActivation]);
+
+
+  React.useEffect(() => {
+    if(!loading) {
+      fetchAccounts();
+    }
+  }, [loading, fetchAccounts])
 
   if(error || loading) {
     return (

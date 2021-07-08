@@ -66,5 +66,6 @@ export const walletlink = new WalletLinkConnector({
 export const ledger = new LedgerConnector({ 
   chainId: 1, 
   url: NETWORK_URL, 
-  pollingInterval: POLLING_INTERVAL
+  pollingInterval: POLLING_INTERVAL,
+  baseDerivationPath: `44'/60'/0'/0/0`
 })

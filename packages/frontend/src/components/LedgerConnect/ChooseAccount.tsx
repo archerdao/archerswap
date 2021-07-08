@@ -46,6 +46,7 @@ const ChooseAccount = ({ handleConfirm, derivationPath }: ChooseAccountProps ) =
   const fetchAccounts = () => {
     setFetchingAccounts(true);
     (connector as LedgerConnector).getAccounts(pageNumber).then(res => {
+      console.log(res);
       setAccounts([...accounts, ...res]);
       setFetchingAccounts(false);
     }).catch(err => {

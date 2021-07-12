@@ -44,12 +44,14 @@ const SelectDerivationPath = ({ handleConfirm, derivationPath }: SelectDerivatio
         >
           44'/60'/x'/0/0
         </DerivationItem>
-        <Input 
-          type="text"
-          value={pathText}
-          onChange={handleChangeInput}
-          placeholder="Custom Path"
-        />
+        <div style={{textAlign: "center"}}>
+          <Input 
+            type="text"
+            value={pathText}
+            onChange={handleChangeInput}
+            placeholder="Custom Path"
+          />
+        </div>
       </DerivationSelection>
       <ButtonPrimary 
         onClick={handleConfirmDerivationPath} 

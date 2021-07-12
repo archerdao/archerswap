@@ -131,7 +131,7 @@ export default function WalletModal({
 
   const [walletView, setWalletView] = useState(WALLET_VIEWS.ACCOUNT)
 
-  const [ledgerConnectModal, setLedgerConnectModal] = useState(true);
+  const [ledgerConnectModal, setLedgerConnectModal] = useState(false);
 
   const [pendingWallet, setPendingWallet] = useState<AbstractConnector | undefined>()
 

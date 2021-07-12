@@ -156,8 +156,9 @@ export const DerivationItem = styled.div<{ active: boolean }>`
   }
   &:hover {
     border-color: white;
-    color: white;
   }
+  width: 230px;
+  margin: 0 auto;
 `
 
 export const Input = styled.input`
@@ -173,7 +174,8 @@ export const Input = styled.input`
   text-align: center;
   padding: 4px;
   font-family: monospace;
-  width: 100%;
+  width: 230px;
+  margin: 0 auto;
 `
 
 export const AccountSelectBox = styled.div`

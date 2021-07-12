@@ -90,7 +90,6 @@ export const StyledList = styled.ol`
 
 export const StyledLoader = styled(Loader)`
   margin-right: 1rem;
-  margin-bottom: 1rem;
 `
 
 export const LoadingMessage = styled.div<{ error?: boolean }>`

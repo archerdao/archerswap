@@ -45,6 +45,7 @@ const ChooseAccount = ({ handleConfirm, derivationPath }: ChooseAccountProps ) =
     setSelectedAccountIndex(-1);
     ledger.activate(derivationPath).then(() => {
       setLoading(false);
+      fetchAccounts();
     }).catch((error: any) => { 
       if(error instanceof UnsupportedChainIdError) {
         establishConnection();
@@ -95,18 +96,13 @@ const ChooseAccount = ({ handleConfirm, derivationPath }: ChooseAccountProps ) =
   React.useEffect(() => {
     establishConnection();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [derivationPath])
+
+  React.useEffect(() => {
     return () => {
       ledger.deactivate();
     }
   }, []);
-
-
-  React.useEffect(() => {
-    if(!loading) {
-      fetchAccounts();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading])
 
   const handleChangeAccountIndex = async (index: number) => {
     setSelectedAccountIndex(index);

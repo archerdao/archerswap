@@ -286,6 +286,10 @@ export default function WalletModal({
           <Option
             id={`connect-${key}`}
             onClick={() => {
+              if(option.connector === ledger) {
+                setLedgerConnectModal(true);
+                return;
+              }
               option.connector === connector
                 ? setWalletView(WALLET_VIEWS.ACCOUNT)
                 : !option.href && tryActivation(option.connector)
@@ -337,11 +341,7 @@ export default function WalletModal({
           confirmedTransactions={confirmedTransactions}
           ENSName={ENSName}
           openOptions={() => {
-            if(connector == ledger) {
-              setLedgerConnectModal(true);
-            } else {
-              setWalletView(WALLET_VIEWS.OPTIONS);
-            }
+            setWalletView(WALLET_VIEWS.OPTIONS);
           }}
         />
       )

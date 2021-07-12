@@ -95,6 +95,9 @@ const ChooseAccount = ({ handleConfirm, derivationPath }: ChooseAccountProps ) =
   React.useEffect(() => {
     establishConnection();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      ledger.deactivate();
+    }
   }, []);
 
 

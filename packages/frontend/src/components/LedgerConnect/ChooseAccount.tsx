@@ -80,13 +80,16 @@ const ChooseAccount = ({ handleConfirm, derivationPath }: ChooseAccountProps ) =
     }, 0);
   }
 
-  const handleConfirmAccount = () => {
-    activate(ledger, undefined, true).then(() => {
-      setLoading(false);
+  const handleConfirmAccount = async () => {
+    setLoading(true);
+    try {
+      await ledger.setAccountIndex(selectedAccountIndex);
+      await activate(ledger, undefined, true);
       handleConfirm();
-    }).catch((error: any) => { 
+      setLoading(false);
+    } catch(error) {
       setPendingError(true);
-    });
+    }
   }
 
   React.useEffect(() => {
@@ -103,12 +106,7 @@ const ChooseAccount = ({ handleConfirm, derivationPath }: ChooseAccountProps ) =
   }, [loading])
 
   const handleChangeAccountIndex = async (index: number) => {
-    try {
-      setSelectedAccountIndex(index);
-      await ledger.setAccountIndex(index);
-    } catch(error) {
-      setPendingError(true);
-    }
+    setSelectedAccountIndex(index);
   }
 
   if(error || loading) {

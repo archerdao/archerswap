@@ -131,7 +131,7 @@ export default function WalletModal({
 
   const [walletView, setWalletView] = useState(WALLET_VIEWS.ACCOUNT)
 
-  const [ledgerConnectModal, setLedgerConnectModal] = useState(false);
+  const [ledgerConnectModal, setLedgerConnectModal] = useState(true);
 
   const [pendingWallet, setPendingWallet] = useState<AbstractConnector | undefined>()
 
@@ -336,7 +336,13 @@ export default function WalletModal({
           pendingTransactions={pendingTransactions}
           confirmedTransactions={confirmedTransactions}
           ENSName={ENSName}
-          openOptions={() => setWalletView(WALLET_VIEWS.OPTIONS)}
+          openOptions={() => {
+            if(connector == ledger) {
+              setLedgerConnectModal(true);
+            } else {
+              setWalletView(WALLET_VIEWS.OPTIONS);
+            }
+          }}
         />
       )
     }

@@ -1,18 +1,17 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { UnsupportedChainIdError, useWeb3React } from '@web3-react/core'
 import { LedgerConnector } from '@web3-react/ledger-connector';
 import { ledger } from '../../connectors'
-import { TYPE } from '../../theme'
-import { RowFixed } from '../Row'
 import { ButtonLight, ButtonPrimary } from 'components/Button';
-import  { ThemeContext } from 'styled-components'
 import {
   SectionTitle, 
   LoadingMessage,
   LoadingWrapper,
   ErrorGroup,
   ErrorButton,
-  StyledLoader
+  StyledLoader,
+  AccountSelectBox,
+  AddressItem
 } from './styleds';
 
 interface ChooseAccountProps  {
@@ -20,23 +19,35 @@ interface ChooseAccountProps  {
   readonly derivationPath: string;
 }
 
-const ChooseAccount = ({ handleConfirm, derivationPath }: ChooseAccountProps ) => {
-  const theme = useContext(ThemeContext)
+const unique = (value: string, index:number, self: any) => {
+  return self.indexOf(value) === index
+}
 
-  const { connector, activate} = useWeb3React();
+const formatAddress = (address: string) => {
+  return address.substring(0, 13) + "..." + address.substring(address.length-3, address.length);
+}
+
+const ChooseAccount = ({ handleConfirm, derivationPath }: ChooseAccountProps ) => {
+  const { activate} = useWeb3React();
+  const [isDuplicated, setDuplicated] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
   const [error, setPendingError] = React.useState(false);
   const [accounts, setAccounts] = React.useState<string[]>([]);
+  const [selectedAccountIndex, setSelectedAccountIndex] = React.useState(-1);
   const [fetchingAccounts, setFetchingAccounts] = React.useState(false);
   const [pageNumber, setPageNumber] = React.useState(1);
  
-  const tryActivation = () => {
+  const establishConnection = () => {
     setLoading(true);
-    activate(ledger, undefined, true).then(() => {
+    setAccounts([]);
+    setDuplicated(false);
+    setPageNumber(1);
+    setSelectedAccountIndex(-1);
+    ledger.activate(derivationPath).then(() => {
       setLoading(false);
-    }).catch(error => { 
+    }).catch((error: any) => { 
       if(error instanceof UnsupportedChainIdError) {
-        tryActivation();
+        establishConnection();
       } else {
         setPendingError(true);
       }
@@ -45,14 +56,21 @@ const ChooseAccount = ({ handleConfirm, derivationPath }: ChooseAccountProps ) =
 
   const fetchAccounts = () => {
     setFetchingAccounts(true);
-    (connector as LedgerConnector).getAccounts(pageNumber).then(res => {
-      console.log(res);
-      setAccounts([...accounts, ...res]);
-      setFetchingAccounts(false);
-    }).catch(err => {
-      setPendingError(true);
-      setFetchingAccounts(false);
-    })
+    if(ledger) {
+      (ledger as LedgerConnector).getAccounts(pageNumber).then(res => {
+        const updatedRes = [...accounts, ...res];
+        const uniqueRes = updatedRes.filter(unique);
+        if(updatedRes.length !== uniqueRes.length) {
+          setDuplicated(true);
+        }
+        setAccounts(uniqueRes);
+        setFetchingAccounts(false);
+      }).catch((error: any) => {
+        setPendingError(true);
+        setFetchingAccounts(false);
+      })
+    }
+    
   }
 
   const handleLoadMore = () => {
@@ -63,13 +81,17 @@ const ChooseAccount = ({ handleConfirm, derivationPath }: ChooseAccountProps ) =
   }
 
   const handleConfirmAccount = () => {
-    handleConfirm();
+    activate(ledger, undefined, true).then(() => {
+      setLoading(false);
+      handleConfirm();
+    }).catch((error: any) => { 
+      setPendingError(true);
+    });
   }
 
   React.useEffect(() => {
-    tryActivation();
-    setAccounts([]);
-    setPageNumber(0);
+    establishConnection();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
 
@@ -77,7 +99,17 @@ const ChooseAccount = ({ handleConfirm, derivationPath }: ChooseAccountProps ) =
     if(!loading) {
       fetchAccounts();
     }
-  }, [loading, connector])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading])
+
+  const handleChangeAccountIndex = async (index: number) => {
+    try {
+      setSelectedAccountIndex(index);
+      await ledger.setAccountIndex(index);
+    } catch(error) {
+      setPendingError(true);
+    }
+  }
 
   if(error || loading) {
     return (
@@ -89,7 +121,7 @@ const ChooseAccount = ({ handleConfirm, derivationPath }: ChooseAccountProps ) =
               <ErrorButton
                 onClick={() => {
                   setPendingError(false)
-                  tryActivation();
+                  establishConnection();
                 }}
               >
                 Try Again
@@ -109,26 +141,28 @@ const ChooseAccount = ({ handleConfirm, derivationPath }: ChooseAccountProps ) =
   return (
     <div style={{textAlign: 'center'}}>
       <SectionTitle style={{marginBottom: '30px'}}>Available Ledger Accounts</SectionTitle>
-      <div style={{ marginBottom: '30px' }}>
+      {accounts.length > 0 && (<AccountSelectBox>
         {accounts.map((account, index) => (
-          <RowFixed key={index}>
-            <TYPE.black fontWeight={400} fontSize={14} color={theme.text2}>
-              {account}
-            </TYPE.black>
-          </RowFixed>
+          <AddressItem 
+            key={index}
+            onClick={() => handleChangeAccountIndex(index)}  
+            active={selectedAccountIndex === index} 
+          >
+            {formatAddress(account)}
+          </AddressItem>
         ))}
-      </div>
+      </AccountSelectBox>)}
       {fetchingAccounts ? (
         <>
           <StyledLoader />
           Loading Accounts...
         </> 
-      ): (
+      ): !isDuplicated ? (
         <ButtonLight onClick={handleLoadMore} disabled={fetchingAccounts}>
           Load More...
         </ButtonLight>
-      )}
-      <ButtonPrimary onClick={handleConfirmAccount} style={{marginTop: '20px'}}>
+      ): null }
+      <ButtonPrimary onClick={handleConfirmAccount} style={{marginTop: '20px'}} disabled={selectedAccountIndex < 0}>
         Confirm
       </ButtonPrimary>
     </div>

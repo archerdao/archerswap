@@ -69,3 +69,10 @@ export const ledger = new LedgerConnector({
   pollingInterval: POLLING_INTERVAL,
   baseDerivationPath: `44'/60'/0'/0/0`
 })
+
+export const LEDGER_CONNECTION_INFO = {
+  chainId: 1, 
+  url: NETWORK_URL, 
+  pollingInterval: POLLING_INTERVAL,
+  baseDerivationPath: `44'/60'/0'/0/0`
+}

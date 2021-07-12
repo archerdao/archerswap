@@ -88,30 +88,6 @@ export const StyledList = styled.ol`
   }
 `
 
-export const DerivationSelection = styled.div`
-  margin-top: 40px;
-`
-
-export const DerivationItem = styled.div<{ active: boolean }>`
-  text-align: center;
-  padding: 8px 10px;
-  border: 1px solid gray;
-  border-radius: 4px;
-  font-family: monospace;
-  color: ${props => (props.active ? 'white' : 'gray')};
-  border-color: ${props => (props.active ? 'white' : 'gray')};
-  letter-spacing: 1px;
-  margin-bottom: 1px;
-  &:active {
-    border-color: white;
-    color: white;
-  }
-  &:hover {
-    border-color: white;
-    color: white;
-  }
-`
-
 export const StyledLoader = styled(Loader)`
   margin-right: 1rem;
 `
@@ -157,3 +133,76 @@ export const LoadingWrapper = styled.div`
   align-items: center;
   justify-content: center;
 `
+
+
+export const DerivationSelection = styled.div`
+  margin-top: 60px;
+  margin-bottom: 90px
+`
+
+export const DerivationItem = styled.div<{ active: boolean }>`
+  text-align: center;
+  padding: 6px 10px;
+  border: 1px solid gray;
+  border-radius: 4px;
+  font-family: monospace;
+  color: ${props => (props.active ? 'white' : 'gray')};
+  border-color: ${props => (props.active ? 'white' : 'gray')};
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+  &:active {
+    border-color: white;
+    color: white;
+  }
+  &:hover {
+    border-color: white;
+    color: white;
+  }
+`
+
+export const Input = styled.input`
+  background: ${({ theme }) => theme.bg1};
+  font-size: 16px;
+  width: auto;
+  outline: none;
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+  }
+  color: ${({ theme, color }) => (color === 'red' ? theme.red1 : theme.text1)};
+  text-align: center;
+  padding: 4px;
+  font-family: monospace;
+  width: 100%;
+`
+
+export const AccountSelectBox = styled.div`
+  margin-bottom: 20px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  overflow: auto;
+  height: 160px;
+  width: 220px;
+  margin: 0 auto 50px auto;
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #212429;;
+    border-radius: 6px;
+  }
+`;
+
+export const AddressItem = styled.div<{active: boolean}>`
+  text-align: center;
+  font-size: 16px;
+  font-family: monospace;
+  padding: 5px;
+  border: 1px solid gray;
+  border-color: ${props => (props.active ? 'white' : 'gray')}
+  color: ${props => (props.active ? 'white' : 'gray')};
+  border-radius: 2px;
+  &:hover {
+    border-color: white;
+  }
+`;

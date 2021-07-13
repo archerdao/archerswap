@@ -218,7 +218,6 @@ export function useDerivedSwapInfo(): {
       } else {
         setUserETHTip(res.toString())
       }
-      
     }
   }, [userGasEstimate, userGasPrice, userTipManualOverride, setUserETHTip])
 

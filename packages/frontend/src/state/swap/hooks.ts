@@ -213,9 +213,7 @@ export function useDerivedSwapInfo(): {
   useEffect(() => {
     if(!userTipManualOverride) {
       const res = JSBI.multiply(JSBI.BigInt(userGasEstimate), JSBI.BigInt(userGasPrice));
-      if(!JSBI.greaterThanOrEqual(res, JSBI.BigInt(0))) {
-        setUserETHTip(DEFAULT_ETH_TIP.toString())
-      } else {
+      if(JSBI.greaterThanOrEqual(res, JSBI.BigInt(0))) {
         setUserETHTip(res.toString())
       }
     }

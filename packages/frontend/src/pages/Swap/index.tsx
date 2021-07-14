@@ -417,9 +417,7 @@ export default function Swap({ history }: RouteComponentProps) {
                       {allowedSlippage / 100}%
                     </ClickableText>
                   </RowBetween>  
-                  {userHasSpecifiedInputOutput && (
-                    <MinerTip />
-                  )}
+                  {!!userHasSpecifiedInputOutput &&  <MinerTip /> }
                 </AutoColumn>
               </Card>
             )}

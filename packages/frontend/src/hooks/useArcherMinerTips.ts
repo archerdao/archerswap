@@ -16,9 +16,12 @@ export default function useFetchArcherMinerTips(): { status: string, data: T } {
   });
 
   useEffect(() => {
-      const fetchData = async () => {
-          setStatus('fetching');
+      const ac = new AbortController();
+      const fetchData = async () => {   
+        setStatus('fetching');
+        try {
           const response = await fetch(ARCHER_GAS_URL, {
+            signal: ac.signal,
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -28,8 +31,12 @@ export default function useFetchArcherMinerTips(): { status: string, data: T } {
           const json = await response.json();
           setData(json.data as T);
           setStatus('fetched');
+        } catch (err) {
+          console.log(err);
+        }
       };
       fetchData();
+      return () => ac.abort();
   }, []);
 
   return { status, data };

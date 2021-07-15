@@ -58,6 +58,7 @@ export default function MinerTip() {
     color: theme.text2,
   };
 
+  const sliderEl = React.useRef(null);
   const toggleSettings = useToggleSettingsMenu();
   const [userTipManualOverride] = useUserTipManualOverride();
   const [userETHTip] = useUserETHTip();
@@ -104,6 +105,7 @@ export default function MinerTip() {
       </RowBetween>
       {!userTipManualOverride && (
         <StyledSlider
+          ref={sliderEl}
           defaultValue={0}
           marks={marks}
           max={max}

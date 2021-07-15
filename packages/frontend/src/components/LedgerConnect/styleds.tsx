@@ -155,9 +155,10 @@ export const DerivationItem = styled.div<{ active: boolean }>`
     color: white;
   }
   &:hover {
+    cursor: pointer;
     border-color: white;
   }
-  width: 230px;
+  width: 280px;
   margin: 0 auto;
 `
 
@@ -172,9 +173,9 @@ export const Input = styled.input`
   }
   color: ${({ theme, color }) => (color === 'red' ? theme.red1 : theme.text1)};
   text-align: center;
-  padding: 4px;
+  padding: 5px;
   font-family: monospace;
-  width: 230px;
+  width: 280px;
   margin: 0 auto;
 `
 

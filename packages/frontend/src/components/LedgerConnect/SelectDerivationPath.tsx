@@ -12,6 +12,9 @@ interface SelectDerivationPathProps  {
   readonly derivationPath: string;
 }
 
+const DEFAULT_PATH = `44'/60'/0'/0/0`;
+const LEGACY_PATH = `44'/60'/x'/0/0`;
+
 const SelectDerivationPath = ({ handleConfirm, derivationPath }: SelectDerivationPathProps ) => {
   const [path, setPath] = React.useState('');
   const [pathText, setPathText] = React.useState('');
@@ -20,7 +23,7 @@ const SelectDerivationPath = ({ handleConfirm, derivationPath }: SelectDerivatio
   }
 
   React.useEffect(() => {
-    setPath(derivationPath);
+    setPath(derivationPath || DEFAULT_PATH);
   }, [derivationPath])
 
   const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,16 +36,16 @@ const SelectDerivationPath = ({ handleConfirm, derivationPath }: SelectDerivatio
       <SectionTitle>Select a derivation path</SectionTitle>
       <DerivationSelection>
         <DerivationItem 
-          active={path===`44'/60'/0'/0/0`} 
-          onClick={() => setPath(`44'/60'/0'/0/0`)}
+          active={path===DEFAULT_PATH} 
+          onClick={() => setPath(DEFAULT_PATH)}
         >
-          44'/60'/0'/0/0
+          44'/60'/0'/0/0 (Default)
         </DerivationItem>
         <DerivationItem 
-          active={path===`44'/60'/x'/0/0`} 
-          onClick={() => setPath(`44'/60'/x'/0/0`)}
+          active={path===LEGACY_PATH}
+          onClick={() => setPath(LEGACY_PATH)}
         >
-          44'/60'/x'/0/0
+          44'/60'/x'/0/0 (Legacy)
         </DerivationItem>
         <div style={{textAlign: "center"}}>
           <Input 

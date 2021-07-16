@@ -7,7 +7,7 @@ import ReactGA from 'react-ga'
 import styled from 'styled-components'
 import MetamaskIcon from '../../assets/images/metamask.png'
 import { ReactComponent as Close } from '../../assets/images/x.svg'
-import { fortmatic, injected, portis } from '../../connectors'
+import { fortmatic, injected, ledger, portis } from '../../connectors'
 import { OVERLAY_READY } from '../../connectors/Fortmatic'
 import { SUPPORTED_WALLETS } from '../../constants'
 import usePrevious from '../../hooks/usePrevious'
@@ -15,6 +15,7 @@ import { ApplicationModal } from '../../state/application/actions'
 import { useModalOpen, useWalletModalToggle } from '../../state/application/hooks'
 import { ExternalLink } from '../../theme'
 import AccountDetails from '../AccountDetails'
+import LedgerConnect from 'components/LedgerConnect'
 
 import Modal from '../Modal'
 import Option from './Option'
@@ -130,6 +131,8 @@ export default function WalletModal({
 
   const [walletView, setWalletView] = useState(WALLET_VIEWS.ACCOUNT)
 
+  const [ledgerConnectModal, setLedgerConnectModal] = useState(false);
+
   const [pendingWallet, setPendingWallet] = useState<AbstractConnector | undefined>()
 
   const [pendingError, setPendingError] = useState<boolean>()
@@ -138,6 +141,10 @@ export default function WalletModal({
   const toggleWalletModal = useWalletModalToggle()
 
   const previousAccount = usePrevious(account)
+
+  const toggleLedgerConnectModal = () => {
+    setLedgerConnectModal(!ledgerConnectModal);
+  }
 
   // close on connection, when logged out before
   useEffect(() => {
@@ -163,7 +170,8 @@ export default function WalletModal({
     }
   }, [setWalletView, active, error, connector, walletModalOpen, activePrevious, connectorPrevious])
 
-  const tryActivation = async (connector: AbstractConnector | undefined) => {
+
+  const doActivation = async (connector: AbstractConnector | undefined) => {
     let name = ''
     Object.keys(SUPPORTED_WALLETS).map(key => {
       if (connector === SUPPORTED_WALLETS[key].connector) {
@@ -192,7 +200,15 @@ export default function WalletModal({
         } else {
           setPendingError(true)
         }
-      })
+      });
+  }
+
+  const tryActivation = async (connector: AbstractConnector | undefined) => {
+   if(connector === ledger) {
+     toggleLedgerConnectModal();
+   } else {
+     doActivation(connector);
+   }
   }
 
   // close wallet modal if fortmatic modal is active
@@ -263,7 +279,6 @@ export default function WalletModal({
           return null
         }
       }
-
       // return rest of options
       return (
         !isMobile &&
@@ -271,6 +286,10 @@ export default function WalletModal({
           <Option
             id={`connect-${key}`}
             onClick={() => {
+              if(option.connector === ledger) {
+                setLedgerConnectModal(true);
+                return;
+              }
               option.connector === connector
                 ? setWalletView(WALLET_VIEWS.ACCOUNT)
                 : !option.href && tryActivation(option.connector)
@@ -289,6 +308,14 @@ export default function WalletModal({
   }
 
   function getModalContent() {
+    if(ledgerConnectModal) {
+      return (
+        <LedgerConnect 
+          open={ledgerConnectModal} 
+          handleDismiss={toggleLedgerConnectModal} 
+        />
+      )
+    }
     if (error) {
       return (
         <UpperSection>
@@ -313,7 +340,9 @@ export default function WalletModal({
           pendingTransactions={pendingTransactions}
           confirmedTransactions={confirmedTransactions}
           ENSName={ENSName}
-          openOptions={() => setWalletView(WALLET_VIEWS.OPTIONS)}
+          openOptions={() => {
+            setWalletView(WALLET_VIEWS.OPTIONS);
+          }}
         />
       )
     }

@@ -12,8 +12,9 @@ import Transaction from './Transaction'
 import { SUPPORTED_WALLETS } from '../../constants'
 import { ReactComponent as Close } from '../../assets/images/x.svg'
 import { getEtherscanLink } from '../../utils'
-import { injected, walletconnect, walletlink, fortmatic, portis } from '../../connectors'
+import { injected, walletconnect, walletlink, fortmatic, portis, ledger } from '../../connectors'
 import CoinbaseWalletIcon from '../../assets/images/coinbaseWalletIcon.svg'
+import LeadgerWalletIcon from '../../assets/images/ledgerWalletIcon.svg'
 import WalletConnectIcon from '../../assets/images/walletConnectIcon.svg'
 import FortmaticIcon from '../../assets/images/fortmaticIcon.png'
 import PortisIcon from '../../assets/images/portisIcon.png'
@@ -266,6 +267,12 @@ export default function AccountDetails({
           <img src={FortmaticIcon} alt={'fortmatic logo'} />
         </IconWrapper>
       )
+    } else if (connector === ledger) {
+      return (
+        <IconWrapper size={16}>
+          <img src={LeadgerWalletIcon} alt={'Leadger logo'} />
+        </IconWrapper>
+      )
     } else if (connector === portis) {
       return (
         <>
@@ -299,6 +306,10 @@ export default function AccountDetails({
       )
   }, [dispatch, chainId, confirmedTransactions])
 
+  const closeConnection = () => {
+   ;(connector as any).close();
+  }
+
   return (
     <>
       <UpperSection>
@@ -312,12 +323,10 @@ export default function AccountDetails({
               <AccountGroupingRow>
                 {formatConnectorName()}
                 <div>
-                  {connector !== injected && connector !== walletlink && (
+                  {connector !== injected && connector !== walletlink && connector !== ledger && (
                     <WalletAction
                       style={{ fontSize: '.825rem', fontWeight: 400, marginRight: '8px' }}
-                      onClick={() => {
-                        ;(connector as any).close()
-                      }}
+                      onClick={closeConnection}
                     >
                       Disconnect
                     </WalletAction>

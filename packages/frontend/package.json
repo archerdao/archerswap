@@ -68,6 +68,7 @@
     "polished": "^3.3.2",
     "prettier": "^1.17.0",
     "qs": "^6.9.4",
+    "rc-slider": "^9.7.2",
     "react": "^16.13.1",
     "react-confetti": "^6.0.0",
     "react-device-detect": "^1.6.2",
@@ -130,6 +131,7 @@
   "license": "GPL-3.0-or-later",
   "dependencies": {
     "@uniswap/default-token-list": "^2.0.0",
-    "rc-slider": "^9.7.2"
+    "@web3-react/ledger-connector": "git+https://github.com/johnkcr/ledger-connector",
+    "web3-provider-ledger": "^1.0.6"
   }
 }

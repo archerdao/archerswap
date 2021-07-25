@@ -218,7 +218,7 @@ export function useDerivedSwapInfo(): {
   }, [useRelay, setUserTipManualOverride, setUserETHTip, setUserGasEstimate])
 
   useEffect(() => {
-    if (useRelay && !userTipManualOverride) {
+    if (useRelay && userTipManualOverride) {
       setUserETHTip(JSBI.multiply(JSBI.BigInt(userGasEstimate), JSBI.BigInt(userGasPrice)).toString())
     }
   }, [useRelay, userGasEstimate, userGasPrice, userTipManualOverride, setUserETHTip])

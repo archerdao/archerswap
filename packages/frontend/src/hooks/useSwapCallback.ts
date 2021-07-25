@@ -83,10 +83,6 @@ export function useSwapCallArguments(
     const contract: Contract | null =
       useArcher ? getRouterContract(chainId, library, account) : underlyingRouter
 
-    console.log("contract", contract);
-    console.log("underlyingRouter", underlyingRouter);
-
-    console.log(contract);
     if (!contract) {
       return []
     }
@@ -125,7 +121,7 @@ export function useSwapCallArguments(
       )
     }
 
-    swapMethods.map(({ methodName, args, value }) => {
+    return swapMethods.map(({ methodName, args, value }) => {
       if (argentWalletContract && trade.inputAmount.currency.symbol) { // i will take a look at this
         return {
           address: argentWalletContract.address,
@@ -176,8 +172,6 @@ export function useSwapCallArguments(
     //     })
     //   // }
     // })
-
-    return [];
 
     //return swapMethods.map(parameters => ({ parameters, contract }))
   }, [account, argentWalletContract, allowedSlippage, chainId, deadline, library, recipient, trade, useArcher, exchange, ethTip])
@@ -337,6 +331,7 @@ export function useSwapCallback(
        // check if any calls errored with a recognizable error
        if (!bestCallOption) {
         const errorCalls = estimatedCalls.filter((call): call is FailedCall => 'error' in call)
+        console.log("errorcalls", errorCalls);
         if (errorCalls.length > 0) throw errorCalls[errorCalls.length - 1].error
         const firstNoErrorCall = estimatedCalls.find<SuccessfulCall>(
           (call): call is SuccessfulCall => !('error' in call)

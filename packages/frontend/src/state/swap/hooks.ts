@@ -14,12 +14,16 @@ import { AppDispatch, AppState } from '../index'
 import { useCurrencyBalances } from '../wallet/hooks'
 import { Field, replaceSwapState, selectCurrency, setRecipient, switchCurrencies, typeInput } from './actions'
 import { SwapState } from './reducer'
-import { useUserSlippageTolerance, useUserGasPrice, useUserETHTip, useUserGasEstimate, useUserTipManualOverride } from '../user/hooks'
-import { useSwapCallArguments, EstimatedSwapCall, SuccessfulCall } from '../../hooks/useSwapCallback'
+import { useUserSlippageTolerance, useUserGasPrice, useUserETHTip, useUserGasEstimate, useUserTipManualOverride, useUserUseRelay } from '../user/hooks'
+import {
+  EstimatedSwapCall,
+  SuccessfulCall,
+  swapErrorToUserReadableMessage,
+  useSwapCallArguments,
+} from '../../hooks/useSwapCallback'
 import { computeSlippageAdjustedAmounts } from '../../utils/prices'
 import { DEFAULT_ETH_TIP, DEFAULT_GAS_ESTIMATE } from '../../constants'
 import isZero from '../../utils/isZero'
-
 
 export function useSwapState(): AppState['swap'] {
   return useSelector<AppState, AppState['swap']>(state => state.swap)
@@ -117,7 +121,7 @@ export function useDerivedSwapInfo(): {
   inputError?: string
   v1Trade: Trade | undefined
 } {
-  const { account } = useActiveWeb3React()
+  const { account, library } = useActiveWeb3React()
 
   const {
     independentField,
@@ -197,7 +201,8 @@ export function useDerivedSwapInfo(): {
     inputError = 'Insufficient ' + amountIn.currency.symbol + ' balance'
   }
 
-  const swapCalls = useSwapCallArguments(v2Trade as Trade, allowedSlippage, to)
+  const [doArcher] = useUserUseRelay();
+  const swapCalls = useSwapCallArguments(v2Trade || undefined, allowedSlippage, to, undefined, doArcher)
 
   const [, setUserETHTip] = useUserETHTip()
   const [userGasEstimate, setUserGasEstimate] = useUserGasEstimate()
@@ -205,74 +210,88 @@ export function useDerivedSwapInfo(): {
   const [userTipManualOverride, setUserTipManualOverride] = useUserTipManualOverride()
 
   useEffect(() => {
-    setUserTipManualOverride(false)
-    setUserETHTip(DEFAULT_ETH_TIP.toString())
-    setUserGasEstimate(DEFAULT_GAS_ESTIMATE.toString())
-  }, [setUserTipManualOverride, setUserETHTip, setUserGasEstimate])
+    if (doArcher) {
+      setUserTipManualOverride(false)
+      setUserETHTip(DEFAULT_ETH_TIP.toString())
+      setUserGasEstimate(DEFAULT_GAS_ESTIMATE.toString())
+    }
+  }, [doArcher, setUserTipManualOverride, setUserETHTip, setUserGasEstimate])
 
   useEffect(() => {
-    if(!userTipManualOverride) {
+    if (doArcher && !userTipManualOverride) {
       setUserETHTip(JSBI.multiply(JSBI.BigInt(userGasEstimate), JSBI.BigInt(userGasPrice)).toString())
     }
-  }, [userGasEstimate, userGasPrice, userTipManualOverride, setUserETHTip])
+  }, [doArcher, userGasEstimate, userGasPrice, userTipManualOverride, setUserETHTip])
 
   useEffect(() => {
     async function estimateGas() {
       const estimatedCalls: EstimatedSwapCall[] = await Promise.all(
-        swapCalls.map(call => {
-          const {
-            parameters: { methodName, args, value },
-            contract
-          } = call
-          const options = !value || isZero(value) ? {} : { value }
-  
-          return contract.estimateGas[methodName](...args, options)
-            .then(gasEstimate => {
+        swapCalls.map((call) => {
+          const { address, calldata, value } = call
+
+          const tx =
+            !value || isZero(value)
+              ? { from: account || undefined, to: address, data: calldata }
+              : {
+                  from: account || undefined,
+                  to: address,
+                  data: calldata,
+                  value,
+                }
+
+          if(library) {
+            return library
+            .estimateGas(tx)
+            .then((gasEstimate) => {
               return {
                 call,
-                gasEstimate
+                gasEstimate,
               }
             })
-            .catch(gasError => {
+            .catch((gasError) => {
               console.debug('Gas estimate failed, trying eth_call to extract error', call)
-  
-              return contract.callStatic[methodName](...args, options)
-                .then(result => {
+
+              return library
+                .call(tx)
+                .then((result) => {
                   console.debug('Unexpected successful call after failed estimate gas', call, gasError, result)
-                  return { call, error: new Error('Unexpected issue with estimating the gas. Please try again.') }
-                })
-                .catch(callError => {
-                  console.debug('Call threw error', call, callError)
-                  let errorMessage: string
-                  switch (callError.reason) {
-                    case 'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT':
-                    case 'UniswapV2Router: EXCESSIVE_INPUT_AMOUNT':
-                      errorMessage =
-                        'This transaction will not succeed either due to price movement or fee on transfer. Try increasing your slippage tolerance.'
-                      break
-                    default:
-                      errorMessage = `The transaction cannot succeed due to error: ${callError.reason}. This is probably an issue with one of the tokens you are swapping.`
+                  return {
+                    call,
+                    error: new Error('Unexpected issue with estimating the gas. Please try again.'),
                   }
-                  return { call, error: new Error(errorMessage) }
+                })
+                .catch((callError) => {
+                  console.debug('Call threw error', call, callError)
+                  return {
+                    call,
+                    error: new Error(swapErrorToUserReadableMessage(callError)),
+                  }
                 })
             })
+          } else {
+            console.debug('web3 Provider is not defined', call)
+            return {
+              call,
+              error: new Error('web3 Provider is not defined'),
+            }
+          }
         })
       )
-  
+
       // a successful estimation is a bignumber gas estimate and the next call is also a bignumber gas estimate
       const successfulEstimation = estimatedCalls.find(
         (el, ix, list): el is SuccessfulCall =>
           'gasEstimate' in el && (ix === list.length - 1 || 'gasEstimate' in list[ix + 1])
       )
-  
+
       if (successfulEstimation) {
         setUserGasEstimate(successfulEstimation.gasEstimate.toString())
       }
     }
-    if(v2Trade && swapCalls && !userTipManualOverride) {
+    if (doArcher && v2Trade && swapCalls && !userTipManualOverride) {
       estimateGas()
     }
-  }, [v2Trade, swapCalls, userTipManualOverride, setUserGasEstimate])
+  }, [doArcher, v2Trade, swapCalls, account, userTipManualOverride, library, setUserGasEstimate])
 
   return {
     currencies,

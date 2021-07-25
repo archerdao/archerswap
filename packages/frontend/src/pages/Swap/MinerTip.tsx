@@ -92,6 +92,7 @@ export default function MinerTip() {
   const max = Object.values(marks).length - 1;
   if( max < 0 && !userTipManualOverride ) return null;
 
+  const tipStringValue = CurrencyAmount.ether(userETHTip).toFixed(3);
   return (
     <>
       <RowBetween align="center">
@@ -99,7 +100,7 @@ export default function MinerTip() {
           Miner Tip
         </ClickableText>
         <ClickableText {...textStyleProps} onClick={toggleSettings}>
-          {CurrencyAmount.ether(userETHTip).toFixed(3)} ETH
+          {parseFloat(tipStringValue) < 0.001 ? 0.001 : tipStringValue } ETH
         </ClickableText>
       </RowBetween>
       {!userTipManualOverride && (

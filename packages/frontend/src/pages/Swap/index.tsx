@@ -197,8 +197,14 @@ export default function Swap({ history }: RouteComponentProps) {
   const atMaxAmountInput = Boolean(maxAmountInput && parsedAmounts[Field.INPUT]?.equalTo(maxAmountInput))
 
   // the callback to execute the swap
-  const { callback: swapCallback, error: swapCallbackError } = useSwapCallback(trade, allowedSlippage, recipient,
-    doRelay ? ttl : undefined)
+  const signatureData = undefined
+  const { callback: swapCallback, error: swapCallbackError } = useSwapCallback(
+    trade, 
+    allowedSlippage, 
+    recipient,
+    signatureData,
+    doRelay ? ttl : undefined
+  )
 
   const { priceImpactWithoutFee } = computeTradePriceBreakdown(trade)
 

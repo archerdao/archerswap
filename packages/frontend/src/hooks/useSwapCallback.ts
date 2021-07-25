@@ -63,7 +63,7 @@ export function useSwapCallArguments(
   allowedSlippage: number = INITIAL_ALLOWED_SLIPPAGE, // in bips
   recipientAddressOrName: string | null, // the ENS name or address of the recipient of the trade, or null if swap should be returned to sender
   signatureData: SignatureData | null | undefined,
-  useArcher: boolean = false
+  useRelay: boolean = false
   ): SwapCall[] {
   const { account, chainId, library } = useActiveWeb3React()
   const exchange = useUserUnderlyingExchangeAddresses()
@@ -81,7 +81,7 @@ export function useSwapCallArguments(
     const underlyingRouter = getUnderlyingExchangeRouterContract(exchange.router, chainId, library, account);
 
     const contract: Contract | null =
-      useArcher ? getRouterContract(chainId, library, account) : underlyingRouter
+      useRelay ? getRouterContract(chainId, library, account) : underlyingRouter
 
     if (!contract) {
       return []
@@ -89,7 +89,7 @@ export function useSwapCallArguments(
 
     const swapMethods = []
 
-    if (!useArcher) {
+    if (!useRelay) {
       swapMethods.push(
         Router.swapCallParameters(trade, {
           feeOnTransfer: false,
@@ -145,7 +145,7 @@ export function useSwapCallArguments(
         }
       }
     })
-  }, [account, argentWalletContract, allowedSlippage, chainId, deadline, library, recipient, trade, useArcher, exchange, ethTip])
+  }, [account, argentWalletContract, allowedSlippage, chainId, deadline, library, recipient, trade, useRelay, exchange, ethTip])
 }
 
 
@@ -203,8 +203,8 @@ export function useSwapCallback(
 ): { state: SwapCallbackState; callback: null | (() => Promise<string>); error: string | null } {
   const { account, chainId, library } = useActiveWeb3React()
 
-  const useArcher = archerRelayDeadline !== undefined
-  const swapCalls = useSwapCallArguments(trade, allowedSlippage, recipientAddressOrName, signatureData, useArcher)
+  const useRelay = archerRelayDeadline !== undefined
+  const swapCalls = useSwapCallArguments(trade, allowedSlippage, recipientAddressOrName, signatureData, useRelay)
 
   const blockNumber = useBlockNumber()
   let eip1559 = false;
@@ -315,7 +315,7 @@ export function useSwapCallback(
         call: { address, calldata, value },
       } = bestCallOption
 
-      if (!useArcher) {
+      if (!useRelay) {
         console.log('SWAP WITHOUT ARCHER')
         console.log(
           'gasEstimate' in bestCallOption ? { gasLimit: calculateGasMargin(bestCallOption.gasEstimate) } : {}
@@ -506,8 +506,8 @@ export function useSwapCallback(
                       ? shortenAddress(recipientAddressOrName)
                       : recipientAddressOrName
                   }`) + (archerRelayDeadline ? ' 🏹' : '')
-            const archer =
-              useArcher && archerRelayDeadline
+            const relay =
+              useRelay && archerRelayDeadline
                 ? {
                     rawTransaction: signedTx,
                     deadline: Math.floor(archerRelayDeadline + new Date().getTime() / 1000),
@@ -520,10 +520,10 @@ export function useSwapCallback(
               { hash },
               {
                 summary: withRecipient,
-                relay: archer,
+                relay,
               }
             )
-            return archer ? postToRelay(archer.rawTransaction, archer.deadline).then(() => hash) : hash
+            return relay ? postToRelay(relay.rawTransaction, relay.deadline).then(() => hash) : hash
           })
           .catch((error: any) => {
             // if the user rejected the tx, pass this along
@@ -542,5 +542,5 @@ export function useSwapCallback(
       },
       error: null
     }
-  }, [trade, library, account, chainId, recipient, recipientAddressOrName, swapCalls, useArcher, addTransaction, ethTip, archerRelayDeadline, eip1559])
+  }, [trade, library, account, chainId, recipient, recipientAddressOrName, swapCalls, useRelay, addTransaction, ethTip, archerRelayDeadline, eip1559])
 }

@@ -201,8 +201,8 @@ export function useDerivedSwapInfo(): {
     inputError = 'Insufficient ' + amountIn.currency.symbol + ' balance'
   }
 
-  const [doArcher] = useUserUseRelay();
-  const swapCalls = useSwapCallArguments(v2Trade || undefined, allowedSlippage, to, undefined, doArcher)
+  const [useRelay] = useUserUseRelay();
+  const swapCalls = useSwapCallArguments(v2Trade || undefined, allowedSlippage, to, undefined, useRelay)
 
   const [, setUserETHTip] = useUserETHTip()
   const [userGasEstimate, setUserGasEstimate] = useUserGasEstimate()
@@ -210,18 +210,18 @@ export function useDerivedSwapInfo(): {
   const [userTipManualOverride, setUserTipManualOverride] = useUserTipManualOverride()
 
   useEffect(() => {
-    if (doArcher) {
+    if (useRelay) {
       setUserTipManualOverride(false)
       setUserETHTip(DEFAULT_ETH_TIP.toString())
       setUserGasEstimate(DEFAULT_GAS_ESTIMATE.toString())
     }
-  }, [doArcher, setUserTipManualOverride, setUserETHTip, setUserGasEstimate])
+  }, [useRelay, setUserTipManualOverride, setUserETHTip, setUserGasEstimate])
 
   useEffect(() => {
-    if (doArcher && !userTipManualOverride) {
+    if (useRelay && !userTipManualOverride) {
       setUserETHTip(JSBI.multiply(JSBI.BigInt(userGasEstimate), JSBI.BigInt(userGasPrice)).toString())
     }
-  }, [doArcher, userGasEstimate, userGasPrice, userTipManualOverride, setUserETHTip])
+  }, [useRelay, userGasEstimate, userGasPrice, userTipManualOverride, setUserETHTip])
 
   useEffect(() => {
     async function estimateGas() {
@@ -288,10 +288,10 @@ export function useDerivedSwapInfo(): {
         setUserGasEstimate(successfulEstimation.gasEstimate.toString())
       }
     }
-    if (doArcher && v2Trade && swapCalls && !userTipManualOverride) {
+    if (useRelay && v2Trade && swapCalls && !userTipManualOverride) {
       estimateGas()
     }
-  }, [doArcher, v2Trade, swapCalls, account, userTipManualOverride, library, setUserGasEstimate])
+  }, [useRelay, v2Trade, swapCalls, account, userTipManualOverride, library, setUserGasEstimate])
 
   return {
     currencies,

@@ -145,35 +145,6 @@ export function useSwapCallArguments(
         }
       }
     })
-
-    // swapMethods.forEach(({ methodName, args, value }) => {
-    //   // if (argentWalletContract && trade.inputAmount.currency.symbol) { // i will take a look at this
-    //   //   return {
-    //   //     address: argentWalletContract.address,
-    //   //     calldata: argentWalletContract.interface.encodeFunctionData('wc_multiCall', [
-    //   //       [
-    //   //         approveAmountCalldata(trade.maximumAmountIn(new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE)), contract.address),
-    //   //         {
-    //   //           to: contract.address,
-    //   //           value: value,
-    //   //           data: contract.interface.encodeFunctionData(methodName, args),
-    //   //         },
-    //   //       ],
-    //   //     ]),
-    //   //     value: '0x0',
-    //   //   }
-    //   // } else {
-    //     // console.log({ methodName, args })
-    //     contract.interface.encodeFunctionData(methodName, args);
-    //     console.log(args, methodName);
-    //     console.log({
-    //       address: contract.address,
-    //       value,
-    //     })
-    //   // }
-    // })
-
-    //return swapMethods.map(parameters => ({ parameters, contract }))
   }, [account, argentWalletContract, allowedSlippage, chainId, deadline, library, recipient, trade, useArcher, exchange, ethTip])
 }
 

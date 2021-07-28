@@ -208,7 +208,7 @@ export interface ArcherTrade {
         } else if (etherOut) {
           methodName = 'swapExactTokensForETHAndTipAmount'
           args = [factoryAddress, archerTrade, ethTip]
-          value = ethTip
+          value = '0x00'
         } else {
           methodName = 'swapExactTokensForTokensAndTipAmount'
           args = [factoryAddress, archerTrade]
@@ -223,7 +223,7 @@ export interface ArcherTrade {
         } else if (etherOut) {
           methodName = 'swapTokensForExactETHAndTipAmount'
           args = [factoryAddress, archerTrade, ethTip]
-          value = ethTip
+          value = '0x00'
         } else {
           methodName = 'swapTokensForExactTokensAndTipAmount'
           args = [factoryAddress, archerTrade]
@@ -231,7 +231,6 @@ export interface ArcherTrade {
         }
         break
     }
-
     return {
       methodName,
       args,

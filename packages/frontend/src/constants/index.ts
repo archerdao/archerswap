@@ -211,6 +211,8 @@ export const INITIAL_ALLOWED_SLIPPAGE = 0
 export const DEFAULT_DEADLINE_FROM_NOW = 60 * 20
 // default gas estimate, 250k wei
 export const DEFAULT_GAS_ESTIMATE: BigNumber = BigNumber.from(250000)
+// default token tip
+export const DEFAULT_TOKEN_TIP: number = 50000;
 // default gas prices to use if all other sources unavailable
 export const DEFAULT_GAS_PRICES: BigNumber[] = [
   BigNumber.from(60000000000),

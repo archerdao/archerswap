@@ -41,5 +41,8 @@
       "**/@graphprotocol/graph-ts",
       "**/@graphprotocol/graph-ts/**"
     ]
+  },
+  "config": {
+    "HARDHAT_NETWORK": "local"
   }
 }

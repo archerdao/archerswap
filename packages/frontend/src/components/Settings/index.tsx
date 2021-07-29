@@ -13,7 +13,8 @@ import {
   useUserSingleHopOnly,
   useUserETHTip,
   useUserUseRelay,
-  useUserTipManualOverride
+  useUserTipManualOverride,
+  useUserUseGaslessTransaction
 } from '../../state/user/hooks'
 import { TYPE } from '../../theme'
 import { ButtonError } from '../Button'
@@ -133,6 +134,7 @@ export default function SettingsTab() {
   const [userETHTip, setUserETHTip] = useUserETHTip()
   const [userTipManualOverride, setUserTipManualOverride] = useUserTipManualOverride()
   const [userUseRelay, setUserUseRelay] = useUserUseRelay()
+  const [userUseGaslessTransaction, setUserUseGaslessTransaction] = useUserUseGaslessTransaction()
   const [ttl, setTtl] = useUserTransactionTTL()
 
   const [expertMode, toggleExpertMode] = useExpertModeManager()
@@ -211,6 +213,8 @@ export default function SettingsTab() {
               setTipManualOverride={setUserTipManualOverride}
               useRelay={userUseRelay}
               setUseRelay={setUserUseRelay}
+              useGaslessTransaction={userUseGaslessTransaction}
+              setUseGaslessTransaction={setUserUseGaslessTransaction}
             />
             <Text fontWeight={600} fontSize={14}>
               Interface Settings

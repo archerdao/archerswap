@@ -14,10 +14,10 @@ import { AppDispatch, AppState } from '../index'
 import { useCurrencyBalances } from '../wallet/hooks'
 import { Field, replaceSwapState, selectCurrency, setRecipient, switchCurrencies, typeInput } from './actions'
 import { SwapState } from './reducer'
-import { useUserSlippageTolerance, useUserGasPrice, useUserETHTip, useUserGasEstimate, useUserTipManualOverride } from '../user/hooks'
+import { useUserSlippageTolerance, useUserGasPrice, useUserETHTip, useUserGasEstimate, useUserTipManualOverride, useUserTokenTip } from '../user/hooks'
 import { useSwapCallArguments, EstimatedSwapCall, SuccessfulCall } from '../../hooks/useSwapCallback'
 import { computeSlippageAdjustedAmounts } from '../../utils/prices'
-import { DEFAULT_ETH_TIP, DEFAULT_GAS_ESTIMATE } from '../../constants'
+import { DEFAULT_ETH_TIP, DEFAULT_GAS_ESTIMATE, DEFAULT_TOKEN_TIP } from '../../constants'
 import isZero from '../../utils/isZero'
 
 
@@ -200,6 +200,7 @@ export function useDerivedSwapInfo(): {
   const swapCalls = useSwapCallArguments(v2Trade as Trade, allowedSlippage, to)
 
   const [, setUserETHTip] = useUserETHTip()
+  const [, setTokenTip] = useUserTokenTip()
   const [userGasEstimate, setUserGasEstimate] = useUserGasEstimate()
   const [userGasPrice] = useUserGasPrice()
   const [userTipManualOverride, setUserTipManualOverride] = useUserTipManualOverride()
@@ -207,14 +208,28 @@ export function useDerivedSwapInfo(): {
   useEffect(() => {
     setUserTipManualOverride(false)
     setUserETHTip(DEFAULT_ETH_TIP.toString())
+    setTokenTip(DEFAULT_TOKEN_TIP)
     setUserGasEstimate(DEFAULT_GAS_ESTIMATE.toString())
   }, [setUserTipManualOverride, setUserETHTip, setUserGasEstimate])
 
   useEffect(() => {
     if(!userTipManualOverride) {
-      setUserETHTip(JSBI.multiply(JSBI.BigInt(userGasEstimate), JSBI.BigInt(userGasPrice)).toString())
+      const etherValue = JSBI.multiply(JSBI.BigInt(userGasEstimate), JSBI.BigInt(userGasPrice)).toString();
+      setUserETHTip(etherValue);
+
+      if(outputCurrencyId === 'ETH') {
+        
+        if(v2Trade?.outputAmount) {
+          const outputAmount: CurrencyAmount = v2Trade?.outputAmount;
+          const etherPrice = parseFloat(CurrencyAmount.ether(etherValue).toExact());
+          const res = etherPrice / parseFloat(outputAmount.toExact());
+         
+          setTokenTip(Math.ceil(res * 100000));
+        }
+      }
+      
     }
-  }, [userGasEstimate, userGasPrice, userTipManualOverride, setUserETHTip])
+  }, [userGasEstimate, userGasPrice, userTipManualOverride, setUserETHTip, outputCurrencyId])
 
   useEffect(() => {
     async function estimateGas() {

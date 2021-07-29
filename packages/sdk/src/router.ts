@@ -59,6 +59,21 @@ export interface SwapParameters {
   value: string
 }
 
+export interface GaslessInfo {
+  /**
+   * Path to ETH for tip.
+   */
+  pathToEth: string | undefined
+  /**
+   * ETH minimum for tip conversion.
+   */
+  minEth: number | undefined
+  /**
+   * % of resulting tokens to pay as tip.
+   */
+  tipPct: number | undefined
+}
+
 function toHex(currencyAmount: CurrencyAmount) {
   return `0x${currencyAmount.raw.toString(16)}`
 }
@@ -99,6 +114,7 @@ export abstract class Router {
     let methodName: string
     let args: (string | string[])[]
     let value: string
+
     switch (trade.tradeType) {
       case TradeType.EXACT_INPUT:
         if (etherIn) {
@@ -169,7 +185,7 @@ export interface ArcherTrade {
    * @param trade to produce call parameters for
    * @param options options for the call parameters
    */
-  public static swapCallParameters(routerAddress: string, trade: Trade, options: TradeOptions | TradeOptionsDeadline): SwapParameters {
+  public static swapCallParameters(routerAddress: string, trade: Trade, options: TradeOptions | TradeOptionsDeadline, gaslessInfo: GaslessInfo | undefined = undefined): SwapParameters {
     const etherIn = trade.inputAmount.currency === ETHER
     const etherOut = trade.outputAmount.currency === ETHER
     // the router does not support both ether in and out
@@ -195,37 +211,77 @@ export interface ArcherTrade {
     let args: (string | string[] | ArcherTrade)[]
     let value: string
 
-    switch (trade.tradeType) {
-      case TradeType.EXACT_INPUT:
-        if (etherIn) {
-          methodName = 'swapExactETHForTokensWithTipAmount'
-          args = [routerAddress, archerTrade, ethTip]
-          value = toHex(amountInCurrency.add(options.ethTip))
-        } else if (etherOut) {
-          methodName = 'swapExactTokensForETHAndTipAmount'
-          args = [routerAddress, archerTrade]
-          value = ethTip
-        } else {
-          methodName = 'swapExactTokensForTokensWithTipAmount'
-          args = [routerAddress, archerTrade]
-          value = ethTip
-        }
-        break
-      case TradeType.EXACT_OUTPUT:
-        if (etherIn) {
-          methodName = 'swapETHForExactTokensWithTipAmount'
-          args = [routerAddress, archerTrade, ethTip]
-          value = toHex(amountInCurrency.add(options.ethTip))
-        } else if (etherOut) {
-          methodName = 'swapTokensForExactETHAndTipAmount'
-          args = [routerAddress, archerTrade]
-          value = ethTip
-        } else {
-          methodName = 'swapTokensForExactTokensWithTipAmount'
-          args = [routerAddress, archerTrade]
-          value = ethTip
-        }
-        break
+    if(!gaslessInfo) {
+      switch (trade.tradeType) {
+        case TradeType.EXACT_INPUT:
+          if (etherIn) {
+            methodName = 'swapExactETHForTokensWithTipAmount'
+            args = [routerAddress, archerTrade, ethTip]
+            value = toHex(amountInCurrency.add(options.ethTip))
+          } else if (etherOut) {
+            methodName = 'swapExactTokensForETHAndTipAmount'
+            args = [routerAddress, archerTrade]
+            value = ethTip
+          } else {
+            methodName = 'swapExactTokensForTokensWithTipAmount'
+            args = [routerAddress, archerTrade]
+            value = ethTip
+          }
+          break
+        case TradeType.EXACT_OUTPUT:
+          if (etherIn) {
+            methodName = 'swapETHForExactTokensWithTipAmount'
+            args = [routerAddress, archerTrade, ethTip]
+            value = toHex(amountInCurrency.add(options.ethTip))
+          } else if (etherOut) {
+            methodName = 'swapTokensForExactETHAndTipAmount'
+            args = [routerAddress, archerTrade]
+            value = ethTip
+          } else {
+            methodName = 'swapTokensForExactTokensWithTipAmount'
+            args = [routerAddress, archerTrade]
+            value = ethTip
+          }
+          break
+      }
+    } else {
+      const {
+        tipPct = 1000
+      } = gaslessInfo;
+
+    
+      switch (trade.tradeType) {
+        case TradeType.EXACT_INPUT:
+          if (etherIn) {
+            methodName = 'swapExactETHForTokensWithTipAmount'
+            args = [routerAddress, archerTrade, ethTip]
+            value = toHex(amountInCurrency.add(options.ethTip))
+          } else if (etherOut) {
+            methodName = 'swapExactTokensForETHAndTipPct'
+            args = [routerAddress, archerTrade, tipPct.toString() ]
+            value = ethTip
+          } else {
+            methodName = 'swapExactTokensForTokensWithTipPct'
+            args = [routerAddress, archerTrade]
+            value = ethTip
+          }
+          break
+        case TradeType.EXACT_OUTPUT:
+          if (etherIn) {
+            methodName = 'swapETHForExactTokensWithTipAmount'
+            args = [routerAddress, archerTrade, ethTip]
+            value = toHex(amountInCurrency.add(options.ethTip))
+          } else if (etherOut) {
+            methodName = 'swapTokensForExactETHAndTipPct'
+            args = [routerAddress, archerTrade, tipPct.toString() ]
+            value = ethTip
+          } else {
+            methodName = 'swapTokensForExactTokensWithTipPct'
+            args = [routerAddress, archerTrade]
+            value = ethTip
+          }
+          break
+      }
     }
 
     return {

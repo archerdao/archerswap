@@ -40,6 +40,12 @@ export enum SolidityType {
   uint256 = 'uint256'
 }
 
+export const EIP_1559_ACTIVATION_BLOCK: { [chainId in ChainId]?: number } = {
+  [ChainId.ROPSTEN]: 10499401,
+  [ChainId.GÖRLI]: 5062605,
+  [ChainId.RINKEBY]: 8897988,
+}
+
 export const SOLIDITY_TYPE_MAXIMA = {
   [SolidityType.uint8]: JSBI.BigInt('0xff'),
   [SolidityType.uint256]: JSBI.BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff')

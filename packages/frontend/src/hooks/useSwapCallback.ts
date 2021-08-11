@@ -1,21 +1,28 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { Contract } from '@ethersproject/contracts'
-import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers'
-import { JSBI, Router, ArcherRouter, SwapParameters, Trade, CurrencyAmount, Percent, TradeType, ChainId } from '@archerswap/sdk'
+import { JSBI, Router, ArcherRouter, Trade, CurrencyAmount, Percent, TradeType, ChainId, EIP_1559_ACTIVATION_BLOCK} from '@archerswap/sdk'
+import { TransactionRequest } from '@ethersproject/abstract-provider'
 import { useMemo } from 'react'
-import { ARCHER_RELAY_URI, BIPS_BASE, INITIAL_ALLOWED_SLIPPAGE } from '../constants'
+import { ARCHER_RELAY_URI, BIPS_BASE, INITIAL_ALLOWED_SLIPPAGE} from '../constants'
 import { getTradeVersion } from '../data/V1'
 import { useTransactionAdder } from '../state/transactions/hooks'
 import { calculateGasMargin, getRouterContract, getUnderlyingExchangeRouterContract, isAddress, shortenAddress } from '../utils'
+import { useArgentWalletContract } from './useArgentWalletContract'; 
 import isZero from '../utils/isZero'
 import { useActiveWeb3React } from './index'
-import useTransactionDeadline from './useTransactionDeadline'
+import {  } from './useArgentWalletContract'
 import useENS from './useENS'
 import { Version } from './useToggledVersion'
-import { useUserETHTip, useUserUnderlyingExchangeAddresses, useUserUseRelay } from '../state/user/hooks'
+import { useUserETHTip, useUserUnderlyingExchangeAddresses } from '../state/user/hooks'
 import { ethers } from 'ethers'
 import Common from '@ethereumjs/common'
+import { useBlockNumber } from '../state/application/hooks'
 import { TransactionFactory } from '@ethereumjs/tx'
+import { approveAmountCalldata } from 'utils/approveAmountCalldata'; 
+import useTransactionDeadline from './useTransactionDeadline'
+import { SignatureData } from './useERC20Permit';
+
+const CHAINID_HARMONY = 1666600000;
 
 export enum SwapCallbackState {
   INVALID,
@@ -24,11 +31,16 @@ export enum SwapCallbackState {
 }
 
 interface SwapCall {
-  contract: Contract
-  parameters: SwapParameters
+  address: string
+  calldata: string
+  value: string
 }
 
-export interface SuccessfulCall {
+interface SwapCallEstimate {
+  call: SwapCall
+}
+
+export interface SuccessfulCall extends SwapCallEstimate {
   call: SwapCall
   gasEstimate: BigNumber
 }
@@ -49,12 +61,14 @@ export type EstimatedSwapCall = SuccessfulCall | FailedCall
 export function useSwapCallArguments(
   trade: Trade | undefined, // trade to execute, required
   allowedSlippage: number = INITIAL_ALLOWED_SLIPPAGE, // in bips
-  recipientAddressOrName: string | null // the ENS name or address of the recipient of the trade, or null if swap should be returned to sender
-): SwapCall[] {
+  recipientAddressOrName: string | null, // the ENS name or address of the recipient of the trade, or null if swap should be returned to sender
+  signatureData: SignatureData | null | undefined,
+  useRelay: boolean = false
+  ): SwapCall[] {
   const { account, chainId, library } = useActiveWeb3React()
   const exchange = useUserUnderlyingExchangeAddresses()
-  const [useRelay] = useUserUseRelay()
   const [ethTip] = useUserETHTip()
+  const argentWalletContract = useArgentWalletContract()
 
   const { address: recipientAddress } = useENS(recipientAddressOrName)
   const recipient = recipientAddressOrName === null ? account : recipientAddress
@@ -67,7 +81,8 @@ export function useSwapCallArguments(
     const underlyingRouter = getUnderlyingExchangeRouterContract(exchange.router, chainId, library, account);
 
     const contract: Contract | null =
-       useRelay ? getRouterContract(chainId, library, account) : underlyingRouter
+      useRelay ? getRouterContract(chainId, library, account) : underlyingRouter
+
     if (!contract) {
       return []
     }
@@ -100,29 +115,102 @@ export function useSwapCallArguments(
         ArcherRouter.swapCallParameters(underlyingRouter.address, trade, {
           allowedSlippage: new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE),
           recipient,
-          deadline: deadline.toNumber(),
-          ethTip: CurrencyAmount.ether(ethTip)
+          ttl: deadline.toNumber(),
+          ethTip: CurrencyAmount.ether(ethTip) 
         })
       )
     }
 
-    return swapMethods.map(parameters => ({ parameters, contract }))
-  }, [account, allowedSlippage, chainId, deadline, library, recipient, trade, useRelay, exchange, ethTip])
+    return swapMethods.map(({ methodName, args, value }) => {
+      if (argentWalletContract && trade.inputAmount.currency.symbol) { 
+        return {
+          address: argentWalletContract.address,
+          calldata: argentWalletContract.interface.encodeFunctionData('wc_multiCall', [
+            [
+              approveAmountCalldata(trade.maximumAmountIn(new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE)), contract.address),
+              {
+                to: contract.address,
+                value: value,
+                data: contract.interface.encodeFunctionData(methodName, args),
+              },
+            ],
+          ]),
+          value: '0x0',
+        }
+      } else {
+        return {
+          address: contract.address,
+          calldata: contract.interface.encodeFunctionData(methodName, args),
+          value,
+        }
+      }
+    })
+  }, [account, argentWalletContract, allowedSlippage, chainId, deadline, library, recipient, trade, useRelay, exchange, ethTip])
 }
+
+
+/**
+ * This is hacking out the revert reason from the ethers provider thrown error however it can.
+ * This object seems to be undocumented by ethers.
+ * @param error an error from the ethers provider
+ */
+ export function swapErrorToUserReadableMessage(error: any): string {
+  let reason: string | undefined
+
+  while (Boolean(error)) {
+    reason = error.reason ?? error.message ?? reason
+    error = error.error ?? error.data?.originalError
+  }
+
+  if (reason?.indexOf('execution reverted: ') === 0) reason = reason.substr('execution reverted: '.length)
+
+  switch (reason) {
+    case 'UniswapV2Router: EXPIRED':
+      return `The transaction could not be sent because the deadline has passed. Please check that your transaction deadline is not too low.`
+    case 'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT':
+    case 'UniswapV2Router: EXCESSIVE_INPUT_AMOUNT':
+      return `This transaction will not succeed either due to price movement or fee on transfer. Try increasing your slippage tolerance.`
+    case 'TransferHelper: TRANSFER_FROM_FAILED':
+      return `The input token cannot be transferred. There may be an issue with the input token.`
+    case 'UniswapV2: TRANSFER_FAILED':
+      return `The output token cannot be transferred. There may be an issue with the output token.`
+    case 'UniswapV2: K':
+      return `The Uniswap invariant x*y=k was not satisfied by the swap. This usually means one of the tokens you are swapping incorporates custom behavior on transfer.`
+    case 'Too little received':
+    case 'Too much requested':
+    case 'STF':
+      return `This transaction will not succeed due to price movement. Try increasing your slippage tolerance.`
+    case 'TF':
+      return `The output token cannot be transferred. There may be an issue with the output token.`
+    default:
+      if (reason?.indexOf('undefined is not an object') !== -1) {
+        console.error(error, reason)
+        return `An error occurred when trying to execute this swap. You may need to increase your slippage tolerance. If that does not work, there may be an incompatibility with the token you are trading. Note fee on transfer and rebase tokens are incompatible with Uniswap V3.`
+      }
+      return `Unknown error${reason ? `: "${reason}"` : ''}. Try increasing your slippage tolerance.`
+  }
+}
+
 
 // returns a function that will execute a swap, if the parameters are all valid
 // and the user has approved the slippage adjusted input amount for the trade
 export function useSwapCallback(
   trade: Trade | undefined, // trade to execute, required
-  allowedSlippage: number = INITIAL_ALLOWED_SLIPPAGE, // in bips
+  allowedSlippage: number, // in bips
   recipientAddressOrName: string | null, // the ENS name or address of the recipient of the trade, or null if swap should be returned to sender,
-  relayDeadline?: number, // deadline to use for relay -- set to undefined for no relay
-  signOnly: boolean = true, // don't broadcast, just sign (for private relay)
+  signatureData: SignatureData | undefined | null,
+  archerRelayDeadline?: number // deadline to use for archer relay -- set to undefined for no relay
 ): { state: SwapCallbackState; callback: null | (() => Promise<string>); error: string | null } {
   const { account, chainId, library } = useActiveWeb3React()
 
-  const swapCalls = useSwapCallArguments(trade, allowedSlippage, recipientAddressOrName)
+  const useRelay = archerRelayDeadline !== undefined
+  const swapCalls = useSwapCallArguments(trade, allowedSlippage, recipientAddressOrName, signatureData, useRelay)
 
+  const blockNumber = useBlockNumber()
+  let eip1559 = false;
+  if(blockNumber && chainId && EIP_1559_ACTIVATION_BLOCK[chainId] )
+    eip1559 = blockNumber >= (EIP_1559_ACTIVATION_BLOCK[chainId] as number)
+ 
   const addTransaction = useTransactionAdder()
 
   const { address: recipientAddress } = useENS(recipientAddressOrName)
@@ -131,283 +219,328 @@ export function useSwapCallback(
 
   return useMemo(() => {
     if (!trade || !library || !account || !chainId) {
-      return { state: SwapCallbackState.INVALID, callback: null, error: 'Missing dependencies' }
+      return {
+        state: SwapCallbackState.INVALID,
+        callback: null,
+        error: 'Missing dependencies',
+      }
     }
     if (!recipient) {
       if (recipientAddressOrName !== null) {
-        return { state: SwapCallbackState.INVALID, callback: null, error: 'Invalid recipient' }
+        return {
+          state: SwapCallbackState.INVALID,
+          callback: null,
+          error: 'Invalid recipient',
+        }
       } else {
-        return { state: SwapCallbackState.LOADING, callback: null, error: null }
+        return {
+          state: SwapCallbackState.LOADING,
+          callback: null,
+          error: null,
+        }
       }
     }
-
-    const tradeVersion = getTradeVersion(trade)
 
     return {
       state: SwapCallbackState.VALID,
       callback: async function onSwap(): Promise<string> {
         const estimatedCalls: EstimatedSwapCall[] = await Promise.all(
           swapCalls.map(call => {
-            const {
-              parameters: { methodName, args, value },
-              contract
-            } = call
-            const options = !value || isZero(value) ? {} : { value }
+            const { address, calldata, value } = call
 
-            return contract.estimateGas[methodName](...args, options)
-              .then(gasEstimate => {
+            const tx =
+              !value || isZero(value)
+                ? { from: account, to: address, data: calldata }
+                : {
+                    from: account,
+                    to: address,
+                    data: calldata,
+                    value,
+                  }
+            
+            // console.log('Estimate gas for valid swap')
+
+            // library.getGasPrice().then((gasPrice) => console.log({ gasPrice }))
+
+            return library
+              .estimateGas(tx)
+              .then((gasEstimate) => {
                 return {
                   call,
-                  gasEstimate
+                  gasEstimate,
                 }
               })
-              .catch(gasError => {
+              .catch((gasError) => {
                 console.debug('Gas estimate failed, trying eth_call to extract error', call)
 
-                return contract.callStatic[methodName](...args, options)
-                  .then(result => {
+                return library
+                  .call(tx)
+                  .then((result) => {
                     console.debug('Unexpected successful call after failed estimate gas', call, gasError, result)
-                    return { call, error: new Error('Unexpected issue with estimating the gas. Please try again.') }
-                  })
-                  .catch(callError => {
-                    console.debug('Call threw error', call, callError)
-                    let errorMessage: string
-                    switch (callError.reason) {
-                      case 'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT':
-                      case 'UniswapV2Router: EXCESSIVE_INPUT_AMOUNT':
-                        errorMessage =
-                          'This transaction will not succeed either due to price movement or fee on transfer. Try increasing your slippage tolerance.'
-                        break
-                      default:
-                        errorMessage = `The transaction cannot succeed due to error: ${callError.reason}. This is probably an issue with one of the tokens you are swapping.`
+                    return {
+                      call,
+                      error: new Error('Unexpected issue with estimating the gas. Please try again.'),
                     }
-                    return { call, error: new Error(errorMessage) }
+                  })
+                  .catch((callError) => {
+                    console.debug('Call threw error', call, callError)
+                    return {
+                      call,
+                      error: new Error(swapErrorToUserReadableMessage(callError)),
+                    }
                   })
               })
           })
         )
 
         // a successful estimation is a bignumber gas estimate and the next call is also a bignumber gas estimate
-        const successfulEstimation = estimatedCalls.find(
+        let bestCallOption: SuccessfulCall | SwapCallEstimate | undefined = estimatedCalls.find(
           (el, ix, list): el is SuccessfulCall =>
             'gasEstimate' in el && (ix === list.length - 1 || 'gasEstimate' in list[ix + 1])
         )
 
-        if (!successfulEstimation) {
-          const errorCalls = estimatedCalls.filter((call): call is FailedCall => 'error' in call)
-          if (errorCalls.length > 0) throw errorCalls[errorCalls.length - 1].error
-          throw new Error('Unexpected error. Please contact support: none of the calls threw an error')
-        }
+       // check if any calls errored with a recognizable error
+       if (!bestCallOption) {
+        const errorCalls = estimatedCalls.filter((call): call is FailedCall => 'error' in call)
+        console.log("errorcalls", errorCalls);
+        if (errorCalls.length > 0) throw errorCalls[errorCalls.length - 1].error
+        const firstNoErrorCall = estimatedCalls.find<SuccessfulCall>(
+          (call): call is SuccessfulCall => !('error' in call)
+        )
+        if (!firstNoErrorCall) throw new Error('Unexpected error. Could not estimate gas for the swap.')
+        bestCallOption = firstNoErrorCall
+      }
 
-        const {
-          call: {
-            contract,
-            parameters: { methodName, args, value }
-          },
-          gasEstimate
-        } = successfulEstimation
+      const {
+        call: { address, calldata, value },
+      } = bestCallOption
 
+      if (!useRelay) {
+        console.log('SWAP WITHOUT ARCHER')
+        console.log(
+          'gasEstimate' in bestCallOption ? { gasLimit: calculateGasMargin(bestCallOption.gasEstimate) } : {}
+        )
+        
+        return library
+          .getSigner()
+          .sendTransaction({
+            from: account,
+            to: address,
+            data: calldata,
+            // let the wallet try if we can't estimate the gas
+            ...('gasEstimate' in bestCallOption ? { gasLimit: calculateGasMargin(bestCallOption.gasEstimate) } : {}),
+            gasPrice: !eip1559 && chainId === CHAINID_HARMONY ? BigNumber.from('2000000000') : undefined,
+            ...(value && !isZero(value) ? { value } : {}),
+          })
+          .then((response) => {
+            const inputSymbol = trade.inputAmount.currency.symbol
+            const outputSymbol = trade.outputAmount.currency.symbol
+            const inputAmount = trade.inputAmount.toSignificant(4)
+            const outputAmount = trade.outputAmount.toSignificant(4)
+
+            const base = `Swap ${inputAmount} ${inputSymbol} for ${outputAmount} ${outputSymbol}`
+            const withRecipient =
+              recipient === account
+                ? base
+                : `${base} to ${
+                    recipientAddressOrName && isAddress(recipientAddressOrName)
+                      ? shortenAddress(recipientAddressOrName)
+                      : recipientAddressOrName
+                  }`
+
+            addTransaction(response, {
+              summary: withRecipient,
+            })
+
+            return response.hash
+          })
+          .catch((error) => {
+            // if the user rejected the tx, pass this along
+            if (error?.code === 4001) {
+              throw new Error('Transaction rejected.')
+            } else {
+              // otherwise, the error was unexpected and we need to convey that
+              console.error(`Swap failed`, error, address, calldata, value)
+
+              throw new Error(`Swap failed: ${swapErrorToUserReadableMessage(error)}`)
+            }
+          })
+      } else {
         const postToRelay = (rawTransaction: string, deadline: number) => {
           // as a wise man on the critically acclaimed hit TV series "MTV's Cribs" once said:
           // "this is where the magic happens"
-
           const relayURI = chainId ? ARCHER_RELAY_URI[chainId] : undefined
-          if (!relayURI)
-            throw new Error('Could not determine relay URI for this network')
-
+          if (!relayURI) throw new Error('Could not determine relay URI for this network')
           const body = JSON.stringify({
             method: 'archer_submitTx',
             tx: rawTransaction,
-            deadline: deadline.toString()
+            deadline: deadline.toString(),
           })
-
-          fetch(relayURI, {
-              method: 'POST',
-              body,
-              headers: {
-                'Authorization': process.env.REACT_APP_ARCHER_API_KEY ?? '',
-                'Content-Type': 'application/json',
-              }
-            })
-            //.then(res => res.json())
-            //.then(json => console.log(json))
-            .catch(err => console.error(err))
+          return fetch(relayURI, {
+            method: 'POST',
+            body,
+            headers: {
+              Authorization: process.env.NEXT_PUBLIC_ARCHER_API_KEY ?? '',
+              'Content-Type': 'application/json',
+            },
+          }).then((res) => {
+            if (res.status !== 200) throw Error(res.statusText)
+          })
         }
 
-        if (!signOnly) {
-          return contract[methodName](...args, {
-            from: account,
-            gasLimit: calculateGasMargin(gasEstimate),
-            ...(relayDeadline ? { gasPrice: ethers.utils.parseUnits("1", "gwei") } : {}),
-            ...(value && !isZero(value) ? { value } : {})
-          })
-            .then((response: any) => {
-              const inputSymbol = trade.inputAmount.currency.symbol
-              const outputSymbol = trade.outputAmount.currency.symbol
-              const inputAmount = trade.inputAmount.toSignificant(3)
-              const outputAmount = trade.outputAmount.toSignificant(3)
+        const isMetamask = library.provider.isMetaMask
 
-              const base = `Swap ${inputAmount} ${inputSymbol} for ${outputAmount} ${outputSymbol}`
-              const withRecipient =
-                recipient === account
-                  ? base
-                  : `${base} to ${
-                      recipientAddressOrName && isAddress(recipientAddressOrName)
-                        ? shortenAddress(recipientAddressOrName)
-                        : recipientAddressOrName
-                    }`
+        if (isMetamask) {
+          // ethers will change eth_sign to personal_sign if it detects metamask
+          // https://github.com/ethers-io/ethers.js/blob/2a7dbf05718e29e550f7a208d35a095547b9ccc2/packages/providers/src.ts/web3-provider.ts#L33
 
-              const withVersion =
-                tradeVersion === Version.v2 ? withRecipient : `${withRecipient} on ${(tradeVersion as any).toUpperCase()}` +
-                (relayDeadline ? ' 🏹' : '') 
-
-              console.log('response', response)
-              const relay = relayDeadline ? { 
-                rawTransaction: response.raw,
-                deadline: Math.floor(relayDeadline + (new Date().getTime() / 1000)),
-                nonce: response.nonce,
-                ethTip
-              } : undefined
-
-              addTransaction(response, {
-                summary: withVersion,
-                relay
-              })
-
-              if (relay)
-                postToRelay(relay.rawTransaction, relay.deadline)
-
-              return response.hash
-            })
-            .catch((error: any) => {
-              // if the user rejected the tx, pass this along
-              if (error?.code === 4001) {
-                throw new Error('Transaction rejected.')
-              } else {
-                // otherwise, the error was unexpected and we need to convey that
-                console.error(`Swap failed`, error, methodName, args, value)
-                throw new Error(`Swap failed: ${error.message}`)
-              }
-            })
+          library.provider.isMetaMask = false
         }
-        else {
-          const partialTx = {
-            to: contract.address,
+
+        
+        const fullTxPromise = library.getBlockNumber().then((blockNumber) => {
+          return library.getSigner().populateTransaction({
             from: account,
-            gasLimit: calculateGasMargin(gasEstimate),
-            data: contract.interface.encodeFunctionData(methodName, args),
-            ...(relayDeadline ? { gasPrice: 0 } : {}),
-            ...(value && !isZero(value) ? { value } : {})
-          }
-          return contract.signer.populateTransaction(partialTx)
-            .then(fullTx => {
-              // metamask doesn't support Signer.signTransaction, so we have to do all this manually
-              //return contract.signer.signTransaction(fullTx)
+            to: address,
+            data: calldata,
+            // let the wallet try if we can't estimate the gas
+            ...(bestCallOption && 'gasEstimate' in bestCallOption ? { gasLimit: calculateGasMargin(bestCallOption.gasEstimate) } : {}),
+            ...(value && !isZero(value) ? { value } : {}),
+            ...(archerRelayDeadline && !eip1559 ? { gasPrice: 0 } : { type: 2 }),
+          })
+        })
 
-              const chainNames: {[chainId in ChainId]?: string} = {
-                [ChainId.MAINNET]: 'mainnet',
-                [ChainId.RINKEBY]: 'rinkeby'
-              }
-              const chain = chainNames[chainId]
-              if (!chain)
-                throw new Error(`Unknown chain ID ${chainId} when building transaction`)
 
-              const common = new Common({ chain, hardfork: 'berlin' })
-              const txParams = {
-                nonce: fullTx.nonce !== undefined ? ethers.utils.hexlify(fullTx.nonce, { hexPad: "left" }) : undefined,
-                gasPrice: fullTx.gasPrice !== undefined ? ethers.utils.hexlify(fullTx.gasPrice, { hexPad: "left" }) : undefined,
-                gasLimit: fullTx.gasLimit !== undefined ? ethers.utils.hexlify(fullTx.gasLimit, { hexPad: "left" }) : undefined,
-                to: fullTx.to,
-                value: fullTx.value !== undefined ? ethers.utils.hexlify(fullTx.value, { hexPad: "left" }) : undefined,
-                data: fullTx.data?.toString(),
-                chainId: fullTx.chainId !== undefined ? ethers.utils.hexlify(fullTx.chainId) : undefined,
-                type: fullTx.type !== undefined ? ethers.utils.hexlify(fullTx.type) : undefined
-              }
-              const tx = TransactionFactory.fromTxData(txParams, { common })
-              const unsignedTx = tx.getMessageToSign()
-
-              if (!(contract.signer instanceof JsonRpcSigner)) {
-                throw new Error(`Cannot sign transactions with this wallet type`)
-              }
-              const signer = contract.signer as JsonRpcSigner
-
-              // ethers will change eth_sign to personal_sign if it detects metamask
-              // https://github.com/ethers-io/ethers.js/blob/2a7dbf05718e29e550f7a208d35a095547b9ccc2/packages/providers/src.ts/web3-provider.ts#L33
-
-              let isMetamask: boolean | undefined
-              let web3Provider: Web3Provider | undefined
-              if (signer.provider instanceof Web3Provider) {
-                web3Provider = signer.provider as Web3Provider
-                isMetamask = web3Provider.provider.isMetaMask
-                web3Provider.provider.isMetaMask = false
-              }
-              
-              return signer.provider.send("eth_sign", [account, ethers.utils.hexlify(unsignedTx)])
-                .then(signature => {
+        let signedTxPromise: Promise<{ signedTx: string; fullTx: TransactionRequest }>
+        if (isMetamask) {
+          signedTxPromise = fullTxPromise.then((fullTx) => {
+            // metamask doesn't support Signer.signTransaction, so we have to do all this manually
+            const chainNames: {
+              [chainId in ChainId]?: string
+            } = {
+              [ChainId.MAINNET]: 'mainnet',
+            }
+            const chain = chainNames[chainId]
+            if (!chain) throw new Error(`Unknown chain ID ${chainId} when building transaction`)
+            const common = new Common({
+              chain,
+              hardfork: 'berlin',
+            })
+            const txParams = {
+              nonce:
+                fullTx.nonce !== undefined
+                  ? ethers.utils.hexlify(fullTx.nonce, {
+                      hexPad: 'left',
+                    })
+                  : undefined,
+              gasPrice:
+                fullTx.gasPrice !== undefined ? ethers.utils.hexlify(fullTx.gasPrice, { hexPad: 'left' }) : undefined,
+              gasLimit:
+                fullTx.gasLimit !== undefined ? ethers.utils.hexlify(fullTx.gasLimit, { hexPad: 'left' }) : undefined,
+              to: fullTx.to,
+              value:
+                fullTx.value !== undefined
+                  ? ethers.utils.hexlify(fullTx.value, {
+                      hexPad: 'left',
+                    })
+                  : undefined,
+              data: fullTx.data?.toString(),
+              chainId: fullTx.chainId !== undefined ? ethers.utils.hexlify(fullTx.chainId) : undefined,
+              type: fullTx.type !== undefined ? ethers.utils.hexlify(fullTx.type) : undefined,
+            }
+            const tx: any = TransactionFactory.fromTxData(txParams, {
+              common,
+            })
+            const unsignedTx = tx.getMessageToSign()
+            // console.log('unsignedTx', unsignedTx)
+            if(library.provider.request) {
+              return library.provider.request({ method: 'eth_sign', params: [account, ethers.utils.hexlify(unsignedTx)] })
+                .then((signature) => {
                   const signatureParts = ethers.utils.splitSignature(signature)
-
                   // really crossing the streams here
+                  // eslint-disable-next-line
                   // @ts-ignore
-                  const txWithSignature = tx._processSignature(signatureParts.v, ethers.utils.arrayify(signatureParts.r), ethers.utils.arrayify(signatureParts.s))
-
-                  return {signedTx: ethers.utils.hexlify(txWithSignature.serialize()), fullTx} 
-                })
-                .finally(() => {
-                  if (web3Provider) {
-                    web3Provider.provider.isMetaMask = isMetamask
+                  const txWithSignature = tx._processSignature(
+                    signatureParts.v,
+                    ethers.utils.arrayify(signatureParts.r),
+                    ethers.utils.arrayify(signatureParts.s)
+                  )
+                  return {
+                    signedTx: ethers.utils.hexlify(txWithSignature.serialize()),
+                    fullTx,
                   }
                 })
-
-            })
-            .then(({signedTx, fullTx}) => {
-              const hash = ethers.utils.keccak256(signedTx)
-
-              const inputSymbol = trade.inputAmount.currency.symbol
-              const outputSymbol = trade.outputAmount.currency.symbol
-              const inputAmount = trade.inputAmount.toSignificant(3)
-              const outputAmount = trade.outputAmount.toSignificant(3)
-
-              const base = `Swap ${inputAmount} ${inputSymbol} for ${outputAmount} ${outputSymbol}`
-              const withRecipient =
-                (recipient === account
-                  ? base
-                  : `${base} to ${
-                      recipientAddressOrName && isAddress(recipientAddressOrName)
-                        ? shortenAddress(recipientAddressOrName)
-                        : recipientAddressOrName
-                    }`)
-                + (relayDeadline ? ' 🏹' : '')
-
-              const relay = relayDeadline ? { 
-                rawTransaction: signedTx,
-                deadline: Math.floor(relayDeadline + (new Date().getTime() / 1000)),
-                nonce: ethers.BigNumber.from(fullTx.nonce).toNumber(),
-                ethTip
-              } : undefined
-
-              addTransaction({ hash }, {
-                summary: withRecipient,
-                relay
+            } else {
+              return library
+                .getSigner()
+                .signTransaction(fullTx)
+                .then((signedTx) => {
+                  return { signedTx, fullTx }
+                })
+            }
+          })
+        } else {
+          signedTxPromise = fullTxPromise.then((fullTx) => {
+            return library
+              .getSigner()
+              .signTransaction(fullTx)
+              .then((signedTx) => {
+                return { signedTx, fullTx }
               })
+          })
+        }
 
-              if (relay)
-                postToRelay(relay.rawTransaction, relay.deadline)
-
-              return hash
-            })
-            .catch((error: any) => {
-              // if the user rejected the tx, pass this along
-              if (error?.code === 4001) {
-                throw new Error('Transaction rejected.')
-              } else {
-                // otherwise, the error was unexpected and we need to convey that
-                console.error(`Swap failed`, error, methodName, args, value)
-                throw new Error(`Swap failed: ${error.message}`)
+        return signedTxPromise
+          .then(({ signedTx, fullTx }) => {
+            const hash = ethers.utils.keccak256(signedTx)
+            const inputSymbol = trade.inputAmount.currency.symbol
+            const outputSymbol = trade.outputAmount.currency.symbol
+            const inputAmount = trade.inputAmount.toSignificant(3)
+            const outputAmount = trade.outputAmount.toSignificant(3)
+            const base = `Swap ${inputAmount} ${inputSymbol} for ${outputAmount} ${outputSymbol}`
+            const withRecipient =
+              (recipient === account
+                ? base
+                : `${base} to ${
+                    recipientAddressOrName && isAddress(recipientAddressOrName)
+                      ? shortenAddress(recipientAddressOrName)
+                      : recipientAddressOrName
+                  }`) + (archerRelayDeadline ? ' 🏹' : '')
+            const relay =
+              useRelay && archerRelayDeadline
+                ? {
+                    rawTransaction: signedTx,
+                    deadline: Math.floor(archerRelayDeadline + new Date().getTime() / 1000),
+                    nonce: ethers.BigNumber.from(fullTx.nonce).toNumber(),
+                    ethTip: ethTip,
+                  }
+                : undefined
+            // console.log('archer', archer)
+            addTransaction(
+              { hash },
+              {
+                summary: withRecipient,
+                relay,
               }
-            })
+            )
+            return relay ? postToRelay(relay.rawTransaction, relay.deadline).then(() => hash) : hash
+          })
+          .catch((error: any) => {
+            // if the user rejected the tx, pass this along
+            if (error?.code === 4001) {
+              throw new Error('Transaction rejected.')
+            } else {
+              // otherwise, the error was unexpected and we need to convey that
+              console.error(`Swap failed`, error)
+              throw new Error(`Swap failed: ${error.message}`)
+            }
+          })
+          .finally(() => {
+            if (isMetamask) library.provider.isMetaMask = true
+          })
         }
       },
       error: null
     }
-  }, [trade, library, account, chainId, recipient, recipientAddressOrName, swapCalls, addTransaction, signOnly, relayDeadline, ethTip])
+  }, [trade, library, account, chainId, recipient, recipientAddressOrName, swapCalls, useRelay, addTransaction, ethTip, archerRelayDeadline, eip1559])
 }

@@ -6,12 +6,12 @@ import { AbstractConnector } from '@web3-react/abstract-connector'
 import { fortmatic, injected, portis, walletconnect, walletlink } from '../connectors'
 
 export const ARCHER_ROUTER_ADDRESS: { [chainId in ChainId]?: string } = {
-  [ChainId.MAINNET]: '0x87535b160E251167FB7abE239d2467d1127219E4',
+  [ChainId.MAINNET]: '0x9917C083FF9FbD29Df1367FBF7F2388A9a202431',
   [ChainId.RINKEBY]: '0x21323080D91dD77c420be7775Bf5C33d21Dcc8Fc'
 }
 
 export const ARCHER_RELAY_URI: { [chainId in ChainId]?: string } = {
-  [ChainId.MAINNET]: 'https://api.archerdao.io/v1/transaction'
+  [ChainId.MAINNET]: 'https://api.edennetwork.io/v1/transaction'
 }
 
 export const UNISWAP_ROUTER_ADDRESS = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
@@ -254,3 +254,10 @@ export const BLOCKED_ADDRESSES: string[] = [
   '0xA7e5d5A720f06526557c513402f2e6B5fA20b008',
   '0x8576aCC5C05D6Ce88f4e49bf65BdF0C62F91353C'
 ]
+
+
+export const EIP_1559_ACTIVATION_BLOCK: { [chainId in ChainId]?: number } = {
+  [ChainId.ROPSTEN]: 10499401,
+  [ChainId.GÖRLI]: 5062605,
+  [ChainId.RINKEBY]: 8897988,
+}

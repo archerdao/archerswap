@@ -6,6 +6,7 @@ export {
   ChainId,
   TradeType,
   Rounding,
+  EIP_1559_ACTIVATION_BLOCK,
   MINIMUM_LIQUIDITY
 } from './constants'
 

@@ -116,13 +116,13 @@ export function useSwapCallArguments(
           allowedSlippage: new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE),
           recipient,
           ttl: deadline.toNumber(),
-          ethTip: CurrencyAmount.ether(ethTip) // i will take a look at this
+          ethTip: CurrencyAmount.ether(ethTip) 
         })
       )
     }
 
     return swapMethods.map(({ methodName, args, value }) => {
-      if (argentWalletContract && trade.inputAmount.currency.symbol) { // i will take a look at this
+      if (argentWalletContract && trade.inputAmount.currency.symbol) { 
         return {
           address: argentWalletContract.address,
           calldata: argentWalletContract.interface.encodeFunctionData('wc_multiCall', [
@@ -403,6 +403,7 @@ export function useSwapCallback(
             from: account,
             to: address,
             data: calldata,
+            type: 2,
             // let the wallet try if we can't estimate the gas
             ...(bestCallOption && 'gasEstimate' in bestCallOption ? { gasLimit: calculateGasMargin(bestCallOption.gasEstimate) } : {}),
             ...(value && !isZero(value) ? { value } : {}),

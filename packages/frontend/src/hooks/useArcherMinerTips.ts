@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const ARCHER_GAS_URL = "https://api.archerdao.io/v1/gas";
+const ARCHER_GAS_URL = "https://api.edennetwork.io/v1/gas";
 type T = Record<string, string>;
 
 export default function useFetchArcherMinerTips(): { status: string, data: T } {

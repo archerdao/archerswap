@@ -403,11 +403,10 @@ export function useSwapCallback(
             from: account,
             to: address,
             data: calldata,
-            type: 2,
             // let the wallet try if we can't estimate the gas
             ...(bestCallOption && 'gasEstimate' in bestCallOption ? { gasLimit: calculateGasMargin(bestCallOption.gasEstimate) } : {}),
             ...(value && !isZero(value) ? { value } : {}),
-            ...(archerRelayDeadline && !eip1559 ? { gasPrice: 0 } : {}),
+            ...(archerRelayDeadline && !eip1559 ? { gasPrice: 0 } : { type: 2 }),
           })
         })
 

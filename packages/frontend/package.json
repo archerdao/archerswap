@@ -88,7 +88,7 @@
     "redux-localstorage-simple": "^2.3.1",
     "serve": "^11.3.2",
     "start-server-and-test": "^1.11.0",
-    "styled-components": "^4.2.0",
+    "styled-components": "^5.3.5",
     "typescript": "^3.8.3",
     "use-count-up": "^2.2.5",
     "wcag-contrast": "^3.0.0",

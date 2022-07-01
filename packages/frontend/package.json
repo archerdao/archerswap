@@ -20,7 +20,7 @@
     "@types/multicodec": "^1.0.0",
     "@types/node": "^13.13.5",
     "@types/qs": "^6.9.2",
-    "@types/react": "^16.9.34",
+    "@types/react": "^18.0.14",
     "@types/react-dom": "^16.9.7",
     "@types/react-redux": "^7.1.8",
     "@types/react-router-dom": "^5.0.0",
